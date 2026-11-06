@@ -1,0 +1,28 @@
+{
+  "name": "@altpool/falcon",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "test": "forge test -vv",
+    "forge:build": "forge build",
+    "smoke": "bun scripts/falcon-smoke.ts",
+    "recipient": "bun scripts/falcon-recipient.ts"
+  },
+  "dependencies": {
+    "@altpool/core": "workspace:*",
+    "altpool": "workspace:*",
+    "@forshtat/hegota-support": "0.0.1",
+    "@noble/post-quantum": "0.7.1",
+    "viem": "^2.57.10",
+    "@altpool/contracts": "workspace:*",
+    "@altpool/prover": "workspace:*"
+  },
+  "devDependencies": {
+    "forge-std": "github:foundry-rs/forge-std#v1.9.7"
+  }
+}

@@ -9,3 +9,5 @@ packages/contracts/cache/
 packages/contracts/lib/
 packages/prover/artifacts/
 .tmp/
+packages/falcon/out/
+packages/falcon/cache/

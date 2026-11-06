@@ -1,0 +1,1 @@
+Vendored, unmodified: ZKNoxHQ/ETHFALCON @ 43ac863e30281bb7821748178d39967367d54bc2 (MIT): the NIST Falcon-512 verifier (`ZKNOX_falcon`) and its imports, plus its `InterfaceVerifier` and `sstore2` libs. Upstream marks it experimental and unaudited.
