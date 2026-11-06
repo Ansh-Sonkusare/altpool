@@ -26,7 +26,8 @@ import { getProfile } from "@forshtat/hegota-support/profiles";
 import { DEVNET, altDevnet, ethrex, explorerTx, gateway, toWire, type WithdrawProof } from "@altpool/core";
 import { createNote, noteToString, prove, proveForRoot } from "../../prover/src/index";
 import { EXIT_FEE, exitTx, exitTxRR } from "../src/exit";
-import { MINER_SIDECAR, depositNote, explorerExit, sendExit } from "../src/flow";
+import { MINER_SIDECAR, depositNote, explorerExit } from "../src/flow";
+import { altpoolActions, createAltMempoolClient } from "../../sdk/src/index";
 import deployments from "../deployments.json";
 
 const rr = process.argv.includes("--rr");
@@ -121,11 +122,16 @@ else {
   tx = await exitFor(proof);
 }
 
-const r = await sendExit(tx, { sendUrl: send.url });
-const exitHash = r.hash;
+// submit, not send: the exit sender is the ExitRelay contract (zero signatures) and ExitRelay pins frame gas.
+const sdk = pub.extend(altpoolActions({ sidecar: createAltMempoolClient({ httpUrl: send.url, profile, name: "send" }) }));
+const exitHash = (await sdk.altpool.submitFrameTransaction({ transaction: tx })).hash;
 console.log(`exit sent ${exitHash}`);
-console.log(`included in block ${r.blockNumber}, status ${r.status}, gasUsed ${r.gasUsed}`);
-r.frames.forEach((f, i) => console.log(`  frame ${i}: status ${f.status} gasUsed ${f.gasUsed} stateGasUsed ${f.stateGasUsed}`));
+const { receipt: r } = await sdk.altpool.waitForFrameTransactionReceipt({ hash: exitHash, timeoutMs: 180_000, throwOnRevert: true });
+console.log(`included in block ${r.blockNumber}, status ${r.status}${r.gasUsed === undefined ? "" : `, gasUsed ${r.gasUsed}`}`);
+r.frames.forEach((f) => console.log(`  frame ${f.index}: status ${f.status} gasUsed ${f.gasUsed.execution} stateGasUsed ${f.gasUsed.state}`));
+// throwOnRevert checks only the tx status; a frame can fail inside a successful tx.
+const failed = r.frames.find((f) => f.status !== "success");
+if (failed) throw new Error(`exit ${exitHash} frame ${failed.index} ${failed.status}`);
 
 const got = await pub.getBalance({ address: recipient });
 const want = DEVNET.denomination - EXIT_FEE;
