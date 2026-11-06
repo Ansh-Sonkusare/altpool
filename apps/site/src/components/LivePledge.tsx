@@ -8,7 +8,9 @@ import type { EntityReport } from "@altpool/monitor";
 import { addrUrl, exitUrl } from "../altpool";
 import type { FrameRow } from "../frames";
 import { PAY_RELAY, type DoctorView, type Live } from "../live";
-import { demoKeyFunder } from "../liveExit/funding";
+import { deployments } from "@altpool/contracts";
+import type { Address } from "viem";
+import { freshKeyFunder, fundKeyFunder } from "../liveExit/funding";
 import { DEFAULT_FG, freshAddress, validate, type Raw } from "../livePledge/inputs";
 import { LifecyclePanel, secs, StepRow } from "../livePledge/parts";
 import { plannedRows } from "../livePledge/plan";
@@ -20,6 +22,7 @@ import { GatePanel, PresetBar, RecoverPanel, usePaidInvoice, type GateState } fr
 import { recentRuns, setCurrentRun, setLastSent, useCurrentRun, type CurrentRun } from "../pledge";
 import { openInDoctor } from "./doctor/follow";
 import { GapStory } from "./doctor/Gap";
+import { Crowd } from "./Crowd";
 import { FrameDetail } from "./frames/FrameDetail";
 import { FrameRail } from "./frames/FrameRail";
 import { FrameLegend } from "./frames/Legend";
@@ -29,6 +32,7 @@ import { Card, CardBar, cx, Dot, ExtLink, fmt, Pill, Section, short, valueOf } f
 /** Fewer sends than this before PayRelayWETH is throttled and the button stays off: one run adds one send. */
 const MIN_HEADROOM = 5;
 const QUOTE_POLL_MS = 15_000;
+const WETH_POOL = deployments.wethPool as Address;
 
 /** One run at a time per page, however many panels are mounted. */
 let busy = false;
@@ -120,8 +124,12 @@ const RecentRuns = ({ entity }: { entity: Live<EntityReport> }) => {
   );
 };
 
+/** A failing step shows its own error. An error before any step (a chunk that did not load) goes on the first one. */
+const failedBeforeSteps = (st: Steps, e: unknown): Steps =>
+  Object.values(st).some((x) => x.status === "error") ? st : { ...st, keys: { ...st.keys, status: "error", error: e instanceof Error ? e.message : String(e) } };
+
 export const LivePledge = ({ entity }: { entity: Live<EntityReport> }) => {
-  const funder = useMemo(demoKeyFunder, []);
+  const fund = useMemo(fundKeyFunder, []);
   const [defaults, setDefaults] = useState(() => ({ payee: freshAddress(), change: freshAddress() }));
   const [raw, setRaw] = useState<Raw>({ amount: DEFAULT_FG, ...defaults });
   const [steps, setSteps] = useState<Steps>(blankSteps);
@@ -136,6 +144,7 @@ export const LivePledge = ({ entity }: { entity: Live<EntityReport> }) => {
   const [intent, setIntent] = useState<Intent>(PAY);
   const [gate, setGate] = useState<GateState>();
   const [story, setStory] = useState<{ view?: DoctorView; sent?: Hex }>();
+  const [myLeaf, setMyLeaf] = useState<number>();
   const paid = usePaidInvoice(phase);
   const cur = useCurrentRun();
   const run = useRef<CurrentRun | undefined>(undefined);
@@ -190,9 +199,10 @@ export const LivePledge = ({ entity }: { entity: Live<EntityReport> }) => {
     setSel(0);
     setGate(undefined);
     setStory(undefined);
+    setMyLeaf(undefined);
     publish({ preset: presetOf(intent).label, expectRevert: expectsRevert(intent), raw: undefined, hash: undefined }, true);
     const ui: Ui = {
-      onChange: setSteps, onPlan: setRows, onTxs: setTxs, onLifecycle: setLc, onIncluded: setIncluded,
+      onChange: setSteps, onPlan: setRows, onTxs: setTxs, onLifecycle: setLc, onIncluded: setIncluded, onLeaf: setMyLeaf,
       onSent: (h) => { setLastSent(h); publish({ hash: h }); setStory((st) => st && { ...st, sent: h }); },
       onBuilt: (raw, i) => publish({ preset: i.id === "pay" && intent.id !== "pay" ? `${presetOf(intent).label}, after the fix` : presetOf(i).label, expectRevert: expectsRevert(i), raw, hash: undefined }),
       onIntent: setIntent,
@@ -200,10 +210,11 @@ export const LivePledge = ({ entity }: { entity: Live<EntityReport> }) => {
     };
     try {
       const { runLivePledge } = await import("../livePledge/run");
-      setResult(await runLivePledge(inputs, labels, intent, ui, funder));
+      setResult(await runLivePledge(inputs, labels, intent, ui, freshKeyFunder("Fresh depositor key")));
       setPhase("done");
-    } catch {
-      setPhase("failed"); // the failing step already shows its error
+    } catch (e) {
+      setSteps((st) => failedBeforeSteps(st, e));
+      setPhase("failed");
     } finally {
       busy = false;
       // The run spent the fresh defaults; offer new ones unless the visitor typed their own.
@@ -238,9 +249,12 @@ export const LivePledge = ({ entity }: { entity: Live<EntityReport> }) => {
 
       <Notes />
 
-      <p className="m-0 max-w-[760px] rounded-xl border border-warnln bg-warnbg px-5 py-4 text-[14px] text-fg1">
-        <span className="font-medium text-warn">This shows the mechanism, not privacy.</span> The run deposits and pays seconds apart from your IP, and timing links the two. The host that serves the public RPC also serves the sidecar, so one operator sees both. The pool holds only the deposits made on this devnet. The deposit is signed by <span className="text-fg">{funder.label.toLowerCase()} {short(funder.address)}</span>: {funder.note} The payment itself carries no signature.
-      </p>
+      <div className="m-0 flex max-w-[760px] flex-col gap-2 rounded-xl border border-warnln bg-warnbg px-5 py-4 text-[14px] text-fg1">
+        <p className="m-0"><span className="font-medium text-warn">This shows the mechanism, not privacy.</span> The run deposits and pays from this tab one to three minutes apart, so timing links the payment to the deposit. The deposits that land around yours come mostly from a crowd of accounts we run on this devnet: anyone who knows those addresses can set them aside, and your note is then nearly alone again. The invoice amount and the change are public. The host that serves the public RPC also serves the faucet and the sidecar, so one operator sees your IP on both.</p>
+        <p className="m-0">What the run does: your deposit comes from a fresh key. After it lands, the run waits up to 90 s for two later deposits and proves against a root that holds them, so your note is not the newest leaf in it. If none come, it says so and proves anyway, and then your note is the newest leaf. The depositor signs nothing after its deposit. The fund key {short(fund.address)} creates the invoice, and a fresh key signs any rescue.</p>
+      </div>
+
+      <Crowd pool={WETH_POOL} myLeafIndex={myLeaf} />
 
       <PresetBar intent={intent} paid={paid} disabled={running} onPick={pick} />
 
@@ -280,7 +294,7 @@ export const LivePledge = ({ entity }: { entity: Live<EntityReport> }) => {
         <p id="live-pledge-reason" role="status" className="m-0 max-w-[620px] text-[13px] text-fg2">
           {reason ?? (expectsRevert(intent)
             ? "Uses devnet ETH. Builds the payment, simulates it and stops before the send, so you can see where the verdicts disagree and choose."
-            : "Uses devnet ETH. Takes about a minute: the proof takes seconds on a fast machine, inclusion is the rest. It is simulated first and never sent if the simulation predicts a revert.")}
+            : "Uses devnet ETH. Takes one to three minutes: after your deposit the run waits up to 90 s for two later deposits, then proves and sends. It is simulated first and never sent if the simulation predicts a revert.")}
         </p>
       </div>
 
@@ -316,7 +330,7 @@ export const LivePledge = ({ entity }: { entity: Live<EntityReport> }) => {
             </dl>
             <ExtLink href={exitUrl(result.hash)} className="font-mono text-[13px] text-amber underline decoration-amberln underline-offset-4">{short(result.hash)} on the explorer, miner's view</ExtLink>
           </div>
-          <div className="border-t border-ln"><RecoverPanel rescue={result.rescue} funder={funder} now={now} /></div>
+          <div className="border-t border-ln"><RecoverPanel rescue={result.rescue} now={now} /></div>
         </Card>
       )}
 
@@ -328,8 +342,15 @@ export const LivePledge = ({ entity }: { entity: Live<EntityReport> }) => {
               <Fact k="Frames that succeeded">{result.frames} of 9</Fact>
               <Fact k="Block">{fmt(result.block)}</Fact>
               <Fact k="Gas used">{result.gasUsed === undefined ? "not reported" : fmt(result.gasUsed)}</Fact>
+              <Fact k="Your leaf in the proof's root">{fmt(result.anonymity.leaf)} of 0 to {fmt(result.anonymity.leaves - 1)}</Fact>
+              <Fact k="Deposits after yours in the root">{fmt(result.anonymity.after)}</Fact>
+              <Fact k="Unspent notes in the root (upper bound)">{fmt(result.anonymity.set)}</Fact>
               <Fact k="Whole run">{secs(result.totalMs)}</Fact>
             </dl>
+            <p className="m-0 max-w-[760px] text-[14px]/[22px] text-fg2">
+              Your note is 1 of {fmt(result.anonymity.leaves)} notes in the root the proof used, and {fmt(result.anonymity.after)} deposited after yours.{" "}
+              {result.anonymity.after >= 2 ? "The deposits around yours come mostly from our devnet crowd, so this shows the mechanism, not privacy." : "Fewer than two deposits landed after yours, so the root and the timing still point at your note."}
+            </p>
             <ExtLink href={exitUrl(result.hash)} className="font-mono text-[13px] text-amber underline decoration-amberln underline-offset-4">{short(result.hash)} on the explorer, miner's view</ExtLink>
           </div>
         </Card>
@@ -363,7 +384,7 @@ export const LivePledge = ({ entity }: { entity: Live<EntityReport> }) => {
         {r
           ? `PayRelayWETH ${short(PAY_RELAY)} · ${r.stake.isStaked ? `staked ${formatEther(r.stake.amount)} ETH` : "unstaked"} · reputation ${r.reputation.status} · ${r.headroom.untilThrottled} sends until throttled${entity.status === "error" ? " · stale, refresh failed" : ""}`
           : entity.status === "error" ? `PayRelayWETH's headroom could not be read: ${entity.error}` : "Reading PayRelayWETH's headroom…"}
-        {" · "}<ExtLink href={addrUrl(funder.address)} className="underline decoration-ln2 underline-offset-4">{funder.label.toLowerCase()} {short(funder.address)}</ExtLink>
+        {" · "}<ExtLink href={addrUrl(fund.address)} className="underline decoration-ln2 underline-offset-4">{fund.label.toLowerCase()} {short(fund.address)}, creates the invoices</ExtLink>
       </p>
     </Section>
   );

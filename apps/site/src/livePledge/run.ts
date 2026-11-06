@@ -1,17 +1,15 @@
-// One live Pledge Paid in two halves that can run in different sessions. Deposit: note -> faucet -> wrap+deposit (WETH pool).
-// Pay: wait for later deposits -> tree -> invoice (fund key) + quote -> Settler address -> proof -> 9 frames -> simulate
-// -> checkAdmission -> miner sidecar -> receipt -> outcome. The depositor signs nothing after its deposit; the nine-frame
-// payment carries no signature.
+// One live Pledge Paid, end to end in the browser: fresh depositor key -> faucet -> wrap+deposit (WETH pool) -> tree
+// -> invoice (fund key) + quote -> Settler address -> proof -> 9 frames -> simulate -> checkAdmission -> miner sidecar
+// -> receipt -> outcome. The depositor signs nothing after its deposit; the nine-frame payment carries no signature.
 import "../liveExit/shim";
 import { renderReport } from "@altpool/simulator";
-import { formatEther, formatUnits, isAddressEqual, parseAbi, parseEther, parseEventLogs, type Address, type Hex } from "viem";
+import { formatEther, formatUnits, isAddressEqual, parseAbi, parseAbiItem, parseEther, parseEventLogs, type Address, type Hex } from "viem";
 import { EXIT_FEE, WETH9, deployments, invoiceBookAbi, payTx, settlerAbi, settlerAddress, settlerFactoryAbi, wethAbi, type Terms } from "@altpool/contracts";
 import { DEVNET, type Note } from "@altpool/core";
 import { encodeTx } from "@forshtat/hegota-support/tx";
 import { addrUrl, client, profile } from "../altpool";
 import type { DoctorView } from "../live";
 import { PAY_RELAY, pledgeSimulator, runPledgeTx } from "../live";
-import { crowdOf } from "../liveExit/crowd";
 import { fundKeyFunder, wrapAndDeposit, DEPOSIT_NEED, type Funder } from "../liveExit/funding";
 import { createNote } from "../liveExit/note";
 import { prove } from "../liveExit/prove";
@@ -21,7 +19,7 @@ import type { Inputs } from "./inputs";
 import { plannedRows } from "./plan";
 import { expectsRevert, fixOf, presetOf, type Intent } from "./presets";
 import { FGUSD, quote } from "./quote";
-import { type ChainTx, type Lifecycle, type Rescue, type RunResult, type StepId, type Steps } from "./steps";
+import { blankSteps, type ChainTx, type Later, type Lifecycle, type Rescue, type RunResult, type StepId, type Steps } from "./steps";
 
 const [FACTORY, BOOK, POOL] = [deployments.settlerFactory, deployments.invoiceBook, deployments.wethPool] as Address[];
 const erc20 = parseAbi(["function balanceOf(address) view returns (uint256)"]);
@@ -52,6 +50,8 @@ export interface Ui {
   onIncluded(hash: Hex): void;
   /** The nine frames are built: the raw transaction, before anything is sent. */
   onBuilt(raw: Hex, intent: Intent): void;
+  /** The visitor's deposit landed at this leaf. */
+  onLeaf(leaf: number): void;
   /** The run took a different intent (the fix). */
   onIntent(intent: Intent): void;
   /** The simulation predicts a revert on a run meant to revert. Resolve with what to do about it. */
@@ -60,8 +60,8 @@ export interface Ui {
 export interface Gate { intent: Intent; frame: number; raw: Hex; view?: DoctorView }
 export interface Labels { payee: string; change: string }
 
-/** The step and transaction bookkeeping both halves share, so "deposit and pay now" shows one continuous run. */
-export interface Tracker {
+/** The step and transaction bookkeeping the deposit and the payment share. */
+interface Tracker {
   put(id: StepId, patch: Partial<StepState>): void;
   fact(id: StepId, f: Fact): void;
   step<T>(id: StepId, fn: () => Promise<T>): Promise<T>;
@@ -69,9 +69,9 @@ export interface Tracker {
   settleTx(hash: Hex, block: bigint | number | undefined, ok?: boolean): void;
 }
 
-export const tracker = (ui: Pick<Ui, "onChange" | "onTxs">, steps0: Steps, txs0: ChainTx[]): Tracker => {
-  const steps = { ...steps0 };
-  const txs = txs0.map((x) => ({ ...x }));
+const tracker = (ui: Pick<Ui, "onChange" | "onTxs">): Tracker => {
+  const steps = blankSteps();
+  const txs: ChainTx[] = [];
   const put = (id: StepId, patch: Partial<StepState>) => { steps[id] = { ...steps[id], ...patch }; ui.onChange({ ...steps }); };
   return {
     put,
@@ -104,8 +104,13 @@ export const tracker = (ui: Pick<Ui, "onChange" | "onTxs">, steps0: Steps, txs0:
   };
 };
 
-/** Fund, wrap, approve, deposit. The note it returns is the money: the caller shows it once and never stores it. */
-export async function runDeposit(t: Tracker, funder: Funder): Promise<Note> {
+const DEPOSIT_EVENT = parseAbiItem("event Deposit(bytes32 indexed commitment, uint32 leafIndex, uint256 timestamp)");
+const WANT_LATER = 2;
+const WAIT_MS = 90_000;
+const WATCH_MS = 3000;
+
+/** Fund, wrap, approve, deposit. The note stays in this run's locals: never stored or shown. */
+async function runDeposit(t: Tracker, funder: Funder): Promise<{ note: Note; hash: Hex }> {
   const { step, fact, track, settleTx } = t;
   const note = await step("keys", async () => {
     const note = createNote();
@@ -120,64 +125,87 @@ export async function runDeposit(t: Tracker, funder: Funder): Promise<Note> {
     else fact("faucet", { k: "faucet", v: "not needed, the balance covers a deposit" });
   });
 
-  await step("deposit", async () => {
+  const hash = await step("deposit", async () => {
     const LABELS = { wrap: "wrap 0.1 ETH into WETH", approve: "approve the pool to take it", deposit: "pool.deposit(commitment)" } as const;
-    await wrapAndDeposit(funder, note, POOL, (what, h) => track("deposit", LABELS[what], h), (h, block, ok) => settleTx(h, block, ok));
+    const hash = await wrapAndDeposit(funder, note, POOL, (what, h) => track("deposit", LABELS[what], h), (h, block, ok) => settleTx(h, block, ok));
     fact("deposit", { k: "deposited", v: `${formatEther(DEVNET.denomination)} WETH into the pool`, tone: "ok" });
     fact("deposit", { k: "the depositor", v: "signs nothing more: the fund key creates the invoice and a fresh key signs any rescue", tone: "ok" });
+    return hash;
   });
-  return note;
+  return { note, hash };
+}
+
+/** Watches the pool's Deposit logs after the visitor's deposit, listing each later one, until WANT_LATER exist or 90 s pass.
+ *  This page creates no deposits: whatever lands comes from others (on this devnet, mostly our crowd runner). */
+async function waitForLater(t: Tracker, ui: Ui, own: Hex): Promise<Later[]> {
+  const { step, fact, track, settleTx } = t;
+  return step("wait", async () => {
+    const r = await client.waitForTransactionReceipt({ hash: own, timeout: 180_000 });
+    const [mine] = parseEventLogs({ abi: [DEPOSIT_EVENT], logs: r.logs.filter((l) => isAddressEqual(l.address, POOL)) });
+    if (!mine) throw new Error(`no Deposit event in ${own}`);
+    const leaf = mine.args.leafIndex;
+    ui.onLeaf(leaf);
+    fact("wait", { k: "your deposit", v: `leaf ${leaf}, block ${n(r.blockNumber)}` });
+    const seen = new Map<number, Later>();
+    const end = Date.now() + WAIT_MS;
+    for (;;) {
+      const logs = await retry(() => client.getLogs({ address: POOL, event: DEPOSIT_EVENT, fromBlock: r.blockNumber, toBlock: "latest" }));
+      for (const l of logs.filter((l) => l.args.leafIndex! > leaf).sort((a, b) => a.args.leafIndex! - b.args.leafIndex!)) {
+        if (seen.has(l.args.leafIndex!)) continue;
+        const later = { leaf: l.args.leafIndex!, block: Number(l.blockNumber), hash: l.transactionHash };
+        seen.set(later.leaf, later);
+        track("wait", `deposit after yours, leaf ${later.leaf}`, later.hash);
+        settleTx(later.hash, later.block);
+      }
+      fact("wait", { k: "later deposits", v: `${seen.size} of ${WANT_LATER}`, tone: seen.size >= WANT_LATER ? "ok" : undefined });
+      if (seen.size >= WANT_LATER) return [...seen.values()];
+      if (Date.now() > end) {
+        fact("wait", seen.size
+          ? { k: "timed out", v: `only ${seen.size} deposit landed after yours in 90 s. Proving anyway: the timing still narrows the set to a few notes.`, tone: "warn" }
+          : { k: "no crowd running", v: "no deposit landed after yours in 90 s. Your note is the newest leaf in the root, and the timing links it.", tone: "warn" });
+        return [...seen.values()];
+      }
+      await sleep(WATCH_MS);
+    }
+  });
 }
 
 const FUND_GAS = parseEther("0.01");
-const POLL_MS = 6000;
-const pause = (ms: number, signal?: AbortSignal) => new Promise<void>((r) => {
-  const id = setTimeout(r, ms);
-  signal?.addEventListener("abort", () => { clearTimeout(id); r(); }, { once: true });
-});
+const POOL_READS = parseAbi(["function nextIndex() view returns (uint32)"]);
 
-export interface PayOpts {
-  /** Deposits that must land after the note's before the proof. */
-  k: number;
-  signal?: AbortSignal;
+/** One Pledge Paid: a fresh depositor deposits, then the same tab proves against the newest root and pays. */
+export async function runLivePledge(inputs: Inputs, labels: Labels, intent0: Intent, ui: Ui, funder: Funder): Promise<RunResult> {
+  const t = tracker(ui);
+  ui.onPlan(plannedRows());
+  const { note, hash } = await runDeposit(t, funder);
+  const later = await waitForLater(t, ui, hash);
+  return runPay(t, ui, note, inputs, labels, intent0, later);
 }
 
-/** Wait for `k` later deposits, prove against the newest root, have the fund issue the invoice, then build, simulate and send. */
-export async function runPay(t: Tracker, ui: Ui, note: Note, inputs: Inputs, labels: Labels, intent0: Intent, opts: PayOpts): Promise<RunResult> {
+/** Prove against the newest root, have the fund issue the invoice, then build, simulate and send. */
+async function runPay(t: Tracker, ui: Ui, note: Note, inputs: Inputs, labels: Labels, intent0: Intent, later: Later[]): Promise<RunResult> {
   const t0 = performance.now();
   const { put, fact, step, track, settleTx } = t;
-  ui.onPlan(plannedRows());
-
-  await step("wait", async () => {
-    fact("wait", { k: "wanted", v: `${opts.k} deposit${opts.k === 1 ? "" : "s"} after yours before proving` });
-    for (;;) {
-      const c = await retry(() => crowdOf(note, POOL));
-      if (c.spent) throw new Error("this note is already spent");
-      fact("wait", { k: "your deposit", v: `leaf ${c.leafIndex}, block ${n(c.depositBlock)}` });
-      fact("wait", { k: "deposits after yours", v: `${c.after} of ${opts.k}`, tone: c.after >= opts.k ? "ok" : undefined });
-      fact("wait", { k: "withdrawals since", v: `${c.withdrawals}, counted from block receipts (failed frame txs included)` });
-      fact("wait", { k: "unspent notes in the pool", v: n(c.unspent) });
-      if (c.after >= opts.k) {
-        if (c.after === 0) fact("wait", { k: "warning", v: "no deposit after yours: the newest leaf in the proof's root is yours", tone: "warn" });
-        return;
-      }
-      await pause(POLL_MS, opts.signal);
-      if (opts.signal?.aborted) throw new Error("Stopped waiting. Nothing was sent; the note stays unspent. Paste it again later.");
-    }
-  });
 
   const { path, anonymity } = await step("tree", async () => {
     const { rebuildTree } = await import("../liveExit/tree");
     const p = await rebuildTree(note, 10, POOL);
-    const c = await retry(() => crowdOf(note, POOL));
+    const [leavesNow, bal] = await retry(() => Promise.all([
+      client.readContract({ address: POOL, abi: POOL_READS, functionName: "nextIndex" }),
+      client.readContract({ address: WETH9, abi: wethAbi, functionName: "balanceOf", args: [POOL] }),
+    ]));
     const after = p.leafCount - 1 - p.leafIndex;
-    // Notes in the root that nobody has withdrawn: total withdrawals so far are the deposits now minus the unspent notes.
-    const set = p.leafCount - (c.leaves - c.unspent);
+    // Every later deposit seen was mined before this read, so the newest root holds them all: check it rather than assume it.
+    const missing = later.filter((l) => l.leaf >= p.leafCount);
+    if (missing.length || (later.length && after < 1)) throw new Error(`the root covers leaves 0 to ${p.leafCount - 1}, which leaves out later leaves ${missing.map((l) => l.leaf).join(", ")} or puts yours last`);
+    // Notes in the root that nobody has withdrawn: every withdrawal so far is a deposit missing from the pool's balance.
+    const set = p.leafCount - (leavesNow - Number(bal / DEVNET.denomination));
     fact("tree", { k: "leaves", v: `${n(p.leafCount)} deposits rebuilt; ours is leaf ${p.leafIndex}` });
     fact("tree", { k: "pool getLastRoot()", v: `${short(p.chainRoot)} = local root, at roots(${p.rootIdx})`, tone: "ok" });
-    fact("tree", { k: "root covers", v: `leaves 0 to ${p.leafCount - 1}: ${after} deposit${after === 1 ? "" : "s"} after yours`, tone: after > 0 ? "ok" : "warn" });
-    fact("tree", { k: "anonymity set", v: `${set} unspent notes in this root. The proof only hides you among deposits in the root you prove against.`, tone: after > 0 ? "ok" : "warn" });
-    return { path: p, anonymity: { root: p.root, leaves: p.leafCount, after, set } };
+    fact("tree", { k: "root covers", v: `leaves 0 to ${p.leafCount - 1}: ${after} deposit${after === 1 ? "" : "s"} after yours${after ? "" : ", so the newest leaf in this root is yours"}`, tone: after > 0 ? "ok" : "warn" });
+    fact("tree", { k: "anonymity set", v: `${set} unspent notes in this root, an upper bound. ${after ? "Timing still narrows it." : "Your leaf is the newest in this root, so the newest-leaf and timing links narrow it, likely to 1."}`, tone: "warn" });
+    fact("tree", { k: "your position", v: `1 of ${p.leafCount} notes in this root, ${after} deposited after yours`, tone: after >= WANT_LATER ? "ok" : "warn" });
+    return { path: p, anonymity: { leaf: p.leafIndex, root: p.root, rootIdx: p.rootIdx, leaves: p.leafCount, after, set, later } };
   });
 
   let intent = intent0;

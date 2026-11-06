@@ -83,7 +83,7 @@ export const doctorHash = async (hash: Hex): Promise<DoctorResult> => {
   // getFrameTransactionReceipt throws for a plain tx, so ask the chain directly before calling the hash unknown.
   const plain = rec || receipt?.blockNumber ? null : await client.getTransactionReceipt({ hash }).catch(() => null);
   const lines = [`frame-doctor ${hash}`];
-  const view: DoctorView = { txHash: hash, notes: { public: "Not checked for a sent tx. Paste the raw tx to simulate it on the node." }, node: url };
+  const view: DoctorView = { txHash: hash, notes: {}, node: url };
   if (rec) {
     const d = diagnoseAdmission({ outcome: rec.outcome, checks: rec.checks });
     const v: MempoolVerdict = {
@@ -102,7 +102,22 @@ export const doctorHash = async (hash: Hex): Promise<DoctorResult> => {
     view.notes.alt = "Unknown hash: neither the sidecars nor the chain know it. Paste the raw tx to simulate it.";
     lines.push("  alt    ? unknown hash  neither the sidecars nor the chain know it. Paste the raw tx to simulate it.");
   }
-  lines.push("  public · not checked for a sent tx (paste the raw tx to simulate it)");
+  // A sent tx can't be re-simulated (its nonce key is spent), but the public gas cap is readable from the tx itself.
+  const prefix = status?.tx ? validationPrefixLength(profile, status.tx) : 0;
+  const limit = status?.tx ? status.tx.frames.slice(0, prefix).reduce((s, f) => s + f.limits.execution, 0n) : 0n;
+  if (limit > DEVNET.publicVerifyGasCap) {
+    const pub: MempoolVerdict = {
+      mempool: "public", source: "model", verdict: "rejected",
+      failed: { rule: "public-gas-cap", ercRule: "BUDGET-010" },
+      error: { code: 0, message: `validation prefix limits ${n(limit)} > ${n(DEVNET.publicVerifyGasCap)} public cap, read from the tx` },
+      fix: "The public mempool caps the validation prefix at 100k gas. This tx needs the alt mempool.",
+    };
+    view.public = pub;
+    lines.push(...renderVerdict(pub));
+  } else {
+    view.notes.public = "A sent tx can't be re-simulated, because its nonce key is now spent. Its prefix fits the public gas cap, so only a simulation before sending could say more.";
+    lines.push("  public · not re-checked: a sent tx's nonce key is spent, so the node can't simulate it again");
+  }
   if (status) {
     const frames = receipt?.frames.map((f) => (f.status === "success" ? "ok" : f.status));
     lines.push(`  status ${status.status}${receipt?.blockNumber ? ` in block ${receipt.blockNumber}` : ""}${frames?.length ? `, frames: ${frames.join(", ")}` : ""}`);
@@ -169,7 +184,9 @@ const viewOf = (r: AdmissionReport, frames: DoctorView["frames"]): DoctorView =>
   ({ txHash: r.txHash, public: r.verdicts.public, alt: r.verdicts.alt, notes: {}, frames, verifyGas: r.verifyGas });
 
 /** Run the real checkAdmission, plus the per-frame simulation (best effort: the verdicts stand without it). */
-const checkView = async (input: Parameters<typeof simulator.check>[0] | Hex, raw: Hex, title?: string, sim: typeof simulator = simulator): Promise<DoctorResult> => {
+const checkView = async (input: Parameters<typeof simulator.check>[0] | Hex, raw: Hex, title?: string, sim?: typeof simulator): Promise<DoctorResult> => {
+  // The model's VERIFY pin is our own per-relay limit, not a mempool rule: PayRelayWETH's is 600k, the exits' 450k.
+  sim ??= decodeTx(profile, raw).sender?.toLowerCase() === PAY_RELAY.toLowerCase() ? pledgeSimulator : simulator;
   const [report, frames] = await Promise.all([sim.check(input as never), frameRows(raw).catch(() => undefined)]);
   return { text: renderReport(report, { title }), ok: report.verdicts.public.source === "simulate", view: viewOf(report, frames) };
 };
@@ -241,9 +258,9 @@ export const RULES: { id: RuleId; scope: Scope; info: string }[] = [
   { id: "entrypoint-access", scope: "alt", info: "VERIFY may not read the EntryPoint sentinel's code." },
   { id: "recent-root", scope: "alt", info: "A recent-root reference must be committed in the predeploy and inside its window." },
   { id: "mempool", scope: "alt", info: "Reputation and pool policy: banned entities, throttle limits, nonce-key holds, fee bumps." },
-  { id: "admission", scope: "alt", info: "The sidecar rejected it without naming a failing check. Read the record on the explorer." },
-  { id: "execution", scope: "alt", info: "Sidecar rule: the frames must execute as validated." },
-  { id: "nullifier-spent", scope: "both", info: "ExitRelay's VERIFY reverted because the note was already withdrawn." },
+  { id: "admission", scope: "alt", info: "Not a check of its own. It lights only when the sidecar rejects a tx without naming which check failed; then read its record on the explorer." },
+  { id: "execution", scope: "alt", info: "Whether the frames after validation succeed when the node simulates them. The sidecar admits a tx that will revert (docs/10 finding 9), so a predicted revert is a warning, not a rejection." },
+  { id: "nullifier-spent", scope: "both", info: "The relay's VERIFY (ExitRelay or PayRelayWETH) rejects a note that was already withdrawn, so a spent note can never be paid twice." },
   { id: "public-storage", scope: "public", info: "The public mempool lets VERIFY read only the sender's own storage (STORAGE-010)." },
   { id: "public-gas-cap", scope: "public", info: "The public mempool caps the whole validation prefix at 100k gas (BUDGET-010)." },
 ];

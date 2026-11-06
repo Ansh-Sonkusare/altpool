@@ -15,10 +15,13 @@ export const RuleGrid = ({ view }: { view?: DoctorView }) => {
   const [active, setActive] = useState<string>();
   const shown = RULES.find((r) => r.id === active);
   const cell = shown && cells.get(shown.id);
+  const [all, setAll] = useState(false);
+  const reported = RULES.filter((r) => cells.has(r.id));
+  const hidden = RULES.length - reported.length;
   return (
     <div className="flex flex-col gap-3">
       <ul className="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(168px,1fr))] gap-2 p-0">
-        {RULES.map((r) => {
+        {(all ? RULES : reported).map((r) => {
           const state = cells.get(r.id)?.state ?? "unchecked";
           return (
             <li key={r.id}>
@@ -37,6 +40,11 @@ export const RuleGrid = ({ view }: { view?: DoctorView }) => {
           );
         })}
       </ul>
+      {hidden > 0 && (
+        <button type="button" onClick={() => setAll(!all)} className="self-start font-mono text-xs text-fg2 underline decoration-ln2 underline-offset-4 hover:text-fg1">
+          {all ? "Show only the rules reported for this input" : `${hidden} more rules were not reported for this input. Show them`}
+        </button>
+      )}
       <p id="rule-info" aria-live="polite" className="m-0 min-h-[42px] text-sm/[21px] text-fg2">
         {shown ? (
           <>
@@ -44,7 +52,7 @@ export const RuleGrid = ({ view }: { view?: DoctorView }) => {
             {" "}{shown.info}{cell?.why && cell.state === "fail" && <> <span className="text-bad">This input: {cell.why}</span></>}
           </>
         ) : (
-          "Hover or focus a rule for what it checks. ✓ pass, ✗ fail, – not reported for this input: a sent tx has only the sidecar's recorded checks."
+          "Hover or focus a rule for what it checks."
         )}
       </p>
     </div>

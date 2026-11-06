@@ -115,13 +115,19 @@ export const Doctor = ({ doctor: { current, run, invalid }, entity }: DoctorProp
       </div>
 
       {done?.view.frames && (
-        <div className="flex flex-col gap-4">
-          <H3>Frame by frame</H3>
-          <Frames frames={done.view.frames} />
-        </div>
+        <details className="group flex flex-col gap-4">
+          <summary className="cursor-pointer list-none font-mono text-sm text-fg1 marker:hidden">
+            <span className="mr-2 inline-block transition-transform group-open:rotate-90">›</span>Frame by frame
+          </summary>
+          <div className="mt-4"><Frames frames={done.view.frames} /></div>
+        </details>
       )}
 
-      <Card>
+      <details className="group">
+        <summary className="cursor-pointer list-none font-mono text-sm text-fg1 marker:hidden">
+          <span className="mr-2 inline-block transition-transform group-open:rotate-90">›</span>The same report, as the CLI prints it
+        </summary>
+      <Card className="mt-4">
         <CardBar windowDots>
           <span>frame-doctor {done?.view.txHash ?? ""}</span>
           <span>same report, as the CLI prints it</span>
@@ -131,6 +137,7 @@ export const Doctor = ({ doctor: { current, run, invalid }, entity }: DoctorProp
           error={current.status === "error" || current.status === "invalid" ? current.error : undefined}
         />
       </Card>
+      </details>
 
       <div className="flex flex-col gap-4">
         <H3>Use it in your code</H3>

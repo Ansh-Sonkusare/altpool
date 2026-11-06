@@ -60,22 +60,15 @@ const keyFunder = (pk: Hex, label: string, note: string): Funder => {
 /** A configured key when it is well formed; Vite inlines it into the bundle, so it is devnet only and readable by anyone. */
 const configured = (v: unknown): Hex | undefined => (typeof v === "string" && isHex(v) && v.length === 66 ? v : undefined);
 
-/** A fresh key in this tab's memory, funded by the faucet on first use. The rescue after a rolled-back batch signs with one. */
-export const freshKeyFunder = (label = "Fresh in-memory key"): Funder =>
-  keyFunder(generatePrivateKey(), label, "A fresh key that lives in this tab's memory and is funded by the faucet.");
-
 /**
- * VITE_DEMO_PK: the shared depositor. Unset or malformed, a fresh key per run.
+ * A fresh key in this tab's memory, funded by the faucet on first use. Every deposit and every rescue signs with its own,
+ * so no two runs share an address (r17 fix 4).
  * TODO(teammate): add `injectedFunder()` beside this for a browser wallet. Use window.ethereum with
  * wallet_switchEthereumChain / wallet_addEthereumChain (chain 1337, rpc DEVNET.ethrexUrl; altDevnet has the params),
  * `createWalletClient({ account: address, chain: altDevnet, transport: custom(window.ethereum) })`, same Funder shape.
  */
-export const demoKeyFunder = (): Funder => {
-  const pk = configured(import.meta.env.VITE_DEMO_PK);
-  return pk
-    ? keyFunder(pk, "Demo wallet", "A shared devnet key, so the deposit is public and tied to it. Anyone who opens this site's bundle can read the key: it holds devnet ETH only.")
-    : freshKeyFunder();
-};
+export const freshKeyFunder = (label = "Fresh in-memory key"): Funder =>
+  keyFunder(generatePrivateKey(), label, "A fresh key that lives in this tab's memory and is funded by the faucet.");
 
 /** VITE_FUND_PK: the aid fund that issues invoices, so the depositor never signs after its deposit. Unset, a fresh key. */
 export const fundKeyFunder = (): Funder => {

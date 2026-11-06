@@ -1,11 +1,10 @@
 // Browser port of packages/prover/src/tree.ts (createRequire there). Rebuilds the pool's 20-level MiMCSponge tree from
 // Deposit logs and checks it against the chain. ponytail: pathFor duplicates the prover package's until it ships a browser entry.
 import mimcsponge from "circomlib/src/mimcsponge.js";
-import { parseAbi, toHex } from "viem";
+import { parseAbi, parseAbiItem, toHex } from "viem";
 import { DEVNET, type Address, type Hex, type Note } from "@altpool/core";
 import type { MerklePath } from "@altpool/prover";
 import { client } from "../altpool";
-import { readDeposits } from "./crowd";
 
 const LEVELS = DEVNET.treeLevels;
 const ZERO_VALUE = 21663839004416932945382355908790599225266501822907911457504978515578255421292n;
@@ -32,6 +31,7 @@ const POOL_ABI = parseAbi([
   "function roots(uint256) view returns (bytes32)",
   "function isSpent(bytes32) view returns (bool)",
 ]);
+const DEPOSIT = parseAbiItem("event Deposit(bytes32 indexed commitment, uint32 leafIndex, uint256 timestamp)");
 
 export interface TreeCheck extends MerklePath {
   leafCount: number;
@@ -41,12 +41,14 @@ export interface TreeCheck extends MerklePath {
 
 const read = async (note: Note, address: Address): Promise<TreeCheck> => {
   const pool = { address, abi: POOL_ABI } as const;
-  const [deposits, chainRoot, rootIdx] = await Promise.all([
-    readDeposits(address),
+  const [logs, chainRoot, rootIdx] = await Promise.all([
+    client.getLogs({ address, event: DEPOSIT, fromBlock: 0n, toBlock: "latest" }),
     client.readContract({ ...pool, functionName: "getLastRoot" }),
     client.readContract({ ...pool, functionName: "currentRootIndex" }),
   ]);
-  const leaves = deposits.map((d) => BigInt(d.commitment));
+  const deposits = logs.map((l) => l.args).sort((a, b) => a.leafIndex! - b.leafIndex!);
+  deposits.forEach((d, i) => { if (d.leafIndex !== i) throw new Error(`deposit logs not contiguous at ${i} (got ${d.leafIndex})`); });
+  const leaves = deposits.map((d) => BigInt(d.commitment!));
   const leafIndex = leaves.indexOf(BigInt(note.commitment));
   if (leafIndex < 0) throw new Error("note not deposited yet");
   const path = pathFor(leaves, leafIndex);
