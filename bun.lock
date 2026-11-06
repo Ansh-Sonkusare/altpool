@@ -22,6 +22,7 @@
         "@altpool/prover": "workspace:*",
         "@altpool/simulator": "workspace:*",
         "altpool": "workspace:*",
+        "viem": "^2.57.10",
       },
     },
     "apps/monitor-web": {

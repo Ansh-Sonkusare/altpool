@@ -8,6 +8,8 @@ export const DEVNET = {
   chainId: 1337,
   gatewayUrl: env("GATEWAY_URL") ?? "https://altmempoolgateway.forshtat.com/rpc",
   ethrexUrl: env("ETHREX_URL") ?? "https://altmempool.forshtat.com",
+  /** The miner's own sidecar. On Nov 6 the gateway admitted exits but did not gossip them to it (contracts README). */
+  minerSidecarUrl: env("MINER_SIDECAR_URL") ?? "https://altmempool.forshtat.com/rpc",
   explorerUrl: "https://explorer.altmempool.wtf",
   profile: "ethrex-eip8141-tracer",
   pool: "0xF8d72424D07721aB219cdbd2852657F3301673fC" as Address,          // Tornado 0.1 ETH, unmodified
@@ -21,7 +23,7 @@ export const DEVNET = {
   minStakeWei: 10n ** 16n,   // stake STRICTLY more than this
   unstakeDelaySec: 86_400,
   publicVerifyGasCap: 100_000n, // ethrex MAX_VERIFY_GAS, still enforced
-  verifyGasMax: 350_000n,       // our self-imposed pin for ExitRelay VERIFY (alt has no cap since Nov 6)
+  verifyGasMax: 450_000n,       // our self-imposed pin for ExitRelay VERIFY (alt has no cap since Nov 6); 350k ran out of gas (contracts README)
   reputation: { minInclusionDenominator: 10, throttlingSlack: 10, banSlack: 50 },
 } as const;
 

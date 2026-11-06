@@ -10,7 +10,7 @@ const short = (a: string) => (a.length > 14 ? `${a.slice(0, 6)}…${a.slice(-4)}
 const gas = (n: bigint) => n.toLocaleString("en-US");
 
 const SOURCE: Record<MempoolVerdict["source"], string> = {
-  send: "sent", simulate: "ethrex simulate", explorer: "explorer record", model: "local model, unverified",
+  send: "sent", simulate: "node simulation", explorer: "explorer record", model: "local model, unverified",
 };
 
 export const renderVerdict = (v: MempoolVerdict): string[] => {

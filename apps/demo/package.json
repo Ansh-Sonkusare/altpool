@@ -17,6 +17,7 @@
     "@altpool/simulator": "workspace:*",
     "@altpool/prover": "workspace:*",
     "@altpool/contracts": "workspace:*",
-    "@altpool/monitor": "workspace:*"
+    "@altpool/monitor": "workspace:*",
+    "viem": "^2.57.10"
   }
 }

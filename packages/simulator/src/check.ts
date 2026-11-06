@@ -1,13 +1,15 @@
 // Owner: Dev C. checkAdmission: will each mempool admit this tx, and why not?
 //   public: ethrex_simulateFrameTransaction (source "simulate"): ethrex's own canonical-mempool verdict.
-//   alt:    the explorer's admission record when the tx was already sent (source "explorer"); otherwise our
-//           local rule model over the same ethrex trace plus live stake and reputation (source "model", unverified).
-//           There is no alt dry-run: frame_simulateTransactionV1 is not deployed (fixture public/22).
+//   alt:    1. the explorer's admission record when the tx was already sent (source "explorer");
+//           2. for a tx with no signatures (ExitRelay), the gateway's eth_estimateFrameTransactionGas, which runs the
+//              sidecar's full rule engine with stake lookups but not reputation (research notes r3-r5 §2.1) (source "simulate");
+//           3. otherwise our local rule model over the ethrex trace plus live stake and reputation (source "model", unverified).
+//           frame_simulateTransactionV1 is not deployed (fixture public/22).
 import { decodeAbiParameters, encodeFunctionData } from "viem";
 import { decodeTx, encodeTx, txHash as hashTx } from "@forshtat/hegota-support/tx";
 import { getProfile } from "@forshtat/hegota-support/profiles";
 import {
-  DEVNET, ethrex as ethrexClient, gateway as gatewayClient,
+  DEVNET, ethrex as ethrexClient, gateway as gatewayClient, toWire,
   type AdmissionChecker, type AdmissionReport, type FrameTx, type Hex, type MempoolVerdict, type RuleId,
 } from "@altpool/core";
 import { diagnoseAdmission, diagnoseError, diagnoseSimulation, type Diagnosis } from "./rules";
@@ -22,6 +24,10 @@ export interface SimulatorOptions {
   verifyGasMax?: bigint;
   /** Look the tx up on the explorer first (default true). */
   explorer?: boolean;
+  /** Ask the gateway's estimator (the sidecar's rule engine) for unsigned txs (default true). */
+  estimate?: boolean;
+  /** What-if: treat every entity as unstaked (skips the estimator, which reads the real stake). */
+  assumeUnstaked?: boolean;
 }
 
 /** ethrex verdicts that say nothing about the alt mempool: the alt rule model decides those. */
@@ -48,6 +54,14 @@ const verdictOf = (mempool: "public" | "alt", source: MempoolVerdict["source"], 
       }
     : { mempool, source, verdict: "admitted", ...extra };
 
+/** A nonce mismatch on a non-zero nonce key means that key is used up. ExitRelay keys exits by nullifier hash. */
+const keyedNonce = (d: Diagnosis | undefined, tx: FrameTx): Diagnosis | undefined => {
+  if (!d || d.rule !== "simulation" || !/Nonce mismatch/.test(d.detail)) return d;
+  const key = tx.nonceKeys.find((k) => k !== 0n);
+  if (key === undefined) return d;
+  return { ...d, fix: `Nonce key 0x${key.toString(16)} is already used. For an ExitRelay exit the key is the note's nullifier hash, so this note was already withdrawn: use a fresh note.` };
+};
+
 /** Fill a role-only entity from the tx (e.g. "payer uses banned opcode" names no address). */
 const withAddress = (d: Diagnosis | undefined, entities: Entity[]): Diagnosis | undefined => {
   if (!d?.entity || d.entity.address) return d;
@@ -55,11 +69,16 @@ const withAddress = (d: Diagnosis | undefined, entities: Entity[]): Diagnosis | 
   return e ? { ...d, entity: { role: e.role, address: e.address } } : d;
 };
 
+/** Estimator answers that say nothing: ones that depend on the placeholder limits it swaps into body frames, and the
+ *  public-mempool gas cap it echoes (the alt sidecar has no cap; live Nov 6, a replayed exit came back with it). */
+const INCONCLUSIVE_ESTIMATE = /BadWithdrawFrame|CostTooHigh|BadFrameCount|per-transaction gas cap|Invalid frame transaction signature|prefix gas budget exceeded/;
+
 export const createSimulator = (opts: SimulatorOptions = {}) => {
   const node = opts.ethrex ?? ethrexClient();
   const gw = opts.gateway ?? gatewayClient();
 
   const stakeOf = async (address: Hex): Promise<StakeInfo> => {
+    if (opts.assumeUnstaked) return { staked: false, stake: 0n, unstakeDelaySec: 0, withdrawTime: 0n };
     const data = encodeFunctionData({ abi: depositInfoAbi, functionName: "getDepositInfo", args: [address] });
     const out: Hex = await node.call("eth_call", [{ to: DEVNET.stakingRegistry, data }, "latest"]);
     const [stake, delay, withdrawTime] = decodeAbiParameters([{ type: "uint256" }, { type: "uint256" }, { type: "uint256" }], out);
@@ -87,11 +106,34 @@ export const createSimulator = (opts: SimulatorOptions = {}) => {
     }
   };
 
+  /** The sidecar's own rule engine, via the estimator. Undefined when its answer can't be trusted for this tx. */
+  const estimateVerdict = async (tx: FrameTx, entities: Entity[]): Promise<MempoolVerdict | undefined> => {
+    if (tx.signatures.length || opts.estimate === false || opts.assumeUnstaked) return undefined; // the estimator rewrites limits, breaking signatures
+    try {
+      await gw.estimateFrameTransactionGas(toWire(tx));
+    } catch (e) {
+      const err = errOf(e);
+      const d = withAddress(diagnoseError(err, "alt"), entities);
+      // The revert reason is decoded from data, so test it too: the message only carries the selector.
+      if (INCONCLUSIVE_ESTIMATE.test(`${err.message} ${d?.revertReason ?? ""}`) || /RPC_UNREACHABLE|RPC_BAD_RESPONSE|-32601/.test(String(err.code))) return undefined;
+      return verdictOf("alt", "simulate", d, { error: { code: numCode(err.code), message: err.message, revertReason: d?.revertReason } });
+    }
+    // The estimator skips reputation: a banned entity is still refused on send.
+    const rep = await reputations();
+    const banned = entities.find((e) => rep.get(e.address.toLowerCase())?.status === "banned");
+    if (banned) {
+      const d = diagnoseError({ code: -32504, message: `${banned.role} ${banned.address} is banned`, data: { [banned.role]: banned.address } }, "alt");
+      return verdictOf("alt", "simulate", { ...d, entity: { role: banned.role, address: banned.address } });
+    }
+    return { mempool: "alt", source: "simulate", verdict: "admitted" };
+  };
+
   const check = async (input: FrameTx | Hex): Promise<AdmissionReport> => {
     const tx = typeof input === "string" ? decodeTx(profile, input) : input;
     const raw = typeof input === "string" ? input : encodeTx(profile, tx);
     const txHash = hashTx(profile, tx);
     const entities = entitiesOf(tx);
+    const explain = (d: Diagnosis | undefined) => withAddress(keyedNonce(d, tx), entities);
 
     // Public: ethrex's canonical-mempool simulation, with the ERC-7562 trace the alt model needs.
     let pub: MempoolVerdict;
@@ -100,16 +142,16 @@ export const createSimulator = (opts: SimulatorOptions = {}) => {
     try {
       const sim = await node.simulateFrameTransaction(raw, true);
       trace = (sim.erc7562Trace ?? undefined) as TraceFrame[] | undefined;
-      pubDiag = withAddress(diagnoseSimulation(sim), entities);
+      pubDiag = explain(diagnoseSimulation(sim));
       pub = verdictOf("public", "simulate", pubDiag, pubDiag ? { error: { code: 0, message: pubDiag.detail, revertReason: pubDiag.revertReason } } : {});
     } catch (e) {
       const err = errOf(e);
-      pubDiag = withAddress(diagnoseError(err, "public"), entities);
+      pubDiag = explain(diagnoseError(err, "public"));
       pub = verdictOf("public", "simulate", pubDiag, { error: { code: numCode(err.code), message: err.message, revertReason: pubDiag?.revertReason } });
     }
 
     // Alt: the explorer if the tx was sent, else the model.
-    const seen = opts.explorer === false ? undefined : await explorerVerdict(txHash);
+    const seen = (opts.explorer === false ? undefined : await explorerVerdict(txHash)) ?? (await estimateVerdict(tx, entities));
     let alt: MempoolVerdict;
     if (seen) {
       alt = seen;

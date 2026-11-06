@@ -1,6 +1,6 @@
 // Owner: Dev C. One entity, live: stake, reputation + headroom, pending, inclusions with VERIFY gas, evictions.
-// Open with ?entity=0x… (or type it in). Talks to the gateway directly (it allows any origin).
-import { DEVNET, explorerTx, type Address, type EntityStatus } from "@altpool/core";
+// Open with ?entity=0x…[&node=miner] (or type it in). Talks to the sidecar directly (both allow any origin).
+import { DEVNET, explorerTx, gateway, type Address, type EntityStatus } from "@altpool/core";
 import { watchEntity } from "@altpool/monitor";
 
 const app = document.querySelector<HTMLElement>("#app")!;
@@ -8,7 +8,6 @@ const esc = (s: string) => s.replace(/[&<>"']/g, (ch) => `&#${ch.charCodeAt(0)};
 const short = (h: string) => `${h.slice(0, 10)}…${h.slice(-6)}`;
 const eth = (wei: bigint) => `${(Number(wei) / 1e18).toFixed(4)} ETH`;
 const n = (x: number | bigint) => x.toLocaleString("en-US");
-const link = (h: string) => `<a class="mono" href="${esc(explorerTx(h))}" target="_blank" rel="noreferrer">${esc(short(h))}</a>`;
 const isAddress = (s: string): s is Address => /^0x[0-9a-fA-F]{40}$/.test(s);
 
 const store = {
@@ -16,7 +15,13 @@ const store = {
   set: (v: string) => { try { localStorage.setItem("altpool.entity", v); } catch { /* private mode */ } },
 };
 
-const initial = new URLSearchParams(location.search).get("entity") ?? store.get();
+const params = new URLSearchParams(location.search);
+const initial = params.get("entity") ?? store.get();
+// ?node=miner (or a sidecar URL): exits are sent to the miner's sidecar, which the gateway never hears from.
+const nodeParam = params.get("node");
+const node = !nodeParam || nodeParam === "gateway" ? DEVNET.gatewayUrl : nodeParam === "miner" ? DEVNET.minerSidecarUrl : nodeParam;
+const txUrl = (h: string) => (node === DEVNET.gatewayUrl ? explorerTx(h) : `${explorerTx(h)}?node=${encodeURIComponent(node)}`);
+const link = (h: string) => `<a class="mono" href="${esc(txUrl(h))}" target="_blank" rel="noreferrer">${esc(short(h))}</a>`;
 
 app.innerHTML = `
   <header>
@@ -83,14 +88,15 @@ let stop: (() => void) | undefined;
 const watch = (addr: Address) => {
   stop?.();
   store.set(addr);
-  history.replaceState(null, "", `?entity=${addr}`);
+  history.replaceState(null, "", `?entity=${addr}${nodeParam ? `&node=${encodeURIComponent(nodeParam)}` : ""}`);
   dot.className = "dot";
   line.textContent = `Loading ${addr}…`;
   view.innerHTML = "";
   stop = watchEntity(addr, {
+    gateway: gateway(node),
     onStatus: (s) => {
       dot.className = "dot live";
-      line.textContent = `${addr} · updated ${new Date().toLocaleTimeString()} · polling every 3 s`;
+      line.textContent = `${addr} · ${node === DEVNET.gatewayUrl ? "gateway" : node} · updated ${new Date().toLocaleTimeString()} · polling every 3 s`;
       render(s);
     },
     onError: (e) => {

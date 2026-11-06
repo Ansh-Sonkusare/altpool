@@ -1,7 +1,7 @@
 // Owner: Dev C. Node response -> RuleId + entity + fix line.
 // Patterns are pinned to captured strings (core fixtures) and the sidecar/ethrex messages in the
 // research repo's derisk/rules.md. Order matters: the first match wins.
-import { decodeAbiParameters } from "viem";
+import { decodeAbiParameters, toFunctionSelector } from "viem";
 import type { Address, EntityRole, EthrexSimulation, Hex, Mempool, RuleCheck, RuleId } from "@altpool/core";
 
 export interface Diagnosis {
@@ -88,8 +88,19 @@ const fixFor = (rule: RuleId, mempool: Mempool, d: Partial<Diagnosis>): string =
   }
 };
 
-/** Error(string) revert data -> its reason. */
+// ExitRelay's custom errors (packages/contracts/src/ExitRelayChecks.sol). The simulator only depends on core, so the
+// names are listed here; keep them in step with the contract.
+const EXIT_RELAY_ERRORS = [
+  "BadFrameCount", "BadExpiryFrame", "BadVerifyFrame", "BadWithdrawFrame", "CostTooHigh", "BadSelector", "BadRelayer", "BadFee",
+  "BadRefund", "BadProofLength", "BadNonce", "TooManySignatures", "BadRoot", "UnknownRoot", "NullifierSpent", "BadProof",
+  "VerifierReverted", "BadRootSource",
+];
+const CUSTOM_ERRORS = new Map(EXIT_RELAY_ERRORS.map((n) => [toFunctionSelector(`${n}()`), n]));
+
+/** Error(string) or a known custom error in revert data -> its reason. */
 export const decodeRevert = (data: string | undefined): string | undefined => {
+  const custom = data && CUSTOM_ERRORS.get(data.slice(0, 10).toLowerCase() as Hex);
+  if (custom) return `${custom}()`;
   if (!data?.startsWith("0x08c379a0")) return undefined;
   try {
     return decodeAbiParameters([{ type: "string" }], `0x${data.slice(10)}` as Hex)[0];
@@ -98,7 +109,7 @@ export const decodeRevert = (data: string | undefined): string | undefined => {
   }
 };
 
-const NULLIFIER_SPENT = /already (been )?spent|nullifier.*(spent|used)|note has been/i;
+const NULLIFIER_SPENT = /NullifierSpent|already (been )?spent|nullifier.*(spent|used)|note has been/i;
 
 type Match = { rule: RuleId; entity?: Diagnosis["entity"]; frameIndex?: number; revertReason?: string };
 
@@ -178,9 +189,21 @@ const finish = (x: Match, detail: string, mempool: Mempool): Diagnosis => {
 export const diagnoseError = (err: NodeError, mempool: Mempool): Diagnosis =>
   finish(classify(err.message, toCode(err.code), err.data), err.message, mempool);
 
-/** ethrex_simulateFrameTransaction result. Undefined when the public mempool would admit the tx. */
-export const diagnoseSimulation = (sim: EthrexSimulation & { executionError?: string | null }): Diagnosis | undefined => {
+/** ethrex_simulateFrameTransaction result. Undefined when the public mempool would admit the tx.
+ *  An execution error (nonce, revert) fails the tx everywhere, so it wins over a public-only violation like the gas cap. */
+export const diagnoseSimulation = (
+  sim: EthrexSimulation & { executionError?: string | null; revertData?: string | null; failedFrameIndex?: number | null },
+): Diagnosis | undefined => {
   if (sim.canonicalMempoolValid) return undefined;
+  if (sim.executionError) {
+    const x = classify(sim.executionError, undefined, undefined);
+    // ethrex hands the revert data and the failing frame as fields, e.g. "VERIFY frame 1 (…) failed: RevertOpcode" + revertData.
+    const revertReason = decodeRevert(sim.revertData ?? undefined) ?? x.revertReason;
+    const frameIndex = sim.failedFrameIndex ?? x.frameIndex;
+    const rule: RuleId = revertReason && NULLIFIER_SPENT.test(revertReason) ? "nullifier-spent" : x.rule === "unknown" && sim.revertData ? "simulation" : x.rule;
+    const detail = sim.revertData && !revertReason ? `${sim.executionError} (revert data ${sim.revertData})` : sim.executionError;
+    if (rule !== "unknown") return finish({ ...x, rule, revertReason, frameIndex }, detail, "public");
+  }
   const message = sim.canonicalMempoolViolation ?? sim.executionError ?? "canonical mempool rejected the tx";
   return finish(classify(message, undefined, undefined), message, "public");
 };

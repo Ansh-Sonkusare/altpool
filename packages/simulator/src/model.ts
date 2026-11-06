@@ -23,6 +23,8 @@ export interface TraceFrame { frameIndex: number; root: TraceCall }
 
 const VERIFY = 1;
 const PAYMENT_SCOPE = 0x1;
+/** The protocol's deadline check (expiry_verify). It may read TIMESTAMP and is no entity: skip it. */
+export const EXPIRY_VERIFIER = "0x0000000000000000000000000000000000008141";
 const lc = (a: string) => a.toLowerCase();
 
 /** Validation prefix: the leading VERIFY frames. */
@@ -40,6 +42,7 @@ export const entitiesOf = (tx: FrameTx): Entity[] => {
   const byAddr = new Map<string, Entity>();
   for (const i of prefixFrames(tx)) {
     const f = tx.frames[i]!;
+    if (f.target && lc(f.target) === EXPIRY_VERIFIER) continue;
     const address = (f.target ?? tx.sender) as Address;
     const role: EntityRole = lc(address) === lc(tx.sender) ? "sender" : (f.flags & PAYMENT_SCOPE) ? "payer" : "sender";
     const e = byAddr.get(lc(address)) ?? { role, address, frames: [] };
@@ -139,9 +142,12 @@ export const runModel = ({ tx, trace, stakes, reputation, verifyGasMax = DEVNET.
     }
   }
 
-  const verifyGas = verifyGasOf(tx);
-  if (verifyGas > verifyGasMax && entities[0]) fail({ rule: "gas-limit", entity: entities[0], detail: `VERIFY gas ${verifyGas} is over our ${verifyGasMax} pin` });
-  else checks.push({ rule: "gas-limit", verdict: "pass", detail: `VERIFY gas ${verifyGas}` });
+  // Our pin is per entity (ERC-8421 BUDGET-010 budgets each entity separately).
+  for (const e of entities) {
+    const gas = e.frames.reduce((s, i) => s + tx.frames[i]!.limits.execution, 0n);
+    if (gas > verifyGasMax) fail({ rule: "gas-limit", entity: e, detail: `${e.role} VERIFY gas ${gas} is over our ${verifyGasMax} pin` });
+    else checks.push({ rule: "gas-limit", entity: e.role, verdict: "pass", detail: `${e.role} VERIFY gas ${gas}` });
+  }
 
-  return { checks, failed, entities, verifyGas };
+  return { checks, failed, entities, verifyGas: verifyGasOf(tx) };
 };

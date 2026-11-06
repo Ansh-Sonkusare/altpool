@@ -1,17 +1,22 @@
 #!/usr/bin/env tsx
-// Owner: Dev C. Usage: watch-entity <address> [--interval ms] [--once]
+// Owner: Dev C. Usage: watch-entity <address> [--node gateway|miner|<url>] [--interval ms] [--once]
 // The terminal view of watchEntity (the cut-list fallback for apps/monitor-web).
-import { DEVNET, explorerTx, type Address, type EntityStatus } from "@altpool/core";
+import { DEVNET, explorerTx, gateway, type Address, type EntityStatus } from "@altpool/core";
 import { entityStatus, watchEntity } from "./index";
 
 const args = process.argv.slice(2);
 const entity = args.find((a) => /^0x[0-9a-fA-F]{40}$/.test(a)) as Address | undefined;
 if (!entity) {
-  console.error("usage: watch-entity <address> [--interval ms] [--once]");
+  console.error("usage: watch-entity <address> [--node gateway|miner|<url>] [--interval ms] [--once]");
   process.exit(2);
 }
 const i = args.indexOf("--interval");
 const intervalMs = i >= 0 ? Number(args[i + 1]) : 3000;
+// Exits are sent to the miner's sidecar; the gateway never sees them (contracts README).
+const nodeArg = args[args.indexOf("--node") + 1];
+const node = !args.includes("--node") || nodeArg === "gateway" ? DEVNET.gatewayUrl : nodeArg === "miner" ? DEVNET.minerSidecarUrl : nodeArg!;
+const gw = gateway(node);
+const txLink = (h: string) => (node === DEVNET.gatewayUrl ? explorerTx(h) : `${explorerTx(h)}?node=${encodeURIComponent(node)}`);
 
 const tty = process.stdout.isTTY && !process.env.NO_COLOR;
 const paint = (code: string) => (s: string) => (tty ? `\x1b[${code}m${s}\x1b[0m` : s);
@@ -33,16 +38,17 @@ const render = (s: EntityStatus): string => {
     `  pending     ${s.pending.length ? s.pending.map((p) => `${short(p.hash)} ${p.status} as ${p.role}`).join(", ") : dim("none")}`,
   ];
   for (const inc of s.inclusions.slice(0, 5))
-    lines.push(`  included    ${short(inc.hash)} block ${inc.block}${inc.verifyGas !== undefined ? `, VERIFY gas ${inc.verifyGas.toLocaleString("en-US")}` : ""}  ${dim(explorerTx(inc.hash))}`);
+    lines.push(`  included    ${short(inc.hash)} block ${inc.block}${inc.verifyGas !== undefined ? `, VERIFY gas ${inc.verifyGas.toLocaleString("en-US")}` : ""}  ${dim(txLink(inc.hash))}`);
   for (const e of s.evictions.slice(0, 5)) lines.push(`  ${red("evicted")}     ${short(e.hash)} ${e.kind}${e.reason ? `: ${e.reason}` : ""}`);
   return lines.join("\n");
 };
 
 if (args.includes("--once")) {
-  console.log(render(await entityStatus(entity)));
+  console.log(render(await entityStatus(entity, gw)));
 } else {
-  console.log(dim(`watching ${entity} on chain ${DEVNET.chainId} every ${intervalMs} ms (ctrl-c to stop)\n`));
+  console.log(dim(`watching ${entity} on chain ${DEVNET.chainId} via ${node} every ${intervalMs} ms (ctrl-c to stop)\n`));
   watchEntity(entity, {
+    gateway: gw,
     intervalMs,
     onStatus: (s) => console.log(render(s) + "\n"),
     onError: (e) => console.error(red(`poll failed: ${(e as Error).message ?? e}`)),

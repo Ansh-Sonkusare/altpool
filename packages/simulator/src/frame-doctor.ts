@@ -5,24 +5,24 @@
 // frame-doctor --fixture <f>  replay a captured call from @altpool/core/fixtures, offline (add --staked for stake lookups)
 // Flags: --json, -v/--verbose. Exit 0 when the alt mempool admits it, 1 when it rejects, 2 on usage or RPC errors.
 import { fixture } from "@altpool/core/fixtures";
-import { explorerTx, gateway as gatewayClient, type AdmissionReport, type Hex, type MempoolVerdict, type RuleCheck } from "@altpool/core";
-import { encodeAbiParameters } from "viem";
+import { DEVNET, explorerTx, gateway as gatewayClient, type AdmissionReport, type Hex, type MempoolVerdict, type RuleCheck } from "@altpool/core";
 import { createSimulator } from "./check";
+import { replaySimulator } from "./replay";
 import { diagnoseAdmission, diagnoseError } from "./rules";
 import { c, renderChecks, renderReport, renderVerdict } from "./report";
 
-const USAGE = "usage: frame-doctor <rawTx | txHash> [--json] [-v]\n       frame-doctor --fixture <path under core/fixtures> [--staked] [--json] [-v]";
+const USAGE = "usage: frame-doctor <rawTx | txHash> [--node <sidecar url>] [--json] [-v]\n       frame-doctor --fixture <path under core/fixtures> [--staked] [--json] [-v]";
 
 const args = process.argv.slice(2);
 const flag = (...names: string[]) => names.some((n) => args.includes(n));
 const value = (name: string) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : undefined; };
 const json = flag("--json");
 const verbose = flag("-v", "--verbose");
-const positional = args.filter((a, i) => !a.startsWith("-") && args[i - 1] !== "--fixture");
+const positional = args.filter((a, i) => !a.startsWith("-") && args[i - 1] !== "--fixture" && args[i - 1] !== "--node");
 
 const bigintJson = (x: unknown) => JSON.stringify(x, (_, v) => (typeof v === "bigint" ? v.toString() : v), 2);
 
-interface SentReport { txHash: Hex; alt?: MempoolVerdict; status?: string; block?: number; frameStatuses?: string[]; verifyGasUsed?: bigint; checks?: RuleCheck[] }
+interface SentReport { txHash: Hex; node?: string; alt?: MempoolVerdict; status?: string; block?: number; frameStatuses?: string[]; verifyGasUsed?: bigint; checks?: RuleCheck[] }
 
 /** The leading VERIFY frames of an explorer record's frames (mode 1). */
 const prefixCount = (frames: { mode: number | string }[] = []) => {
@@ -63,7 +63,8 @@ const renderSent = (r: SentReport): string => {
   if (r.status) lines.push(`  ${c.dim("status")} ${r.status}${r.block !== undefined ? ` in block ${r.block}` : ""}${r.frameStatuses ? `, frames: ${r.frameStatuses.join(", ")}` : ""}`);
   if (r.verifyGasUsed !== undefined) lines.push(`  ${c.dim("VERIFY gas used")} ${r.verifyGasUsed.toLocaleString("en-US")}`);
   if (verbose && r.checks?.length) lines.push(renderChecks(r.checks));
-  if (r.alt) lines.push(`  ${c.dim("explorer")} ${c.cyan(explorerTx(r.txHash))}`);
+  if (r.alt || r.block !== undefined) lines.push(`  ${c.dim("explorer")} ${c.cyan(explorerLink(r.txHash, r.node))}`);
+  if (r.node) lines.push(`  ${c.dim("node")} ${r.node}`);
   return lines.join("\n");
 };
 
@@ -77,14 +78,26 @@ const checkRaw = async (raw: Hex, sim = createSimulator()) => {
   done(r, renderReport(r, { verbose }), r.verdicts.alt.verdict === "admitted");
 };
 
+/** Explorer link on the node that holds the record (the explorer defaults to the gateway's view). */
+const explorerLink = (hash: Hex, node?: string) =>
+  node && node !== DEVNET.gatewayUrl ? `${explorerTx(hash)}?node=${encodeURIComponent(node)}` : explorerTx(hash);
+
+/** Exits go to the miner's sidecar, which the gateway does not hear from: ask both (or --node <url>). */
 const checkHash = async (hash: Hex) => {
-  const gw = gatewayClient();
-  const [rec, receipt, status] = await Promise.all([
-    gw.admission(hash).catch(() => undefined),
-    gw.receipt(hash).catch(() => undefined),
-    gw.txStatus(hash).catch(() => undefined),
-  ]);
-  const r = fromRecord(hash, rec, receipt, status);
+  const nodes = value("--node") ? [value("--node")!] : [DEVNET.gatewayUrl, DEVNET.minerSidecarUrl];
+  let r: SentReport | undefined;
+  for (const url of nodes) {
+    const gw = gatewayClient(url);
+    const [rec, receipt, status] = await Promise.all([
+      gw.admission(hash).catch(() => undefined),
+      gw.receipt(hash).catch(() => undefined),
+      gw.txStatus(hash).catch(() => undefined),
+    ]);
+    const here = { ...fromRecord(hash, rec, receipt, status), node: url };
+    // Prefer a node whose record says admitted (the gateway may only hold a rejected replay), then any record.
+    if (!r || (here.alt?.verdict === "admitted" && r.alt?.verdict !== "admitted") || (!r.alt && here.alt) || (r.block === undefined && here.block !== undefined && !r.alt)) r = here;
+  }
+  r = r!;
   done(r, renderSent(r), r.alt ? r.alt.verdict === "admitted" : r.block !== undefined ? r.status === "OnChain" : undefined);
 };
 
@@ -93,22 +106,8 @@ const replay = async (path: string) => {
   const f = fixture(path);
   const m = f.request.method;
   if (m === "ethrex_simulateFrameTransaction") {
-    const staked = flag("--staked");
-    const zero = encodeAbiParameters([{ type: "uint256" }, { type: "uint256" }, { type: "uint256" }], staked ? [12n * 10n ** 15n, 86_400n, 0n] : [0n, 0n, 0n]);
-    const sim = createSimulator({
-      explorer: false,
-      ethrex: {
-        url: `fixture:${path}`,
-        call: async (method: string) => (method === "eth_call" ? zero : null),
-        simulateFrameTransaction: async () => {
-          if (f.response.error) throw Object.assign(new Error(f.response.error.message), f.response.error);
-          return f.response.result;
-        },
-        sendRawTransaction: async () => { throw new Error("replay: no sends"); },
-      },
-      gateway: { listReputation: async () => ({ items: [] }) } as unknown as ReturnType<typeof gatewayClient>,
-    });
-    return checkRaw(f.request.params[0] as Hex, sim);
+    const sim = replaySimulator(f, { staked: flag("--staked"), label: path });
+    return checkRaw(sim.raw, sim);
   }
   if (m === "skandha_explorer_getTransaction") {
     const r = fromRecord(f.request.params[0] as Hex, f.response.result);
