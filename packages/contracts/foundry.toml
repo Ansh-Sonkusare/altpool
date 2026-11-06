@@ -6,6 +6,6 @@ libs = ["lib"]
 solc_version = "0.8.28"
 via_ir = true
 evm_version = "cancun"
-remappings = ["@forshtat/hegota-support/=node_modules/@forshtat/hegota-support/", "forge-std/=lib/forge-std/src/"]
-# pnpm symlinks into the root store
+remappings = ["@forshtat/hegota-support/=../../node_modules/@forshtat/hegota-support/", "forge-std/=lib/forge-std/src/"]
+# bun hoists dependencies into the repo root node_modules
 allow_paths = ["node_modules", "../../node_modules"]

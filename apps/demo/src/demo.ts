@@ -11,4 +11,4 @@ const steps = [
   "replay the same note -> frame-doctor explains",
 ];
 for (const s of steps) console.log("•", s);
-todo("pnpm demo");
+todo("bun run demo");

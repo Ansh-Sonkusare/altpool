@@ -7,13 +7,13 @@ Plan, owners and timeline: `docs/08-gates-and-tasks.md` in `Ansh-Sonkusare/quiet
 ## Start
 
 ```bash
-pnpm install
-cp .env.example .env          # fresh key only
-pnpm typecheck && pnpm test   # all packages
-pnpm smoke                    # live devnet check (chain 1337, gateway, ethrex, explorer)
+bun install
+cp .env.example .env                 # fresh key only
+bun run typecheck && bun run test   # all packages
+bun run smoke                        # live devnet check (chain 1337, gateway, ethrex, explorer)
 ```
 
-Work on your slice only: `pnpm turbo test --filter=@altpool/simulator...`
+Work on your slice only: `bun run turbo test --filter=@altpool/simulator...`
 
 ## Who owns what
 
@@ -27,7 +27,7 @@ Work on your slice only: `pnpm turbo test --filter=@altpool/simulator...`
 | `packages/simulator` | `@altpool/simulator`: `checkAdmission`, `frame-doctor` | Dev C |
 | `packages/monitor` | `@altpool/monitor`: `watchEntity` | Dev C |
 | `apps/monitor-web` | one-page live view | Dev C |
-| `apps/demo` | `pnpm demo` | Dev C |
+| `apps/demo` | `bun run demo` | Dev C |
 
 Packages depend only on `@altpool/core`. Only the apps reach across owners.
 
@@ -39,7 +39,7 @@ Known devnet facts (from the fixtures): `frame_simulateTransactionV1` is not dep
 
 ## Contracts
 
-Foundry isn't needed by anyone except Dev A. `pnpm --filter @altpool/contracts abi` builds and regenerates `src/generated/abi.ts`; commit that file and `deployments.json` so the apps never need `forge`. First time: `curl -L https://foundry.paradigm.xyz | bash && foundryup`, then `cd packages/contracts && forge install foundry-rs/forge-std --no-git`.
+Foundry isn't needed by anyone except Dev A. `bun run --filter @altpool/contracts abi` builds and regenerates `src/generated/abi.ts`; commit that file and `deployments.json` so the apps never need `forge`. First time: `curl -L https://foundry.paradigm.xyz | bash && foundryup`, then `cd packages/contracts && forge install foundry-rs/forge-std --no-git`.
 
 ## Disclosure
 

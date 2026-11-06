@@ -2,14 +2,18 @@
   "name": "altpool-monorepo",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@12.9.0",
+  "packageManager": "bun@1.2.23",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
   "scripts": {
     "build": "turbo build",
     "typecheck": "turbo typecheck",
     "test": "turbo test",
     "dev": "turbo dev",
-    "smoke": "pnpm --filter @altpool/core smoke",
-    "demo": "pnpm --filter @altpool/demo demo"
+    "smoke": "bun run --filter @altpool/core smoke",
+    "demo": "bun run --filter @altpool/demo demo"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",
@@ -17,5 +21,8 @@
     "turbo": "^2.11.10",
     "typescript": "^7.0.2",
     "vitest": "^5.1.0"
-  }
+  },
+  "trustedDependencies": [
+    "esbuild"
+  ]
 }
