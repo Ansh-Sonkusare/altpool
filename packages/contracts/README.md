@@ -64,6 +64,8 @@ SEND_URL=https://altmempool.forshtat.com/rpc bun run --filter @altpool/contracts
 
 ## Live evidence (devnet, Nov 6)
 
+**Explorer view:** exits are sent to the miner sidecar, but the explorer defaults to the gateway node, which never received them; for runs that replayed the identical tx to the gateway it shows that rejected replay as "Rejected". Open exit links with `?node=https%3A%2F%2Faltmempool.forshtat.com%2Frpc` (or pick **Miner** in the node menu) to see them `OnChain`, e.g. [ExitRelayRR exit, miner view](https://explorer.altmempool.wtf/tx/0xa015c4c7d411030a9fde923866c8773997cd2d17992388735f5cb400a7ed6ee3?node=https%3A%2F%2Faltmempool.forshtat.com%2Frpc). Scripts now print miner-view links, and the replay is a distinct tx (priority fee + 1 wei) so it no longer shares the exit's hash.
+
 - ExitRelay: `0x2576dcb7c8dc6c19cd6e39c8d49de03389b0ea6f` (deploy `0x875380e6…b105c`, stake `0xe60f892d…05f07`)
 - Patched verifier: `0x43168942ab0d0272c7a7efd6f6540266afb7c1b3`
 - [Deposit](https://explorer.altmempool.wtf/tx/0x6ce9723c5994825e8151940e7f90a37df3311b7ff82eba59974cf70972c12da2)
