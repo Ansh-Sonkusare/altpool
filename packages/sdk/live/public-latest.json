@@ -1,0 +1,350 @@
+{
+  "startedAt": "2026-11-06T18:47:03.590Z",
+  "gateway": "https://altmempoolgateway.forshtat.com/rpc",
+  "gatewayWs": "wss://altmempoolgateway.forshtat.com/rpc",
+  "ethrex": "https://altmempool.forshtat.com",
+  "profile": "ethrex-eip8141-tracer",
+  "network": "public",
+  "steps": [
+    {
+      "step": "capabilities",
+      "chainId": {
+        "execution": 1337,
+        "sidecar": 1337,
+        "profile": 1337,
+        "match": true
+      },
+      "sidecar": {
+        "version": "v4.1.1",
+        "protocolVersion": 1,
+        "bootId": "bca7103e3d09aa71",
+        "bundlingMode": "manual"
+      },
+      "p2p": {
+        "enabled": true,
+        "peers": 1
+      },
+      "explorer": {
+        "enabled": true,
+        "historyCapacity": 10000,
+        "inMemory": true,
+        "faucet": true
+      },
+      "staking": {
+        "registry": "0xd51c04d7a0b01124e84de152f4e56d9eecb22d2f",
+        "minStake": "10000000000000000",
+        "minUnstakeDelaySec": 0
+      },
+      "mempools": [
+        {
+          "mempoolId": "QmcFZKUX9qoo3StwVycJTAhwdiqbEjcwNvQVK246p3z1rk",
+          "entryPoint": "0x00000000000000000000000000000000000000aa"
+        }
+      ],
+      "warnings": [
+        "explorer history is in memory on this node (lost on restart) and publicly readable",
+        "validation gas limit is 10000000 (effectively uncapped on this node; other nodes may cap it)"
+      ]
+    },
+    {
+      "step": "funded",
+      "address": "0x1d9554D0FDeeb134E196C7cfA0d0F5C11dd8330A",
+      "faucetTx": "0xb20be1a8801af23bb77c6bc0e8fd180774883ba0e151f27e1f653c3286747ec2",
+      "balance": "1000000000000000000"
+    },
+    {
+      "step": "preflight",
+      "public": "likely-admitted",
+      "alternative": "unknown",
+      "checks": [
+        "structure/chain-id:pass",
+        "structure/frame-modes:pass",
+        "structure/prefix:pass",
+        "structure/nonce-key-count:pass",
+        "structure/nonce-key-range:pass",
+        "structure/nonce-key-order:pass",
+        "structure/gas-limit:pass",
+        "structure/fees:pass",
+        "estimate/simulation:pass",
+        "stake/stake:unknown",
+        "reputation/reputation:unknown",
+        "mempool/nonce:pass",
+        "mempool/mempool:pass"
+      ],
+      "publicChecks": [
+        "structure/chain-id:pass",
+        "structure/frame-modes:pass",
+        "structure/prefix:pass",
+        "structure/nonce-key-count:pass",
+        "structure/nonce-key-range:pass",
+        "structure/nonce-key-order:pass",
+        "structure/gas-limit:pass",
+        "structure/fees:pass",
+        "simulate/public-rules:pass"
+      ]
+    },
+    {
+      "step": "estimate",
+      "frames": [
+        {
+          "i": 0,
+          "mode": "VERIFY",
+          "prefix": true,
+          "declared": {
+            "execution": "60000",
+            "state": "0"
+          },
+          "measured": {
+            "execution": "100",
+            "state": "0"
+          },
+          "suggested": {
+            "execution": "60000",
+            "state": "0"
+          },
+          "auto": false
+        },
+        {
+          "i": 1,
+          "mode": "SENDER",
+          "prefix": false,
+          "declared": {
+            "execution": "50000",
+            "state": "200000"
+          },
+          "measured": {
+            "execution": "3000",
+            "state": "0"
+          },
+          "suggested": {
+            "execution": "50000",
+            "state": "200000"
+          },
+          "auto": true
+        }
+      ],
+      "cumulative": "26102",
+      "fees": {
+        "maxFeePerGas": "2400001",
+        "maxPriorityFeePerGas": "2399993"
+      }
+    },
+    {
+      "step": "submitted",
+      "hash": "0xe0674cf5e8de5f948ab0f9d3a3f08a4883e02c24eef624a546680dba048ae626",
+      "hashMatches": true,
+      "explorer": "https://explorer.altmempool.wtf/tx/0xe0674cf5e8de5f948ab0f9d3a3f08a4883e02c24eef624a546680dba048ae626"
+    },
+    {
+      "step": "status-after-submit",
+      "status": "New"
+    },
+    {
+      "step": "receipt",
+      "status": "success",
+      "block": "7385",
+      "frames": [
+        {
+          "status": "success",
+          "gas": {
+            "execution": "100",
+            "state": "0"
+          }
+        },
+        {
+          "status": "success",
+          "gas": {
+            "execution": "3000",
+            "state": "0"
+          }
+        }
+      ],
+      "finalStatus": "New"
+    },
+    {
+      "step": "admission-report",
+      "outcome": "accepted",
+      "failed": 0,
+      "checks": 17,
+      "events": [
+        "admitted"
+      ],
+      "explorer": "https://explorer.altmempool.wtf/tx/0xe0674cf5e8de5f948ab0f9d3a3f08a4883e02c24eef624a546680dba048ae626"
+    },
+    {
+      "step": "keyed-two-pending",
+      "a": "0x18f64a298b72846c6f45c93e7204ae74525da59e83a3d36270f52dabb0553fc6",
+      "b": "0x8935dbd41c859ad57583660f7f6d587a6dd75d4e90b2546afc6d3c327ca7da0f",
+      "statuses": [
+        "New",
+        "New"
+      ]
+    },
+    {
+      "step": "keyed-after-inclusion",
+      "seqs": [
+        "1",
+        "1"
+      ],
+      "slotDerivationVerified": true
+    },
+    {
+      "step": "replace+5%-rejected",
+      "name": "NonceConflictError",
+      "message": "Frame transaction cannot be replaced: fee too low",
+      "fix": "Bump both maxFeePerGas and maxPriorityFeePerGas by at least 10% (see replacementFees()).",
+      "detail": {
+        "kind": "replacementUnderpriced",
+        "message": "Frame transaction cannot be replaced: fee too low"
+      },
+      "code": -32602,
+      "isNonceConflict": true
+    },
+    {
+      "step": "replace+10%",
+      "original": "0x0b41e1ef461c487ed5d750aff277b752e7ecda098fa085a6b9fc7b925887c380",
+      "replacement": "0x0e6a55a23a1c2d0f058c0caed685d8626b9145a839bff90b641cbfbb2badc9a3"
+    },
+    {
+      "step": "replaced-original",
+      "outcome": "replaced",
+      "events": [
+        "admitted",
+        "replaced(replaced by 0x0e6a55a23a1c2d0f058c0caed685d8626b9145a839bff90b641cbfbb2badc9a3)"
+      ]
+    },
+    {
+      "step": "recent-root-local-check",
+      "ok": false,
+      "checks": [
+        "recent-root-count:pass",
+        "recent-root-predeploy:pass",
+        "recent-root-committed:fail"
+      ]
+    },
+    {
+      "step": "rejection",
+      "name": "RecentRootExpiredError",
+      "message": "EIP-8272 recent-root reference is not committed in the RECENT_ROOT_ADDRESS predeploy at head state",
+      "fix": "Reference a root that is committed, at a slot before the current one and within the usable window.",
+      "detail": {
+        "kind": "recentRoot",
+        "message": "EIP-8272 recent-root reference is not committed in the RECENT_ROOT_ADDRESS predeploy at head state"
+      },
+      "code": -32500,
+      "isRecentRoot": true,
+      "explanation": {
+        "status": "fail",
+        "message": "EIP-8272 recent-root reference is not committed in the RECENT_ROOT_ADDRESS predeploy at head state",
+        "fix": "Reference a root that is committed, at a slot before the current one and within the usable window.",
+        "source": "rpc-error",
+        "rule": "recent-root"
+      }
+    },
+    {
+      "step": "recent-root-written",
+      "predeployOk": true,
+      "writeTx": "0xcfc6cac06ded771a5f1efb85f7566de7e778fc971e66bc31274f2c2c55e72680",
+      "slot": "7395",
+      "committed": true
+    },
+    {
+      "step": "recent-root-tx",
+      "hash": "0x9906a662199661d33dcee29e23afad12e91aa2bf1ee3afa36297755a2299ae73",
+      "status": "success",
+      "explorer": "https://explorer.altmempool.wtf/tx/0x9906a662199661d33dcee29e23afad12e91aa2bf1ee3afa36297755a2299ae73"
+    },
+    {
+      "step": "stake-too-low",
+      "name": "InsufficientStakeError",
+      "message": "Stake 10000000000000000 wei is not above node \"public-gateway\"'s minStake 10000000000000000 wei.",
+      "fix": "Stake more than 10000000000000000 wei.",
+      "isInsufficient": true
+    },
+    {
+      "step": "stake-for-contract",
+      "name": "StakeConfigurationError",
+      "message": "addStake would act for 0x1d9554D0FDeeb134E196C7cfA0d0F5C11dd8330A, not 0xd51c04d7a0b01124e84de152f4e56d9eecb22d2f. The registry keys stakes on msg.sender: 0xd51c04d7a0b01124e84de152f4e56d9eecb22d2f is a contract, so it must call addStake{value}(delay) itself (add an owner-only function that forwards to the registry; see registryCalldata()).",
+      "isConfig": true
+    },
+    {
+      "step": "staked",
+      "tx": "0x34581d886702cbd39dea0c7ac8bc56d70bfc2a32871f83dc00f99b8dcfdbbbc4",
+      "stake": {
+        "amount": "11000000000000000",
+        "state": "staked",
+        "delay": 0,
+        "meets": true
+      },
+      "node": {
+        "staked": true,
+        "source": "node",
+        "node": "public-gateway"
+      }
+    },
+    {
+      "step": "unlocked",
+      "tx": "0x8b9ff83d3774d05f4998cdbab44ea60234cb1c550e5990ec2e6882ea741b4f3b",
+      "state": "withdrawable",
+      "withdrawTime": "1793990940",
+      "node": {
+        "staked": false,
+        "source": "node",
+        "node": "public-gateway"
+      }
+    },
+    {
+      "step": "withdrawn",
+      "tx": "0x9be66f42b04967eacae9ca96109c879fceecac80d3e219000117237086a8d19c",
+      "state": "none"
+    },
+    {
+      "step": "ws-events",
+      "total": 24,
+      "ours": [
+        "169:admitted:0xe0674cf5",
+        "170:admitted:0x18f64a29",
+        "171:admitted:0x8935dbd4",
+        "173:included:0xe0674cf5",
+        "176:admitted:0x0b41e1ef",
+        "178:admitted:0x0e6a55a2",
+        "179:replaced:0x0b41e1ef",
+        "180:included:0x18f64a29",
+        "181:included:0x8935dbd4",
+        "186:included:0x0e6a55a2",
+        "187:admitted:0x9906a662",
+        "191:included:0x9906a662"
+      ]
+    }
+  ],
+  "admittedTx": {
+    "hash": "0xe0674cf5e8de5f948ab0f9d3a3f08a4883e02c24eef624a546680dba048ae626",
+    "explorer": "https://explorer.altmempool.wtf/tx/0xe0674cf5e8de5f948ab0f9d3a3f08a4883e02c24eef624a546680dba048ae626",
+    "block": "7385"
+  },
+  "keyedTxs": [
+    {
+      "hash": "0x18f64a298b72846c6f45c93e7204ae74525da59e83a3d36270f52dabb0553fc6",
+      "explorer": "https://explorer.altmempool.wtf/tx/0x18f64a298b72846c6f45c93e7204ae74525da59e83a3d36270f52dabb0553fc6"
+    },
+    {
+      "hash": "0x8935dbd41c859ad57583660f7f6d587a6dd75d4e90b2546afc6d3c327ca7da0f",
+      "explorer": "https://explorer.altmempool.wtf/tx/0x8935dbd41c859ad57583660f7f6d587a6dd75d4e90b2546afc6d3c327ca7da0f"
+    }
+  ],
+  "rejection": {
+    "message": "EIP-8272 recent-root reference is not committed in the RECENT_ROOT_ADDRESS predeploy at head state",
+    "rule": "recent-root",
+    "fix": "Reference a root that is committed, at a slot before the current one and within the usable window."
+  },
+  "recentRootTx": {
+    "hash": "0x9906a662199661d33dcee29e23afad12e91aa2bf1ee3afa36297755a2299ae73",
+    "explorer": "https://explorer.altmempool.wtf/tx/0x9906a662199661d33dcee29e23afad12e91aa2bf1ee3afa36297755a2299ae73"
+  },
+  "stakeTxs": {
+    "stake": "0x34581d886702cbd39dea0c7ac8bc56d70bfc2a32871f83dc00f99b8dcfdbbbc4",
+    "unlock": "0x8b9ff83d3774d05f4998cdbab44ea60234cb1c550e5990ec2e6882ea741b4f3b"
+  },
+  "ok": true,
+  "finishedAt": "2026-11-06T18:49:11.211Z"
+}
