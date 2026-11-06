@@ -3,7 +3,8 @@
 // opcode read in ExitRelay's VERIFY worked on this devnet.
 // `--rr` runs the same exit through ExitRelayRR: publish the pool root to EIP-8272, prove against it, carry it as a
 // recent-root reference, and assert from the ERC-7562 trace that VERIFY read no foreign storage.
-// `--weth` exits a WETH note from the ERC20Tornado pool through ExitRelayToken (fee paid in WETH), then unwraps the fees.
+// `--weth` exits a WETH note from the ERC20Tornado pool through ExitRelayToken (fee paid in WETH, ETH `refund` to the
+// recipient), has the recipient unwrap its own WETH, then unwraps the relay's fees.
 import { readFileSync } from "node:fs";
 import { setTimeout as sleep } from "node:timers/promises";
 import {
@@ -26,7 +27,7 @@ import { encodeTx, type FrameTx } from "@forshtat/hegota-support/tx";
 import { getProfile } from "@forshtat/hegota-support/profiles";
 import { DEVNET, altDevnet, ethrex, explorerTx, gateway, toWire, type WithdrawProof } from "@altpool/core";
 import { createNote, noteToString, prove, proveForRoot } from "@altpool/prover";
-import { EXIT_FEE, exitTx, exitTxRR } from "../src/exit";
+import { EXIT_FEE, WETH_EXIT_REFUND, exitTx, exitTxRR } from "../src/exit";
 import { MINER_SIDECAR, depositNote, depositNoteWeth, explorerExit, sendExit } from "../src/flow";
 import { WETH9, wethAbi } from "../src/pools";
 import deployments from "../deployments.json";
@@ -120,11 +121,12 @@ const note = createNote();
 const depositTx = weth ? await depositNoteWeth(wallet, note, pool) : await depositNote(wallet, note);
 console.log(`deposited ${formatEther(DEVNET.denomination)} ${weth ? "WETH" : "ETH"} (${depositTx}); note ${noteToString(note)}`);
 
-const recipient = randomAddress();
+const recipientKey = generatePrivateKey(); // never printed
+const recipient = privateKeyToAccount(recipientKey).address;
 let tx: FrameTx;
 if (rr) tx = await exitRR();
 else {
-  const proof = await prove(note, { recipient, relayer: exitRelay, fee: EXIT_FEE }, pool);
+  const proof = await prove(note, { recipient, relayer: exitRelay, fee: EXIT_FEE, refund: weth ? WETH_EXIT_REFUND : 0n }, pool);
   console.log(`proved for recipient ${recipient}, rootIdx ${proof.rootIdx}`);
   tx = await exitFor(proof);
 }
@@ -140,11 +142,11 @@ r.frames.forEach((f, i) => console.log(`  frame ${i}: status ${f.status} gasUsed
 
 const want = DEVNET.denomination - EXIT_FEE;
 if (weth) {
-  // The recipient is paid in WETH and still holds no ETH; the fee WETH lands on the relay, not in its ETH float.
+  // The recipient is paid in WETH plus the pool-forwarded ETH refund; the fee WETH lands on the relay, not in its ETH float.
   const [gotWeth, gotEth, relayWeth] = [await wethOf(recipient), await pub.getBalance({ address: recipient }), await wethOf(exitRelay)];
-  console.log(`recipient ${formatEther(gotWeth)} WETH (want ${formatEther(want)}), ${formatEther(gotEth)} ETH (want 0)`);
+  console.log(`recipient ${formatEther(gotWeth)} WETH (want ${formatEther(want)}), ${formatEther(gotEth)} ETH (want ${formatEther(WETH_EXIT_REFUND)})`);
   if (gotWeth !== want) throw new Error(`recipient WETH ${gotWeth} != ${want}`);
-  if (gotEth !== 0n) throw new Error(`recipient ETH ${gotEth} != 0`);
+  if (gotEth !== WETH_EXIT_REFUND) throw new Error(`recipient ETH ${gotEth} != ${WETH_EXIT_REFUND}`);
   console.log(`relay WETH +${formatEther(relayWeth - relayWethBefore)} (want ${formatEther(EXIT_FEE)})`);
   if (relayWeth - relayWethBefore !== EXIT_FEE) throw new Error(`relay WETH rose by ${relayWeth - relayWethBefore}, want ${EXIT_FEE}`);
 } else {
@@ -174,7 +176,10 @@ const cause = reason(new Error(`${sim.executionError ?? ""} ${sim.revertData ?? 
 console.log(`replay re-simulated: ${cause || JSON.stringify(after)}`);
 if (!/NullifierSpent|nonce/i.test(cause)) throw new Error(`replay not rejected for nonce key / NullifierSpent: ${JSON.stringify(after)}`);
 
-if (weth) await unwrapFees();
+if (weth) {
+  await recipientUnwraps();
+  await unwrapFees();
+}
 
 console.log(`deposit ${explorerTx(depositTx)}`);
 console.log(`exit    ${explorerExit(exitHash)}`);
@@ -190,6 +195,19 @@ async function unwrapFees() {
   const rose = (await pub.getBalance({ address: exitRelay! })) - ethBefore;
   console.log(`unwrapFees ${hash}: relay WETH ${formatEther(fees)} -> ${formatEther(await wethOf(exitRelay!))}, relay ETH +${formatEther(rose)}, gasUsed ${receipt.gasUsed}`);
   if (rose !== fees || (await wethOf(exitRelay!)) !== 0n) throw new Error(`unwrap: relay ETH rose ${rose}, WETH was ${fees}`);
+}
+
+/** The refund's point: the recipient, holding no other ETH, pays its own gas to turn the 0.09 WETH into ETH. */
+async function recipientUnwraps() {
+  const own = createWalletClient({ account: privateKeyToAccount(recipientKey), chain: altDevnet, transport: http(DEVNET.ethrexUrl) });
+  const ethBefore = await pub.getBalance({ address: recipient });
+  const hash = await own.writeContract({ address: WETH9, abi: wethAbi, functionName: "withdraw", args: [want], gas: 100_000n, type: "legacy" });
+  const receipt = await pub.waitForTransactionReceipt({ hash, timeout: 180_000 });
+  if (receipt.status !== "success") throw new Error(`recipient unwrap ${hash} reverted`);
+  const cost = receipt.gasUsed * receipt.effectiveGasPrice;
+  const [eth, weth0] = [await pub.getBalance({ address: recipient }), await wethOf(recipient)];
+  console.log(`recipient unwrap ${explorerTx(hash)}: gasUsed ${receipt.gasUsed}, cost ${formatEther(cost)} ETH; now ${formatEther(eth)} ETH, ${formatEther(weth0)} WETH`);
+  if (weth0 !== 0n || eth !== ethBefore + want - cost) throw new Error(`recipient unwrap: ETH ${eth}, WETH ${weth0}, want ETH ${ethBefore + want - cost}`);
 }
 
 /** The `--rr` half: publish the root, prove against it, then gate on VERIFY touching no foreign storage. */

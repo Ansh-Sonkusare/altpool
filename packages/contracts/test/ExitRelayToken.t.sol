@@ -23,12 +23,13 @@ contract MockWETH {
 
 contract ExitRelayTokenTest is Test {
     uint256 constant FEE = 1e16;
+    uint256 constant REFUND = 1e15;
     MockWETH weth;
     ExitRelayToken relay;
 
     function setUp() public {
         weth = new MockWETH();
-        relay = new ExitRelayToken(address(0xB001), address(0xB002), FEE, address(weth));
+        relay = new ExitRelayToken(address(0xB001), address(0xB002), FEE, address(weth), REFUND);
     }
 
     function test_constructorKeepsRelayConfigAndToken() public view {
@@ -36,6 +37,7 @@ contract ExitRelayTokenTest is Test {
         assertEq(relay.pool(), address(0xB001));
         assertEq(relay.verifier(), address(0xB002));
         assertEq(relay.fee(), FEE);
+        assertEq(relay.refund(), REFUND);
     }
 
     function test_unwrapFeesTurnsWethIntoEthFloor() public {

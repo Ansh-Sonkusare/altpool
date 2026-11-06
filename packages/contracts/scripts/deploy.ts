@@ -7,7 +7,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { createPublicClient, createWalletClient, formatEther, http, parseAbi, parseEther, type Address, type Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { DEVNET, altDevnet } from "@altpool/core";
-import { EXIT_FEE } from "../src/exit";
+import { EXIT_FEE, WETH_EXIT_REFUND } from "../src/exit";
 import { WETH9 } from "../src/pools";
 import { initcodeFor, patchVerifierRuntime } from "../src/verifier-patch";
 import { deployerKey, ensureFunded, mergeDeployments, readDeployments } from "./deployer";
@@ -69,7 +69,7 @@ if (WETH && !wethPool) throw new Error("deployments.json has no wethPool: run `b
 const deployTx = await wallet.deployContract({
   abi: art.abi,
   bytecode: art.bytecode.object,
-  args: WETH ? [wethPool!, verifier, EXIT_FEE, WETH9] : [DEVNET.pool, verifier, EXIT_FEE],
+  args: WETH ? [wethPool!, verifier, EXIT_FEE, WETH9, WETH_EXIT_REFUND] : [DEVNET.pool, verifier, EXIT_FEE],
   value: FLOAT,
   gas: 18_000_000n,
   type: "legacy",
