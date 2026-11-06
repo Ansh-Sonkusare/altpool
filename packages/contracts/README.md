@@ -76,4 +76,18 @@ SEND_URL=https://altmempool.forshtat.com/rpc bun run --filter @altpool/contracts
 - **Funds (I1):** the pool re-verifies the proof; recipient, relayer and fee are public inputs, so a relayer cannot redirect or inflate. Soundness holds given the 2019 setup.
 - **Losses (I3):** a junk proof fails VERIFY before payment is approved; at most one loss per real deposit.
 - No admin, no unlock path for stake.
-- Limits: a fresh ExitRelay per run; reading pool storage is not FOCIL-eligible.
+- Limits: a fresh ExitRelay per run; reading pool storage is not FOCIL-eligible (ExitRelayRR below removes that read).
+
+## ExitRelayRR: no foreign storage in VERIFY (EIP-8272 recent roots)
+
+A second, separate contract (`src/ExitRelayRR.sol`); ExitRelay above is unchanged. Design and citations: research repo `derisk/notes/r13-recent-roots.md`.
+
+- **Root:** anyone calls `publishRoot()`, which copies `pool.getLastRoot()` into the EIP-8272 predeploy (`0x…8272`) under ExitRelayRR's own `rootSource = keccak256(address(this) ‖ 0)`. The exit tx carries one `recentRootReference { rootSource, slot, root }`; consensus validates it before any frame runs, and VERIFY reads it with `0xB6` through a 12-byte helper (Solidity can't emit `0xB6`), requiring `source == rootSource` (`BadRootSource`) and `root == withdraw root` (`UnknownRoot`).
+- **No `isSpent`:** replays are already impossible (nonce key = nullifier, consumed at APPROVE). Cost of dropping it: an owner who withdraws a note directly and then submits an exit for it makes ExitRelayRR pay that exit's gas with no fee, once per note (~0.002 ETH, at most `EXIT_FEE`).
+- **Frame 1 data is one ignored byte:** empty calldata would route to `receive()`, which returns without APPROVE (found live: `frame 2 is a SENDER frame but no frame approved execution`).
+- **Liveness:** a published root is referenceable from the next slot for 8191 slots (~13.6 h) and until 100 more deposits; someone with ETH must republish (~140k gas).
+- **FOCIL:** VERIFY reads no foreign storage, so exits are eligible by construction. Forced inclusion itself can't be shown on this devnet: inclusion lists come only from ethrex's public mempool, which still rejects the 450k VERIFY; one validator. The alt mempool remains required for the gas.
+
+Run: `bun run --filter @altpool/contracts deploy -- --rr`, then `bun run --filter @altpool/contracts exit -- --rr` (deposit → publishRoot → prove against the published root → traced simulate asserting no foreign storage reads in VERIFY → send → balance and replay gates).
+
+Live (Nov 6): ExitRelayRR `0x86ea983cfd294ffa8a67aa353c67054c38e95170`; [publishRoot](https://explorer.altmempool.wtf/tx/0x79ac8cb91951d23e68bd83e0b2975f52293602445d0633dc997097fb4b8464b6) (slot 6552); [exit](https://explorer.altmempool.wtf/tx/0xa015c4c7d411030a9fde923866c8773997cd2d17992388735f5cb400a7ed6ee3) (block 6567): `foreign storage reads in VERIFY: none`, frames 3,051 / 368,270 / 306,969 + 281,520 state, recipient 0 → 0.09 ETH, replay `Nonce mismatch: expected 1, got 0`. VERIFY is 5,947 gas cheaper than ExitRelay; the withdraw frame is ~6.9k dearer because VERIFY no longer warms the pool's slots.
