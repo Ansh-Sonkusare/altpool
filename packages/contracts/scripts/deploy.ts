@@ -44,13 +44,13 @@ if ((await balance()) < MIN_BALANCE) {
 }
 console.log(`deployer ${account.address} has ${formatEther(await balance())} ETH`);
 
-// 6M gas: the HegotaSupport constructor CREATEs nine opcode helpers.
+// 18M gas: eth_estimateGas says ~14.85M (the HegotaSupport constructor CREATEs nine opcode helpers).
 const deployTx = await wallet.deployContract({
   abi: art.abi,
   bytecode: art.bytecode.object,
   args: [DEVNET.pool, DEVNET.verifier, EXIT_FEE],
   value: FLOAT,
-  gas: 6_000_000n,
+  gas: 18_000_000n,
   type: "legacy",
 });
 const exitRelay = (await mined(deployTx)).contractAddress!;

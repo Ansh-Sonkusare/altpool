@@ -1,5 +1,6 @@
 {
   "chainId": 1337,
-  "exitRelay": null,
-  "stakedAt": null
+  "exitRelay": "0x229397eded3ee7d1bc4a34daf690d3d4afdd78bb",
+  "stakedAt": "0x82e1390d5ae10e1c59aa7c50ddd48b4a9a1bf5ad009b5481cc8c6a22bba7b3a0",
+  "deployTx": "0x33145ecead326b7089af5405b89f8b745b9c71c6718bbbade5b1c74eed38bb07"
 }
