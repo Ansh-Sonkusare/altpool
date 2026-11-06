@@ -14,9 +14,13 @@
   },
   "dependencies": {
     "@altpool/core": "workspace:*",
-    "@altpool/monitor": "workspace:*"
+    "@altpool/monitor": "workspace:*",
+    "@altpool/simulator": "workspace:*",
+    "viem": "^2.57.10"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.3.5",
+    "tailwindcss": "^4.3.5",
     "vite": "^7.0.0"
   }
 }

@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+/* Palette: warm graphite with a lime accent (dark first), amber = warning, coral = failure, ice blue = info/nodes.
+   Every status also carries a word; colour never says it alone. */
+:root {
+  --bg: #100f0d; --panel: #181714; --panel-2: #1e1c18; --grid: #1c1b18; --line: #2c2a25;
+  --ink: #ece9e1; --muted: #9b978c; --faint: #6e6a60;
+  --accent: #c8f03c; --accent-ink: #151a02; --accent-soft: rgb(200 240 60 / 0.14);
+  --warn: #f5a524; --bad: #ff6b57; --info: #8cc8ff;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f4f2ec; --panel: #fffefa; --panel-2: #f8f6f0; --grid: #e9e5db; --line: #ddd8cc;
+    --ink: #1b1a17; --muted: #5f5b52; --faint: #8a857a;
+    --accent: #4f6b00; --accent-ink: #ffffff; --accent-soft: rgb(79 107 0 / 0.1);
+    --warn: #9a5b00; --bad: #b42318; --info: #1d5fa8;
+    color-scheme: light;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-panel: var(--panel);
+  --color-panel-2: var(--panel-2);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-warn: var(--warn);
+  --color-bad: var(--bad);
+  --color-info: var(--info);
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --animate-blink: blink 1s steps(1) infinite;
+  --animate-beat: beat 1.6s ease-in-out infinite;
+  @keyframes blink { 50% { opacity: 0; } }
+  @keyframes beat { 50% { opacity: 0.3; } }
+}
+
+@layer base {
+  body {
+    background-color: var(--bg);
+    background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 72px 72px;
+  }
+}
+
+/* The small uppercase mono label used for every caption. */
+@utility label {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 11px;
+  line-height: 1.4;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-blink, .animate-beat { animation: none; }
+}
