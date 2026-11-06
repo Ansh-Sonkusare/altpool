@@ -42,17 +42,21 @@ const POOL_ABI = parseAbi([
 ]);
 const DEPOSIT = parseAbiItem("event Deposit(bytes32 indexed commitment, uint32 leafIndex, uint256 timestamp)");
 
-/** Rebuild the on-chain tree, check it matches getLastRoot(), and return the note's path plus the root's history index. */
-export const rootFor = async (note: Note): Promise<MerklePath> => {
-  const client = createPublicClient({ chain: altDevnet, transport: http(DEVNET.ethrexUrl) });
-  const pool = { address: DEVNET.pool, abi: POOL_ABI } as const;
-  const [logs, chainRoot] = await Promise.all([
-    client.getLogs({ address: DEVNET.pool, event: DEPOSIT, fromBlock: 0n, toBlock: "latest" }),
-    client.readContract({ ...pool, functionName: "getLastRoot" }),
-  ]);
+const client = () => createPublicClient({ chain: altDevnet, transport: http(DEVNET.ethrexUrl) });
+
+/** Every pool commitment in leaf order, from the Deposit logs. */
+const depositedLeaves = async (c = client()): Promise<bigint[]> => {
+  const logs = await c.getLogs({ address: DEVNET.pool, event: DEPOSIT, fromBlock: 0n, toBlock: "latest" });
   const deposits = logs.map((l) => l.args).sort((a, b) => a.leafIndex! - b.leafIndex!);
   deposits.forEach((d, i) => { if (d.leafIndex !== i) throw new Error(`deposit logs not contiguous at ${i} (got ${d.leafIndex})`); });
-  const leaves = deposits.map((d) => BigInt(d.commitment!));
+  return deposits.map((d) => BigInt(d.commitment!));
+};
+
+/** Rebuild the on-chain tree, check it matches getLastRoot(), and return the note's path plus the root's history index. */
+export const rootFor = async (note: Note): Promise<MerklePath> => {
+  const c = client();
+  const pool = { address: DEVNET.pool, abi: POOL_ABI } as const;
+  const [leaves, chainRoot] = await Promise.all([depositedLeaves(c), c.readContract({ ...pool, functionName: "getLastRoot" })]);
 
   const local = leaves.length ? pathFor(leaves, 0).root : toHex(ZEROS[LEVELS], { size: 32 });
   if (BigInt(local) !== BigInt(chainRoot)) throw new Error(`tree mismatch: local ${local} chain ${chainRoot}`);
@@ -60,10 +64,25 @@ export const rootFor = async (note: Note): Promise<MerklePath> => {
   const leafIndex = leaves.indexOf(BigInt(note.commitment));
   if (leafIndex < 0) throw new Error("note not deposited");
   const roots = await Promise.all(
-    Array.from({ length: DEVNET.rootHistorySize }, (_, i) => client.readContract({ ...pool, functionName: "roots", args: [BigInt(i)] })),
+    Array.from({ length: DEVNET.rootHistorySize }, (_, i) => c.readContract({ ...pool, functionName: "roots", args: [BigInt(i)] })),
   );
   const rootIdx = roots.findIndex((r) => BigInt(r) === BigInt(chainRoot));
   if (rootIdx < 0) throw new Error(`root ${chainRoot} not in roots(0..${DEVNET.rootHistorySize - 1})`);
-  if (await client.readContract({ ...pool, functionName: "isSpent", args: [note.nullifierHash] })) throw new Error("note already spent");
+  if (await c.readContract({ ...pool, functionName: "isSpent", args: [note.nullifierHash] })) throw new Error("note already spent");
   return { ...pathFor(leaves, leafIndex), rootIdx };
+};
+
+/**
+ * The note's path against a given (possibly older) root, e.g. one published to EIP-8272: the tree after some prefix
+ * of k deposits has that root. Reads only Deposit logs, no pool storage, so it cannot tell whether the note is spent.
+ */
+export const pathForRoot = async (note: Note, root: Hex): Promise<Omit<MerklePath, "rootIdx">> => {
+  const leaves = await depositedLeaves();
+  const leafIndex = leaves.indexOf(BigInt(note.commitment));
+  if (leafIndex < 0) throw new Error("note not deposited");
+  for (let k = leaves.length; k > leafIndex; k--) {
+    const path = pathFor(leaves.slice(0, k), leafIndex);
+    if (BigInt(path.root) === BigInt(root)) return path;
+  }
+  throw new Error(`root ${root} is not the tree root after any deposit at or after the note's (leaf ${leafIndex})`);
 };

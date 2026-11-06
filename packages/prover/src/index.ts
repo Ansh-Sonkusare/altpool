@@ -2,5 +2,5 @@
 // [root, nullifierHash, recipient, relayer, fee, refund] -> true, and false at fee + 1.
 // Key: tornado-core release v2.0 (matches the devnet Verifier), converted by scripts/convert-pk.ts.
 export { createNote, noteToString, parseNote } from "./note";
-export { rootFor, pathFor, type MerklePath } from "./tree";
-export { prove, proveWithPath, type WithdrawTo } from "./prove";
+export { rootFor, pathFor, pathForRoot, type MerklePath } from "./tree";
+export { prove, proveWithPath, proveForRoot, type WithdrawTo } from "./prove";

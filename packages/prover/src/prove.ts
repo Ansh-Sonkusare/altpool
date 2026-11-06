@@ -4,8 +4,8 @@ import { createRequire } from "node:module";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { concat, toHex } from "viem";
-import type { Address, Note, WithdrawProof } from "@altpool/core";
-import { rootFor, type MerklePath } from "./tree";
+import type { Address, Hex, Note, WithdrawProof } from "@altpool/core";
+import { pathForRoot, rootFor, type MerklePath } from "./tree";
 
 type Witness = unknown;
 type Snarkjs = {
@@ -67,3 +67,7 @@ export const prove = async (note: Note, to: WithdrawTo): Promise<WithdrawProof &
   const path = await rootFor(note);
   return { ...proveWithPath(note, path, to), rootIdx: path.rootIdx };
 };
+
+/** A proof against a given root (ExitRelayRR: the root published to EIP-8272), without any pool storage reads. */
+export const proveForRoot = async (note: Note, root: Hex, to: WithdrawTo): Promise<WithdrawProof> =>
+  proveWithPath(note, await pathForRoot(note, root), to);

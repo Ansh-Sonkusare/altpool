@@ -1,6 +1,8 @@
 // IP3 lever: deposit a fresh note, exit it through the deployed ExitRelay to a 0-ETH recipient, then replay it.
 // `--junk` instead sends one exit with a zeroed proof against a known root: reaching BadProof proves every frame
 // opcode read in ExitRelay's VERIFY worked on this devnet.
+// `--rr` runs the same exit through ExitRelayRR: publish the pool root to EIP-8272, prove against it, carry it as a
+// recent-root reference, and assert from the ERC-7562 trace that VERIFY read no foreign storage.
 import { readFileSync } from "node:fs";
 import { setTimeout as sleep } from "node:timers/promises";
 import {
@@ -9,8 +11,10 @@ import {
   decodeErrorResult,
   formatEther,
   http,
+  isAddressEqual,
   parseAbi,
   parseEther,
+  parseEventLogs,
   toHex,
   type Abi,
   type Address,
@@ -20,14 +24,16 @@ import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { encodeTx, type FrameTx } from "@forshtat/hegota-support/tx";
 import { getProfile } from "@forshtat/hegota-support/profiles";
 import { DEVNET, altDevnet, ethrex, explorerTx, gateway, toWire, type WithdrawProof } from "@altpool/core";
-import { createNote, noteToString, prove } from "../../prover/src/index";
-import { EXIT_FEE, exitTx } from "../src/exit";
+import { createNote, noteToString, prove, proveForRoot } from "../../prover/src/index";
+import { EXIT_FEE, exitTx, exitTxRR } from "../src/exit";
 import { MINER_SIDECAR, depositNote, sendExit } from "../src/flow";
 import deployments from "../deployments.json";
 
-const exitRelay = deployments.exitRelay as Address | null;
-if (!exitRelay) throw new Error("deployments.json has no exitRelay: run `bun run --filter @altpool/contracts deploy` first");
-const errorAbi = (JSON.parse(readFileSync(new URL("../out/ExitRelay.sol/ExitRelay.json", import.meta.url), "utf8")).abi as Abi).filter(
+const rr = process.argv.includes("--rr");
+const contract = rr ? "ExitRelayRR" : "ExitRelay";
+const exitRelay = (rr ? (deployments as Record<string, unknown>).exitRelayRR : deployments.exitRelay) as Address | null | undefined;
+if (!exitRelay) throw new Error(`deployments.json has no ${rr ? "exitRelayRR" : "exitRelay"}: run \`bun run --filter @altpool/contracts deploy\` first`);
+const errorAbi = (JSON.parse(readFileSync(new URL(`../out/${contract}.sol/${contract}.json`, import.meta.url), "utf8")).abi as Abi).filter(
   (x) => x.type === "error",
 );
 const poolAbi = parseAbi([
@@ -53,7 +59,10 @@ function reason(e: unknown): string {
 }
 
 async function exitFor(p: WithdrawProof & { rootIdx: number }): Promise<FrameTx> {
-  const tx = exitTx(p, { exitRelay: exitRelay! });
+  return report(exitTx(p, { exitRelay: exitRelay! }));
+}
+
+async function report(tx: FrameTx): Promise<FrameTx> {
   const sim = await ethrex().simulateFrameTransaction(encodeTx(profile, tx)).then(
     (r) => `valid=${r.canonicalMempoolValid} violation=${r.canonicalMempoolViolation ?? "-"} maxCost=${"maxCost" in r ? String(r.maxCost) : "-"}`,
     (e) => `error ${reason(e)}`,
@@ -104,9 +113,13 @@ const depositTx = await depositNote(wallet, note);
 console.log(`deposited ${formatEther(DEVNET.denomination)} ETH (${depositTx}); note ${noteToString(note)}`);
 
 const recipient = randomAddress();
-const proof = await prove(note, { recipient, relayer: exitRelay, fee: EXIT_FEE });
-console.log(`proved for recipient ${recipient}, rootIdx ${proof.rootIdx}`);
-const tx = await exitFor(proof);
+let tx: FrameTx;
+if (rr) tx = await exitRR();
+else {
+  const proof = await prove(note, { recipient, relayer: exitRelay, fee: EXIT_FEE });
+  console.log(`proved for recipient ${recipient}, rootIdx ${proof.rootIdx}`);
+  tx = await exitFor(proof);
+}
 
 const r = await sendExit(tx, { sendUrl: send.url });
 const exitHash = r.hash;
@@ -139,3 +152,49 @@ if (!/NullifierSpent|nonce/i.test(cause)) throw new Error(`replay not rejected f
 
 console.log(`deposit ${explorerTx(depositTx)}`);
 console.log(`exit    ${explorerTx(exitHash)}`);
+
+/** The `--rr` half: publish the root, prove against it, then gate on VERIFY touching no foreign storage. */
+async function exitRR(): Promise<FrameTx> {
+  const rrAbi = parseAbi(["function publishRoot()", "event RootPublished(bytes32 indexed root)"]);
+  const publishTx = await wallet.writeContract({ address: exitRelay!, abi: rrAbi, functionName: "publishRoot", gas: 400_000n, type: "legacy" });
+  const receipt = await pub.waitForTransactionReceipt({ hash: publishTx, timeout: 180_000 });
+  if (receipt.status !== "success") throw new Error(`publishRoot ${publishTx} reverted`);
+  const [published] = parseEventLogs({ abi: rrAbi, eventName: "RootPublished", logs: receipt.logs });
+  if (!published) throw new Error(`publishRoot ${publishTx} emitted no RootPublished`);
+  const root = published.args.root;
+  // slotNumber is an EIP-8272-devnet header field viem does not type, so read the raw block.
+  const slotOf = async (block: Hex | "latest") => {
+    const b = (await ethrex().call("eth_getBlockByNumber", [block, false])) as { slotNumber?: Hex } | null;
+    if (!b?.slotNumber) throw new Error(`block ${block} has no slotNumber`);
+    return BigInt(b.slotNumber);
+  };
+  const rootSlot = await slotOf(toHex(receipt.blockNumber));
+  console.log(`published root ${root} at block ${receipt.blockNumber} slot ${rootSlot} (${explorerTx(publishTx)})`);
+  // A root written in slot S is referenceable from S+1 on (r13 §2).
+  for (let i = 0; i < 60 && (await slotOf("latest")) <= rootSlot; i++) await sleep(2000);
+
+  const proof = await proveForRoot(note, root, { recipient, relayer: exitRelay!, fee: EXIT_FEE });
+  console.log(`proved for recipient ${recipient} against published root`);
+  const tx = await report(exitTxRR({ ...proof, rootSlot }, { exitRelayRR: exitRelay! }));
+
+  // ERC-7562 trace (ethrex erc7562_tracer.rs): erc7562Trace = [{ frameIndex, root: call scope }], each scope
+  // { from, to, type, calls?, accessedSlots: { reads, writes, ... } }; storage belongs to `from` under DELEGATECALL, else `to`.
+  type Scope = { from: Address; to?: Address | null; type: string; calls?: Scope[]; accessedSlots: { reads: object; writes: object } };
+  const traced = (await ethrex().simulateFrameTransaction(encodeTx(profile, tx), true)) as {
+    erc7562Trace?: { frameIndex: number; root: Scope }[] | null;
+    erc7562TraceError?: string | null;
+  };
+  const verify = traced.erc7562Trace?.find((f) => f.frameIndex === 1);
+  if (!verify) throw new Error(`no VERIFY frame 1 trace: ${traced.erc7562TraceError ?? JSON.stringify(traced)}`);
+  const foreign = new Set<string>();
+  const walk = (c: Scope) => {
+    const owner = c.type === "DELEGATECALL" ? c.from : c.to;
+    const touched = Object.keys(c.accessedSlots.reads).length + Object.keys(c.accessedSlots.writes).length > 0;
+    if (touched && (!owner || !isAddressEqual(owner, exitRelay!))) foreign.add(owner ?? "<create>");
+    c.calls?.forEach(walk);
+  };
+  walk(verify.root);
+  console.log(`foreign storage reads in VERIFY: ${foreign.size ? [...foreign].join(", ") : "none"}`);
+  if (foreign.size) process.exit(1);
+  return tx;
+}
