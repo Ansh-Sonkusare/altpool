@@ -70,7 +70,7 @@ a node.
 - **Estimation needs a signed probe.** The estimator rewrites body-frame limits to 10,000,000 (execution and
   state) *before* checking signatures. A tx signed at its real limits therefore fails with `-32507`, and so does an
   unsigned one. `estimateFrameTransactionGas({ signer })` signs that probe for you. Prefix (VERIFY) frames keep
-  their declared limits and are marked `autoEstimated: false`. The signed probe is a valid tx, so spend the nonce
+  their declared limits and are marked `autoEstimated: false`. The estimator **under-reports** body frames (a transfer that creates an account measured 3,000 gas but needed more than 16,000 plus state gas), so by default the SDK only raises limits and never lowers them (`margin.allowShrink` opts in). The signed probe is a valid tx, so spend the nonce
   right after.
 - `nonceKeys` must have 1–16 entries (`[]` is rejected). `[0n]` is the account nonce. Other keys are read from
   NONCE_MANAGER (`0x…8250`) storage at `keccak256(pad32(sender) ‖ key)`.

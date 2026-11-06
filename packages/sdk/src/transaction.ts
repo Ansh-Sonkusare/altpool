@@ -53,8 +53,13 @@ export function estimationProbe(profile: Profile, tx: FrameTx): FrameTx {
   return { ...tx, frames: tx.frames.map((f, i) => (i < n ? f : { ...f, limits: { execution: p, state: p } })) };
 }
 
-export interface GasMargin { percent: bigint; min: bigint }
-export const DEFAULT_MARGIN: GasMargin = { percent: 20n, min: 10_000n };
+/**
+ * `allowShrink: false` (default) never lowers a declared limit: the sidecar estimator under-reports body frames
+ * (live: a value transfer creating an account measured 3,000 exec / 0 state but needed >16,000 exec plus state gas).
+ */
+export interface GasMargin { percent: bigint; min: bigint; allowShrink?: boolean }
+export const DEFAULT_MARGIN: GasMargin = { percent: 20n, min: 10_000n, allowShrink: false };
+const max = (a: bigint, b: bigint) => (a > b ? a : b);
 const pad = (v: bigint, m: GasMargin) => (v === 0n ? 0n : v + (v * m.percent / 100n > m.min ? v * m.percent / 100n : m.min));
 
 export interface FrameGasRow {
@@ -64,7 +69,7 @@ export interface FrameGasRow {
   declared: { execution: bigint; state: bigint };
   /** What the node measured. For prefix frames this is informational: the node keeps the declared limits. */
   measured: { execution: bigint; state: bigint };
-  /** Limits to use. Prefix frames keep `declared`; body frames get `measured` plus the margin. */
+  /** Limits to use. Prefix frames keep `declared`; body frames get max(declared, measured + margin) unless allowShrink. */
   suggested: { execution: bigint; state: bigint };
   /** false for prefix frames: their limits are not auto-estimated. */
   autoEstimated: boolean;
@@ -88,7 +93,8 @@ export function gasReport(profile: Profile, tx: FrameTx, est: FrameGasEstimate, 
   const frames = tx.frames.map((f, index): FrameGasRow => {
     const measured = est.frames[index] ?? { execution: 0n, state: 0n };
     const inPrefix = index < n;
-    const suggested = inPrefix ? f.limits : { execution: pad(measured.execution, margin), state: pad(measured.state, margin) };
+    const padded = { execution: pad(measured.execution, margin), state: pad(measured.state, margin) };
+    const suggested = inPrefix ? f.limits : margin.allowShrink ? padded : { execution: max(f.limits.execution, padded.execution), state: max(f.limits.state, padded.state) };
     return {
       index, mode: modeName(profile, f.mode), inPrefix, declared: f.limits, measured, suggested, autoEstimated: !inPrefix,
       headroom: inPrefix ? f.limits.execution - measured.execution : undefined,

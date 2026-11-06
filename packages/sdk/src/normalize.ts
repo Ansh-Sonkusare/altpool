@@ -172,10 +172,10 @@ export const parseStatus = (hash: Hex, r: any, node: NodeIdentity): FrameTxStatu
 });
 const safe = <T>(f: () => T): T | undefined => { try { return f(); } catch { return undefined; } };
 
-export type FrameOutcome = "success" | "failure" | "skipped";
+export type FrameOutcome = "success" | "reverted" | "failure" | "skipped";
 export interface FrameReceipt {
   hash: Hex;
-  status: "success" | "failure";
+  status: "success" | "reverted";
   payer?: Address;
   blockNumber?: bigint;
   blockHash?: Hex;
@@ -191,6 +191,7 @@ export interface FrameReceipt {
 const outcome = (s: unknown): FrameOutcome => {
   if (s === "success" || s === "0x1" || s === 1 || s === true) return "success";
   if (s === "skipped" || s === "0x2" || s === 2) return "skipped";
+  if (s === "reverted" || s === "0x0" || s === 0 || s === false) return "reverted";
   return "failure";
 };
 
@@ -198,7 +199,7 @@ const outcome = (s: unknown): FrameOutcome => {
 export function parseReceipt(hash: Hex, r: any, source: FrameReceipt["source"]): FrameReceipt {
   return {
     hash,
-    status: outcome(r.status) === "success" ? "success" : "failure",
+    status: outcome(r.status) === "success" ? "success" : "reverted",
     payer: r.payer ?? undefined,
     blockNumber: bigOr(r.blockNumber),
     blockHash: r.blockHash ?? undefined,

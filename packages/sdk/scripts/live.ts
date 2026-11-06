@@ -47,7 +47,7 @@ const selfPaid = (o: { keys: bigint[]; seq: bigint; value?: bigint; fees?: { max
     chainId: DEVNET.chainId, sender: me, nonceKeys: o.keys, nonceSeq: o.seq,
     frames: [
       frame(profile, "VERIFY", { scope: "EXECUTION_AND_PAYMENT", execution: 60_000n }),
-      frame(profile, "SENDER", { target: RECIPIENT, execution: 50_000n, value: o.value ?? 1n }),
+      frame(profile, "SENDER", { target: RECIPIENT, execution: 50_000n, state: 200_000n, value: o.value ?? 1n }), // state gas: the transfer may create the account
     ],
     signatures: [secp256k1Placeholder(profile)],
     fees: o.fees ?? { maxFeePerGas: 2_000_000_000n, maxPriorityFeePerGas: 1_000_000_000n },
