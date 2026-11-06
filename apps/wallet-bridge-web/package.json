@@ -1,0 +1,23 @@
+{
+  "name": "@altpool/wallet-bridge-web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "test": "echo no tests",
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@altpool/core": "workspace:*",
+    "@altpool/simulator": "workspace:*",
+    "@altpool/wallet-bridge": "workspace:*",
+    "@forshtat/hegota-support": "0.0.1",
+    "altpool": "workspace:*",
+    "viem": "^2.57.10"
+  },
+  "devDependencies": {
+    "vite": "^7.0.0"
+  }
+}

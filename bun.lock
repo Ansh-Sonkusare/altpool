@@ -55,6 +55,21 @@
         "viem": "^2.57.10",
       },
     },
+    "apps/wallet-bridge-web": {
+      "name": "@altpool/wallet-bridge-web",
+      "version": "0.0.0",
+      "dependencies": {
+        "@altpool/core": "workspace:*",
+        "@altpool/simulator": "workspace:*",
+        "@altpool/wallet-bridge": "workspace:*",
+        "@forshtat/hegota-support": "0.0.1",
+        "altpool": "workspace:*",
+        "viem": "^2.57.10",
+      },
+      "devDependencies": {
+        "vite": "^7.0.0",
+      },
+    },
     "packages/contracts": {
       "name": "@altpool/contracts",
       "version": "0.0.0",
@@ -194,6 +209,8 @@
     "@altpool/simulator": ["@altpool/simulator@workspace:packages/simulator"],
 
     "@altpool/wallet-bridge": ["@altpool/wallet-bridge@workspace:packages/wallet-bridge"],
+
+    "@altpool/wallet-bridge-web": ["@altpool/wallet-bridge-web@workspace:apps/wallet-bridge-web"],
 
     "@babel/code-frame": ["@babel/code-frame@7.29.7", "", { "dependencies": { "@babel/helper-validator-identifier": "^7.29.7", "js-tokens": "^4.0.0", "picocolors": "^1.1.1" } }, "sha512-Aup7aUOfpbAUg2ROOJN6Iw5f9DMBlzu0mIkm/malLQFN/YQgO48wCj0Kxa3sEHJvPVFg7siR+qRInwXd2qhQKw=="],
 

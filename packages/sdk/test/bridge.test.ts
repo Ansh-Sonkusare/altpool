@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { decodeAbiParameters, hashTypedData, keccak256, toHex, stringToHex, isAddressEqual, recoverAddress, recoverTypedDataAddress, sliceHex, zeroAddress, type Hex } from "viem";
+import { createWalletClient, custom, decodeAbiParameters, hashTypedData, keccak256, toHex, stringToHex, isAddressEqual, recoverAddress, recoverTypedDataAddress, sliceHex, zeroAddress, type Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { profile } from "@forshtat/hegota-support/profiles/ethrex-eip8141-tracer";
 import {
@@ -75,6 +75,29 @@ describe("bridge: Mode A building and signing", () => {
     expect(signed.signatures[0]!.signature.slice(-2)).toMatch(/1b|1c/);
     expect(await bridge.isOwnerSignature(signed, signed.signatures[0]!.signature)).toBe(true);
     expect(hashTypedData(bridge.typedDataFor(signed))).toBe(hashTypedData(typedData));
+  });
+
+  it("works over EIP-1193 eth_signTypedData_v4 (the JSON payload MetaMask receives)", async () => {
+    const seen: string[] = [];
+    const provider = {
+      request: async ({ method, params }: { method: string; params?: unknown[] }) => {
+        seen.push(method);
+        if (method === "eth_signTypedData_v4") {
+          const [from, payload] = params as [string, string];
+          expect(from.toLowerCase()).toBe(owner.address.toLowerCase());
+          const { domain, types, primaryType, message } = JSON.parse(payload);
+          delete types.EIP712Domain;
+          return owner.signTypedData({ domain, types, primaryType, message });
+        }
+        if (method === "eth_chainId") return "0x539";
+        throw new Error(`unexpected ${method}`);
+      },
+    };
+    const wallet = createWalletClient({ transport: custom(provider) });
+    const { tx } = bridge.buildTx({ calls: [{ to, value: 1n }], nonce: 8n, fees });
+    const signed = await signFrameTransaction(profile, tx, typedDataSigner(wallet, bridge, owner.address));
+    expect(seen).toContain("eth_signTypedData_v4");
+    expect(await bridge.isOwnerSignature(signed, signed.signatures[0]!.signature)).toBe(true);
   });
 
   it("any change to the tx changes what the owner must sign", async () => {
