@@ -8,9 +8,14 @@
   },
   "scripts": {
     "typecheck": "tsc -p .",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests",
+    "watch": "tsx src/watch.ts"
   },
   "dependencies": {
-    "@altpool/core": "workspace:*"
+    "@altpool/core": "workspace:*",
+    "viem": "^2.57.10"
+  },
+  "bin": {
+    "watch-entity": "./src/watch.ts"
   }
 }

@@ -72,8 +72,12 @@
     "packages/monitor": {
       "name": "@altpool/monitor",
       "version": "0.0.0",
+      "bin": {
+        "watch-entity": "./src/watch.ts",
+      },
       "dependencies": {
         "@altpool/core": "workspace:*",
+        "viem": "^2.57.10",
       },
     },
     "packages/prover": {
