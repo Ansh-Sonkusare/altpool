@@ -11,3 +11,4 @@ export { diagnoseError, diagnoseSimulation, diagnoseAdmission, decodeRevert, typ
 
 /** Pass as the SDK's `precheck`. */
 export const simulator: AdmissionChecker = { check: checkAdmission };
+export { renderReport, renderVerdict, renderChecks, summarize } from "./report";
