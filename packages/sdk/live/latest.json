@@ -1,0 +1,149 @@
+{
+  "startedAt": "2026-11-06T17:14:05.643Z",
+  "gateway": "https://altmempoolgateway.forshtat.com/rpc",
+  "gatewayWs": "wss://altmempoolgateway.forshtat.com/rpc",
+  "ethrex": "https://altmempool.forshtat.com",
+  "profile": "ethrex-eip8141-tracer",
+  "steps": [
+    {
+      "step": "capabilities",
+      "chainId": {
+        "execution": 1337,
+        "sidecar": 1337,
+        "profile": 1337,
+        "match": true
+      },
+      "sidecar": {
+        "version": "v4.1.1",
+        "protocolVersion": 1,
+        "bootId": "1297de401113fb04",
+        "bundlingMode": "manual"
+      },
+      "p2p": {
+        "enabled": true,
+        "peers": 0
+      },
+      "explorer": {
+        "enabled": true,
+        "historyCapacity": 10000,
+        "inMemory": true,
+        "faucet": true
+      },
+      "staking": {
+        "registry": "0xd51c04d7a0b01124e84de152f4e56d9eecb22d2f",
+        "minStake": "10000000000000000",
+        "minUnstakeDelaySec": 0
+      },
+      "mempools": [
+        {
+          "mempoolId": "QmcFZKUX9qoo3StwVycJTAhwdiqbEjcwNvQVK246p3z1rk",
+          "entryPoint": "0x00000000000000000000000000000000000000aa"
+        }
+      ],
+      "warnings": [
+        "explorer history is in memory on this node (lost on restart) and publicly readable",
+        "validation gas limit is 10000000 (effectively uncapped on this node; other nodes may cap it)"
+      ]
+    },
+    {
+      "step": "funded",
+      "address": "0xBBc8cEE2807F9fa4b39017822C7a851370F465FD",
+      "faucetTx": "0x83b1897b2808f900e247e8208c501bccd0d8eadd391368ef89f27edf49fe7ee8",
+      "balance": "1000000000000000000"
+    },
+    {
+      "step": "preflight",
+      "public": "likely-admitted",
+      "alternative": "unknown",
+      "checks": [
+        "structure/chain-id:pass",
+        "structure/frame-modes:pass",
+        "structure/prefix:pass",
+        "structure/nonce-key-count:pass",
+        "structure/nonce-key-range:pass",
+        "structure/nonce-key-order:pass",
+        "structure/gas-limit:pass",
+        "structure/fees:pass",
+        "estimate/simulation:pass",
+        "stake/stake:unknown",
+        "reputation/reputation:unknown",
+        "mempool/nonce:pass",
+        "mempool/mempool:pass"
+      ],
+      "publicChecks": [
+        "structure/chain-id:pass",
+        "structure/frame-modes:pass",
+        "structure/prefix:pass",
+        "structure/nonce-key-count:pass",
+        "structure/nonce-key-range:pass",
+        "structure/nonce-key-order:pass",
+        "structure/gas-limit:pass",
+        "structure/fees:pass",
+        "simulate/public-rules:pass"
+      ]
+    },
+    {
+      "step": "estimate",
+      "frames": [
+        {
+          "i": 0,
+          "mode": "VERIFY",
+          "prefix": true,
+          "declared": {
+            "execution": "60000",
+            "state": "0"
+          },
+          "measured": {
+            "execution": "100",
+            "state": "0"
+          },
+          "suggested": {
+            "execution": "60000",
+            "state": "0"
+          },
+          "auto": false
+        },
+        {
+          "i": 1,
+          "mode": "SENDER",
+          "prefix": false,
+          "declared": {
+            "execution": "50000",
+            "state": "0"
+          },
+          "measured": {
+            "execution": "3000",
+            "state": "0"
+          },
+          "suggested": {
+            "execution": "13000",
+            "state": "0"
+          },
+          "auto": true
+        }
+      ],
+      "cumulative": "26102",
+      "fees": {
+        "maxFeePerGas": "2000000001",
+        "maxPriorityFeePerGas": "1999999993"
+      }
+    },
+    {
+      "step": "submitted",
+      "hash": "0x31e12da3bedf26d3bd2e84f02c936c5d36d05931b60c83023f244aa55aa5e3a6",
+      "hashMatches": true,
+      "explorer": "https://explorer.altmempool.wtf/tx/0x31e12da3bedf26d3bd2e84f02c936c5d36d05931b60c83023f244aa55aa5e3a6"
+    },
+    {
+      "step": "status-after-submit",
+      "status": "New"
+    },
+    {
+      "step": "FAILED",
+      "name": "ReceiptTimeoutError",
+      "message": "No receipt for 0x31e12da3bedf26d3bd2e84f02c936c5d36d05931b60c83023f244aa55aa5e3a6 after 120000 ms (last status: New)."
+    }
+  ],
+  "ok": false,
+  "finishedAt": "2026-11-06T17:16:26.678Z"
+}
