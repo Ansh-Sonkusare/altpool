@@ -5,8 +5,8 @@ import { getProfile } from "@forshtat/hegota-support/profiles";
 import { altpoolActions, createAltMempoolClient } from "altpool";
 import { DEVNET, altDevnet, explorerTx, type Note } from "@altpool/core";
 
-/** The miner's own sidecar. The gateway admits exits but does not gossip them to it. */
-export const MINER_SIDECAR = "https://altmempool.forshtat.com/rpc";
+/** The miner's own sidecar (core's DEVNET.minerSidecarUrl, env MINER_SIDECAR_URL). The gateway admits exits but does not gossip them to it. */
+export const MINER_SIDECAR = DEVNET.minerSidecarUrl;
 
 /** Explorer link on the miner node's view: the explorer defaults to the gateway, which never sees exits sent here. */
 export const explorerExit = (hash: Hex) => `${explorerTx(hash)}?node=${encodeURIComponent(MINER_SIDECAR)}`;

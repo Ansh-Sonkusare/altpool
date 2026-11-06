@@ -51,9 +51,8 @@ async function withdraw(noteStr: string, to?: string) {
   }
   const proof = await prove(parseNote(noteStr), { recipient, relayer: exitRelay, fee: EXIT_FEE });
   const tx = exitTx(proof, { exitRelay });
-  // Prefix budget, not one frame: the model sums expiry (10k) + VERIFY (450k); core's 350k default would reject every exit.
   try {
-    const sim = await createSimulator({ verifyGasMax: 460_000n, explorer: false }).check(tx);
+    const sim = await createSimulator({ explorer: false }).check(tx);
     console.log("simulator (checkAdmission):");
     for (const v of [sim.verdicts.public, sim.verdicts.alt]) console.log(renderVerdict(v).join("\n"));
     if (sim.verdicts.alt.checks?.length) console.log(renderChecks(sim.verdicts.alt.checks));
