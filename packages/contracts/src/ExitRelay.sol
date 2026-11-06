@@ -52,10 +52,15 @@ contract ExitRelay is HegotaSupport(Devnet.ERC8421_WORKSHOP) {
             refund: uint256(framedataload(196, 2)),
             proofLength: uint256(framedataload(4 + proofOffset, 2))
         });
-        ExitRelayChecks.checkStatic(t, w, rootIdx, address(this), pool, fee);
+        ExitRelayChecks.checkStatic(t, w, rootIdx, address(this), pool, fee, _refund());
         bytes memory proof = framedatacopy(4 + proofOffset + 32, w.proofLength, 2);
         ExitRelayChecks.checkState(IPool(pool), IVerifier(verifier), w, rootIdx, proof);
         approve(Scope.EXECUTION_AND_PAYMENT);
+    }
+
+    /// ETH the SENDER frame forwards to the recipient through the pool's `refund`; 0 for ETH pools.
+    function _refund() internal view virtual returns (uint256) {
+        return 0;
     }
 
     /// Value and state gas are only checked on the withdraw frame; skipping them elsewhere saves helper calls.

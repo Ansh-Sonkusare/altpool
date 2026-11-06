@@ -57,6 +57,9 @@ library ExitRelayChecks {
     uint256 internal constant WITHDRAW_GAS_MAX = 1_000_000;
     /// EIP-8037 at 1530 gas/state byte: fresh recipient account (120 B) 183,600 + nullifier slot (64 B) 97,920 = 281,520.
     uint256 internal constant WITHDRAW_STATE_GAS_MAX = 300_000;
+    /// With a refund the pool also CALLs the recipient with value, creating the account: + 183,600 on top of the three
+    /// 97,920 slots (nullifier, recipient token balance, relay token balance) = 477,360.
+    uint256 internal constant WITHDRAW_STATE_GAS_MAX_REFUND = 500_000;
     uint256 internal constant ROOT_HISTORY = 100;
     uint256 internal constant PROOF_LENGTH = 256;
     bytes4 internal constant WITHDRAW_SELECTOR = 0x21a0adb6;
@@ -80,19 +83,28 @@ library ExitRelayChecks {
     error VerifierReverted();
     error BadRootSource();
 
-    function checkStatic(TxView memory t, Withdraw memory w, uint256 rootIdx, address self, address pool, uint256 fee)
-        internal
-        pure
-    {
-        checkStaticRR(t, w, self, pool, fee);
+    function checkStatic(
+        TxView memory t,
+        Withdraw memory w,
+        uint256 rootIdx,
+        address self,
+        address pool,
+        uint256 fee,
+        uint256 refund
+    ) internal pure {
+        checkStaticRR(t, w, self, pool, fee, refund);
         if (rootIdx >= ROOT_HISTORY) revert BadRoot();
     }
 
     /// checkStatic without rootIdx: ExitRelayRR takes the root from a recent-root reference instead.
-    function checkStaticRR(TxView memory t, Withdraw memory w, address self, address pool, uint256 fee)
-        internal
-        pure
-    {
+    function checkStaticRR(
+        TxView memory t,
+        Withdraw memory w,
+        address self,
+        address pool,
+        uint256 fee,
+        uint256 refund
+    ) internal pure {
         if (t.frameCount != 3) revert BadFrameCount();
         if (t.expiry.target != EXPIRY_VERIFIER || t.expiry.mode != MODE_VERIFY || t.expiry.gas > EXPIRY_GAS_MAX) {
             revert BadExpiryFrame();
@@ -102,14 +114,14 @@ library ExitRelayChecks {
         }
         Frame memory f = t.withdraw;
         if (
-            f.target != pool || f.mode != MODE_SENDER || f.value != 0 || f.gas < WITHDRAW_GAS_MIN
-                || f.gas > WITHDRAW_GAS_MAX || f.stateGas > WITHDRAW_STATE_GAS_MAX
+            f.target != pool || f.mode != MODE_SENDER || f.value != refund || f.gas < WITHDRAW_GAS_MIN
+                || f.gas > WITHDRAW_GAS_MAX || f.stateGas > (refund == 0 ? WITHDRAW_STATE_GAS_MAX : WITHDRAW_STATE_GAS_MAX_REFUND)
         ) revert BadWithdrawFrame();
-        if (t.maxCost > fee) revert CostTooHigh();
+        if (t.maxCost + refund > fee) revert CostTooHigh();
         if (w.selector != WITHDRAW_SELECTOR) revert BadSelector();
         if (w.relayer != self) revert BadRelayer();
         if (w.fee != fee) revert BadFee();
-        if (w.refund != 0) revert BadRefund();
+        if (w.refund != refund) revert BadRefund();
         if (w.proofLength != PROOF_LENGTH) revert BadProofLength();
         if (t.nonceKeyCount != 1 || t.nonceKey0 != uint256(w.nullifierHash) || t.nonceSeq != 0) revert BadNonce();
         // One signature is allowed for a gateway that insists on a placeholder; ExitRelay never reads it and
@@ -143,7 +155,7 @@ library ExitRelayChecks {
             uint256(uint160(w.recipient)),
             uint256(uint160(w.relayer)),
             w.fee,
-            0
+            w.refund
         ];
         // A revert (malformed input, or out of gas inside this frame) is kept apart from a false verdict.
         try verifier.verifyProof(proof, input) returns (bool ok) {

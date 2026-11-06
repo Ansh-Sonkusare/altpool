@@ -11,9 +11,10 @@ contract Harness {
         uint256 rootIdx,
         address self,
         address pool,
-        uint256 fee
+        uint256 fee,
+        uint256 refund
     ) external pure {
-        ExitRelayChecks.checkStatic(t, w, rootIdx, self, pool, fee);
+        ExitRelayChecks.checkStatic(t, w, rootIdx, self, pool, fee, refund);
     }
 
     function checkState(IPool pool, IVerifier verifier, ExitRelayChecks.Withdraw memory w, uint256 rootIdx, bytes memory proof)
@@ -111,7 +112,7 @@ contract ExitRelayChecksTest is Test {
         internal
         view
     {
-        h.checkStatic(t, w, rootIdx, SELF, address(pool), FEE);
+        h.checkStatic(t, w, rootIdx, SELF, address(pool), FEE, 0);
     }
 
     function expectStatic(bytes4 err, ExitRelayChecks.TxView memory t, ExitRelayChecks.Withdraw memory w) internal {
@@ -211,6 +212,50 @@ contract ExitRelayChecksTest is Test {
         expectStatic(ExitRelayChecks.BadRefund.selector, baseTx(), w);
     }
 
+    uint256 constant REFUND = 1e15;
+
+    function refundTx() internal view returns (ExitRelayChecks.TxView memory t) {
+        t = baseTx();
+        t.withdraw.value = REFUND;
+        t.maxCost = FEE - REFUND;
+    }
+
+    function refundWithdraw() internal pure returns (ExitRelayChecks.Withdraw memory w) {
+        w = baseWithdraw();
+        w.refund = REFUND;
+    }
+
+    function test_refund_happyPathPasses() public view {
+        h.checkStatic(refundTx(), refundWithdraw(), ROOT_IDX, SELF, address(pool), FEE, REFUND);
+    }
+
+    function test_refund_mismatchIsBadRefund() public {
+        ExitRelayChecks.Withdraw memory w = refundWithdraw();
+        w.refund = 0;
+        vm.expectRevert(ExitRelayChecks.BadRefund.selector);
+        h.checkStatic(refundTx(), w, ROOT_IDX, SELF, address(pool), FEE, REFUND);
+        w.refund = REFUND + 1;
+        vm.expectRevert(ExitRelayChecks.BadRefund.selector);
+        h.checkStatic(refundTx(), w, ROOT_IDX, SELF, address(pool), FEE, REFUND);
+    }
+
+    function test_refund_frameValueMismatchIsBadWithdrawFrame() public {
+        ExitRelayChecks.TxView memory t = refundTx();
+        t.withdraw.value = 0;
+        vm.expectRevert(ExitRelayChecks.BadWithdrawFrame.selector);
+        h.checkStatic(t, refundWithdraw(), ROOT_IDX, SELF, address(pool), FEE, REFUND);
+        t.withdraw.value = REFUND + 1;
+        vm.expectRevert(ExitRelayChecks.BadWithdrawFrame.selector);
+        h.checkStatic(t, refundWithdraw(), ROOT_IDX, SELF, address(pool), FEE, REFUND);
+    }
+
+    function test_refund_maxCostPlusRefundAboveFeeIsCostTooHigh() public {
+        ExitRelayChecks.TxView memory t = refundTx();
+        t.maxCost = FEE - REFUND + 1;
+        vm.expectRevert(ExitRelayChecks.CostTooHigh.selector);
+        h.checkStatic(t, refundWithdraw(), ROOT_IDX, SELF, address(pool), FEE, REFUND);
+    }
+
     function test_BadProofLength() public {
         ExitRelayChecks.Withdraw memory w = baseWithdraw();
         w.proofLength = 255;
@@ -254,6 +299,22 @@ contract ExitRelayChecksTest is Test {
         uint256[6] memory input =
             [uint256(ROOT), uint256(NH), uint256(uint160(RECIPIENT)), uint256(uint160(SELF)), FEE, 0];
         h.checkState(pool, new InputPinningVerifier(input), baseWithdraw(), ROOT_IDX, new bytes(256));
+    }
+
+    function test_state_refundIsSixthPublicInput() public {
+        pool.setRoot(ROOT_IDX, ROOT);
+        uint256[6] memory input =
+            [uint256(ROOT), uint256(NH), uint256(uint160(RECIPIENT)), uint256(uint160(SELF)), FEE, REFUND];
+        h.checkState(pool, new InputPinningVerifier(input), refundWithdraw(), ROOT_IDX, new bytes(256));
+    }
+
+    function test_refund_stateGasLimit() public {
+        ExitRelayChecks.TxView memory t = refundTx();
+        t.withdraw.stateGas = 500_000;
+        h.checkStatic(t, refundWithdraw(), ROOT_IDX, SELF, address(pool), FEE, REFUND);
+        t.withdraw.stateGas = 500_001;
+        vm.expectRevert(ExitRelayChecks.BadWithdrawFrame.selector);
+        h.checkStatic(t, refundWithdraw(), ROOT_IDX, SELF, address(pool), FEE, REFUND);
     }
 
     function test_UnknownRoot() public {

@@ -79,7 +79,7 @@ contract ExitRelayRR is HegotaSupport(Devnet.ERC8421_WORKSHOP) {
             refund: uint256(framedataload(196, 2)),
             proofLength: uint256(framedataload(4 + proofOffset, 2))
         });
-        ExitRelayChecks.checkStaticRR(t, w, address(this), pool, fee);
+        ExitRelayChecks.checkStaticRR(t, w, address(this), pool, fee, 0);
         // A missing reference 0 halts 0xB6, which invalidates the tx; the slot window is enforced by consensus.
         ExitRelayChecks.checkRootRef(_rootRef(0, 0), _rootRef(0, 2), rootSource, w.root);
         bytes memory proof = framedatacopy(4 + proofOffset + 32, w.proofLength, 2);

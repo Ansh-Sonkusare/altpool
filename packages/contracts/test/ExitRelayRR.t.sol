@@ -14,7 +14,7 @@ contract HarnessRR {
         address pool,
         uint256 fee
     ) external pure {
-        ExitRelayChecks.checkStaticRR(t, w, self, pool, fee);
+        ExitRelayChecks.checkStaticRR(t, w, self, pool, fee, 0);
     }
 
     function checkRootRef(bytes32 refSource, bytes32 refRoot, bytes32 rootSource, bytes32 root) external pure {
