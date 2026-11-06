@@ -13,14 +13,16 @@
     "abi": "forge build && tsx scripts/export-abi.ts",
     "test": "forge test -vv",
     "deploy": "bun scripts/deploy.ts",
-    "exit": "bun scripts/exit-smoke.ts"
+    "exit": "bun scripts/exit-smoke.ts",
+    "pledge": "bun scripts/pledge.ts"
   },
   "dependencies": {
     "@forshtat/hegota-support": "0.0.1",
     "viem": "^2.57.10",
     "@altpool/core": "workspace:*",
     "altpool": "workspace:*",
-    "@altpool/prover": "workspace:*"
+    "@altpool/prover": "workspace:*",
+    "@altpool/simulator": "workspace:*"
   },
   "devDependencies": {
     "forge-std": "github:foundry-rs/forge-std#v1.9.7"

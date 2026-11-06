@@ -12,5 +12,12 @@
   "wethPoolTx": "0x77d91537d6b0867df6a1065323f70d9cf3d9d3af7e85375daf1d2549cf957cb2",
   "exitRelayWETH": "0xc8ad613fe8dd85ca688599cf76dd90a0a4c5e669",
   "exitRelayWETHDeployTx": "0xc5e30a780dce98ce4d8153685e906e63786a878b3cff85479958c0d758a91f52",
-  "exitRelayWETHStakedAt": "0x3eb5b8c165c847c2db024965c9c861577fecacda42cd3219c49493bd866a667e"
+  "exitRelayWETHStakedAt": "0x3eb5b8c165c847c2db024965c9c861577fecacda42cd3219c49493bd866a667e",
+  "settlerFactory": "0x5e1a0537093dfc364e3456721aeacb582e0bffd4",
+  "settlerFactoryTx": "0xa0ad6a0f83a66b5577474a05d9ffff826fc6b8d09c1f99bc52d7d493f1b99cfa",
+  "invoiceBook": "0xae43e222aa2e508832926f4faabb74c9b8a1ae2a",
+  "invoiceBookTx": "0x57afed853fc9dc7a7c1170597b65cc19a121ff53b412873f3484d6b367c27197",
+  "payRelayWETH": "0x9b1f934ac769ebfa3fec40eb72d2b4c932166ca1",
+  "payRelayWETHDeployTx": "0x9a21e32bfe033caee453580ad6cb37ceb1ed516079eccf232dbffa677beba23e",
+  "payRelayWETHStakedAt": "0xd9f0564d4702d7b76671770e8264146d2307c526b93f3e33215642d6087eadbf"
 }

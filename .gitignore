@@ -11,3 +11,6 @@ packages/prover/artifacts/
 .tmp/
 packages/falcon/out/
 packages/falcon/cache/
+
+.env*.local
+.crowd*.local.json
