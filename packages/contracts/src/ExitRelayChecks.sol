@@ -10,6 +10,11 @@ interface IVerifier {
     function verifyProof(bytes calldata proof, uint256[6] calldata input) external view returns (bool);
 }
 
+/// ExitRelayRR's publisher read; kept out of IPool so existing IPool implementers stay complete.
+interface IRootPool {
+    function getLastRoot() external view returns (bytes32);
+}
+
 /// ExitRelay's VERIFY checks over already-read values, so forge can test them without frame opcodes (docs/03).
 library ExitRelayChecks {
     struct Frame {
@@ -73,8 +78,18 @@ library ExitRelayChecks {
     error NullifierSpent();
     error BadProof();
     error VerifierReverted();
+    error BadRootSource();
 
     function checkStatic(TxView memory t, Withdraw memory w, uint256 rootIdx, address self, address pool, uint256 fee)
+        internal
+        pure
+    {
+        checkStaticRR(t, w, self, pool, fee);
+        if (rootIdx >= ROOT_HISTORY) revert BadRoot();
+    }
+
+    /// checkStatic without rootIdx: ExitRelayRR takes the root from a recent-root reference instead.
+    function checkStaticRR(TxView memory t, Withdraw memory w, address self, address pool, uint256 fee)
         internal
         pure
     {
@@ -100,7 +115,13 @@ library ExitRelayChecks {
         // One signature is allowed for a gateway that insists on a placeholder; ExitRelay never reads it and
         // CostTooHigh bounds what it can cost.
         if (t.sigCount > 1) revert TooManySignatures();
-        if (w.root == 0 || rootIdx >= ROOT_HISTORY) revert BadRoot();
+        if (w.root == 0) revert BadRoot();
+    }
+
+    /// Reference 0 must sit in ExitRelayRR's own 8272 namespace and carry the proof's root.
+    function checkRootRef(bytes32 refSource, bytes32 refRoot, bytes32 rootSource, bytes32 root) internal pure {
+        if (refSource != rootSource) revert BadRootSource();
+        if (refRoot != root) revert UnknownRoot();
     }
 
     /// Pool reads by index only: `isKnownRoot`, `currentRootIndex` and `nextIndex` change on every deposit and
@@ -111,6 +132,11 @@ library ExitRelayChecks {
     {
         if (pool.roots(rootIdx) != w.root) revert UnknownRoot();
         if (pool.isSpent(w.nullifierHash)) revert NullifierSpent();
+        checkProof(verifier, w, proof);
+    }
+
+    /// The Groth16 pairing; BadProof on a false verdict, VerifierReverted on a revert.
+    function checkProof(IVerifier verifier, Withdraw memory w, bytes memory proof) internal view {
         uint256[6] memory input = [
             uint256(w.root),
             uint256(w.nullifierHash),

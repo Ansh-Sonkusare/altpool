@@ -1,6 +1,7 @@
 // Deploys a fresh ExitRelay on the public devnet, funds its float, stakes it, and writes deployments.json.
 // Fresh per run on purpose (docs/03): a new address dodges the gateway's opsIncluded = 0 throttle.
 // ExitRelay verifies against a patched copy of the pool's verifier (see src/verifier-patch.ts); the pool keeps its own.
+// `--rr` deploys ExitRelayRR (recent-root VERIFY) the same way and merges its keys into the existing deployments.json.
 import { existsSync, readFileSync, appendFileSync, writeFileSync } from "node:fs";
 import { setTimeout as sleep } from "node:timers/promises";
 import { createPublicClient, createWalletClient, formatEther, http, parseAbi, parseEther, type Address, type Hex } from "viem";
@@ -10,7 +11,9 @@ import { EXIT_FEE } from "../src/exit";
 import { initcodeFor, patchVerifierRuntime } from "../src/verifier-patch";
 
 const ENV = new URL("../.env", import.meta.url);
-const ARTIFACT = new URL("../out/ExitRelay.sol/ExitRelay.json", import.meta.url);
+const RR = process.argv.includes("--rr");
+const NAME = RR ? "ExitRelayRR" : "ExitRelay";
+const ARTIFACT = new URL(`../out/${NAME}.sol/${NAME}.json`, import.meta.url);
 const DEPLOYMENTS = new URL("../deployments.json", import.meta.url);
 const G1_PROOF = new URL("../../prover/artifacts/g1-proof.json", import.meta.url);
 const FLOAT = parseEther("0.05");
@@ -74,7 +77,7 @@ for (const [fee, want] of [[BigInt(g1.fee), true], [BigInt(g1.fee) + 1n, false]]
 }
 console.log("patched verifier agrees with the original on the G1 proof (true, then false at fee + 1)");
 
-// 18M gas: eth_estimateGas says ~14.85M (the HegotaSupport constructor CREATEs nine opcode helpers).
+// 18M gas: eth_estimateGas says ~14.85M (the HegotaSupport constructor CREATEs nine opcode helpers; RR adds the 0xB6 one).
 const deployTx = await wallet.deployContract({
   abi: art.abi,
   bytecode: art.bytecode.object,
@@ -84,7 +87,7 @@ const deployTx = await wallet.deployContract({
   type: "legacy",
 });
 const exitRelay = (await mined(deployTx)).contractAddress!;
-console.log(`ExitRelay ${exitRelay} (${deployTx}), float ${formatEther(FLOAT)} ETH`);
+console.log(`${NAME} ${exitRelay} (${deployTx}), float ${formatEther(FLOAT)} ETH`);
 
 const stakedAt = await wallet.writeContract({
   address: exitRelay,
@@ -105,8 +108,13 @@ const [stake] = await pub.readContract({
 if (stake < STAKE) throw new Error(`stake not recorded for ${exitRelay}: ${stake}`);
 console.log(`staked ${formatEther(stake)} ETH, unstake delay ${DEVNET.unstakeDelaySec}s (${stakedAt})`);
 
-writeFileSync(
-  DEPLOYMENTS,
-  JSON.stringify({ chainId: DEVNET.chainId, exitRelay, stakedAt, deployTx, verifier, verifierTx }, null, 2) + "\n",
-);
+const deployments = RR
+  ? {
+      ...(existsSync(DEPLOYMENTS) ? JSON.parse(readFileSync(DEPLOYMENTS, "utf8")) : { chainId: DEVNET.chainId }),
+      exitRelayRR: exitRelay,
+      exitRelayRRDeployTx: deployTx,
+      exitRelayRRStakedAt: stakedAt,
+    }
+  : { chainId: DEVNET.chainId, exitRelay, stakedAt, deployTx, verifier, verifierTx };
+writeFileSync(DEPLOYMENTS, JSON.stringify(deployments, null, 2) + "\n");
 console.log("wrote packages/contracts/deployments.json");
