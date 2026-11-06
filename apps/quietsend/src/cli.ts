@@ -62,13 +62,17 @@ async function withdraw(noteStr: string, to?: string) {
   }
   const sidecar = createAltMempoolClient({ httpUrl: MINER_SIDECAR, profile, name: "miner" });
   const client = pub.extend(altpoolActions({ sidecar, explorerUrl: DEVNET.explorerUrl }));
-  const pre = await client.altpool.preflightFrameTransaction({ transaction: tx });
-  for (const [label, m] of [["public", pre.public], ["alt", pre.alternative]] as const) {
-    console.log(`preflight ${label}: ${m.status}`);
-    for (const c of m.checks) if (c.status !== "pass") console.log(`  ${c.stage} ${c.rule} ${c.status}: ${c.message}`);
-  }
-  if (pre.alternative.checks.some((c) => c.stage === "estimate" && c.status === "fail")) {
-    console.log("note: the estimator rewrites body-frame gas to 10M, so ExitRelay's withdraw-gas pin rejects the probe (prediction only)");
+  try {
+    const pre = await client.altpool.preflightFrameTransaction({ transaction: tx });
+    for (const [label, m] of [["public", pre.public], ["alt", pre.alternative]] as const) {
+      console.log(`preflight ${label}: ${m.status}`);
+      for (const c of m.checks) if (c.status !== "pass") console.log(`  ${c.stage} ${c.rule} ${c.status}: ${c.message}`);
+    }
+    if (pre.alternative.checks.some((c) => c.stage === "estimate" && c.status === "fail")) {
+      console.log("note: the estimator rewrites body-frame gas to 10M, so ExitRelay's withdraw-gas pin rejects the probe (prediction only)");
+    }
+  } catch (e) {
+    console.log(`preflight: unavailable (${e instanceof Error ? e.message : String(e)})`);
   }
   const before = await pub.getBalance({ address: recipient });
   // submit, not send: the exit sender is the ExitRelay contract (zero signatures) and ExitRelay pins frame gas.
