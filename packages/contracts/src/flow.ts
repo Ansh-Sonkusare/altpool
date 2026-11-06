@@ -1,5 +1,8 @@
-// The deposit half of an exit and the miner-sidecar constants, shared by scripts/exit-smoke.ts and the quietsend CLI.
+// The deposit and send halves of an exit, shared by scripts/exit-smoke.ts, the quietsend CLI and apps/demo.
 import { createPublicClient, http, parseAbi, type Account, type Chain, type Hex, type Transport, type WalletClient } from "viem";
+import type { FrameTx } from "@forshtat/hegota-support/tx";
+import { getProfile } from "@forshtat/hegota-support/profiles";
+import { altpoolActions, createAltMempoolClient } from "altpool";
 import { DEVNET, altDevnet, explorerTx, type Note } from "@altpool/core";
 
 /** The miner's own sidecar. The gateway admits exits but does not gossip them to it. */
@@ -23,4 +26,31 @@ export async function depositNote(wallet: WalletClient<Transport, Chain, Account
   const receipt = await createPublicClient({ chain: altDevnet, transport: http(DEVNET.ethrexUrl) }).waitForTransactionReceipt({ hash, timeout: 180_000 });
   if (receipt.status !== "success") throw new Error(`deposit ${hash} reverted`);
   return hash;
+}
+
+export interface ExitResult {
+  hash: Hex;
+  status: string;
+  blockNumber: number;
+  gasUsed?: number;
+  frames: { status: string; gasUsed: number; stateGasUsed: number }[];
+}
+
+/** Submit through the altpool SDK and wait for inclusion; throws unless the tx and every frame succeeded. */
+export async function sendExit(tx: FrameTx, o: { sendUrl?: string } = {}): Promise<ExitResult> {
+  const sidecar = createAltMempoolClient({ httpUrl: o.sendUrl ?? process.env.SEND_URL ?? MINER_SIDECAR, profile: getProfile(DEVNET.profile), name: "send" });
+  const sdk = createPublicClient({ chain: altDevnet, transport: http(DEVNET.ethrexUrl) }).extend(altpoolActions({ sidecar }));
+  // submit, not send: the exit sender is the ExitRelay contract (zero signatures) and ExitRelay pins frame gas.
+  const { hash } = await sdk.altpool.submitFrameTransaction({ transaction: tx });
+  const { receipt: r } = await sdk.altpool.waitForFrameTransactionReceipt({ hash, timeoutMs: 180_000, throwOnRevert: true });
+  // throwOnRevert checks only the tx status; a frame can fail inside a successful tx.
+  const failed = r.frames.find((f) => f.status !== "success");
+  if (failed) throw new Error(`exit ${hash} frame ${failed.index} ${failed.status}`);
+  return {
+    hash,
+    status: r.status,
+    blockNumber: Number(r.blockNumber),
+    gasUsed: r.gasUsed === undefined ? undefined : Number(r.gasUsed),
+    frames: r.frames.map((f) => ({ status: f.status, gasUsed: Number(f.gasUsed.execution), stateGasUsed: Number(f.gasUsed.state) })),
+  };
 }
