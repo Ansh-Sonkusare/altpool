@@ -24,6 +24,8 @@ Work on your slice only: `bun run turbo test --filter=@altpool/simulator...`
 | `packages/contracts` | `@altpool/contracts`: ExitRelay (Foundry), ABI, deployments | Dev A |
 | `packages/sdk` | `altpool`: viem extension (send, gas, nonce keys, stake) | Dev B |
 | `apps/quietsend` | `quietsend` CLI: deposit, withdraw | Dev B |
+| `packages/wallet-bridge` | `@altpool/wallet-bridge`: BridgeAccount (browser wallets sign frame txs via EIP-712) | Dev B |
+| `apps/wallet-bridge-web` | Wallet Bridge demo page (MetaMask/Rabby) | Dev B |
 | `packages/simulator` | `@altpool/simulator`: `checkAdmission`, `frame-doctor` | Dev C |
 | `packages/monitor` | `@altpool/monitor`: `watchEntity` | Dev C |
 | `apps/monitor-web` | one-page live view | Dev C |
