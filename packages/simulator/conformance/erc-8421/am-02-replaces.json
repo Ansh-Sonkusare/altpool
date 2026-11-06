@@ -1,0 +1,560 @@
+{
+ "clause": "AM-2",
+ "also": [
+  "AM-10",
+  "AM-13"
+ ],
+ "document": "14-erc-8421.md",
+ "version": 1,
+ "operation": "pool",
+ "distinguishes": "Under the ruleset FP-6's prefix-wide budget, FP-7's single nonce, FP-11's cap on a non-canonical paymaster and FP-12's one pending transaction per sender no longer bind, and the admission order puts the simulation before the nonce: a pool that keeps any of them fails here.",
+ "cases": [
+  {
+   "name": "two contiguous transactions of one sender",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "a0",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "a1",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 1,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      }
+     ],
+     "expect": [
+      "ok",
+      "ok"
+     ],
+     "expect_rules": [
+      null,
+      null
+     ]
+    }
+   ],
+   "derivation": "LIFECYCLE-010 admits nonce_seq 1 one above a pending transaction on key 0; FP-7 and FP-12 would refuse it."
+  },
+  {
+   "name": "one non-canonical paymaster for two senders",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "a",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "b",
+       "type": 6,
+       "sender": "bob",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      }
+     ],
+     "expect": [
+      "ok",
+      "ok"
+     ],
+     "expect_rules": [
+      null,
+      null
+     ]
+    }
+   ],
+   "derivation": "REPUTATION-220 allows a new unstaked payer 10 pending transactions; FP-11 would allow 1."
+  },
+  {
+   "name": "a sender's 80000 and a payer's 90000 in one prefix",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "a",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 80000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 90000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      }
+     ],
+     "expect": [
+      "ok"
+     ],
+     "expect_rules": [
+      null
+     ]
+    }
+   ],
+   "derivation": "BUDGET-010 per entity: sender 80000 + 2800 = 82800 and payer 90000, each under 100000; FP-6's sum, 172800, would refuse."
+  },
+  {
+   "name": "a nonce gap with an unassigned opcode is refused at the opcode",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "a",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 5,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "opcodes": [
+          "UNASSIGNED"
+         ],
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      }
+     ],
+     "expect": [
+      "ErrFrameUnassignedOpcode"
+     ],
+     "expect_rules": [
+      "OPCODES-030"
+     ]
+    }
+   ],
+   "derivation": "The simulation (step 4) comes before the nonce (step 6); FP-7 would have answered ErrNonceTooHigh first."
+  }
+ ]
+}

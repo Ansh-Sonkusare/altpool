@@ -21,6 +21,7 @@
         "@altpool/monitor": "workspace:*",
         "@altpool/prover": "workspace:*",
         "@altpool/simulator": "workspace:*",
+        "@forshtat/hegota-support": "0.0.1",
         "altpool": "workspace:*",
         "viem": "^2.57.10",
       },
@@ -167,6 +168,9 @@
         "@altpool/core": "workspace:*",
         "@forshtat/hegota-support": "0.0.1",
         "viem": "^2.57.10",
+      },
+      "devDependencies": {
+        "vitest": "^5.1.0",
       },
     },
     "packages/wallet-bridge": {
@@ -845,7 +849,7 @@
 
     "forever-agent": ["forever-agent@0.6.1", "", {}, "sha512-j0KLYPhm6zeac4lz3oJ3o65qvgQCcPubiyotZrXqEaG4hNagNYO8qdlUrX5vwqv9ohqeT/Z3j6+yW067yWWdUw=="],
 
-    "forge-std": ["forge-std@github:foundry-rs/forge-std#77041d2", {}, "foundry-rs-forge-std-77041d2"],
+    "forge-std": ["forge-std@github:foundry-rs/forge-std#77041d2", {}, "foundry-rs-forge-std-77041d2", "sha512-ZFTn8yWNakfTzXF7vU3OoS9JT4Wa+BLfPWvPH3bZZCmysBhB0mhsBpCjku+5ihcv2CW5Wf74DAZFNhCy0dxZRA=="],
 
     "form-data": ["form-data@2.3.3", "", { "dependencies": { "asynckit": "^0.4.0", "combined-stream": "^1.0.6", "mime-types": "^2.1.12" } }, "sha512-1lLKB2Mu3aGP1Q/2eCOx0fNbRMe7XdwktwOruhfqqd0rIJWwN4Dh+E3hrPSlDCXnSR7UtZ1N38rVXm+6+MEhJQ=="],
 

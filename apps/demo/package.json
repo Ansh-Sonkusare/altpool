@@ -18,6 +18,7 @@
     "@altpool/prover": "workspace:*",
     "@altpool/contracts": "workspace:*",
     "@altpool/monitor": "workspace:*",
-    "viem": "^2.57.10"
+    "viem": "^2.57.10",
+    "@forshtat/hegota-support": "0.0.1"
   }
 }

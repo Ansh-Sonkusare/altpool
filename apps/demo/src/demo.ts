@@ -11,7 +11,9 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { setTimeout as sleep } from "node:timers/promises";
 import { createPublicClient, createWalletClient, formatEther, http, parseEther, type Address, type Hex } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
-import { DEVNET, altDevnet, explorerTx, gateway, toWire, type AdmissionReport } from "@altpool/core";
+import { encodeTx } from "@forshtat/hegota-support/tx";
+import { getProfile } from "@forshtat/hegota-support/profiles";
+import { DEVNET, altDevnet, ethrex, explorerTx, gateway, toWire, type AdmissionReport } from "@altpool/core";
 import { checkAdmission, createSimulator, diagnoseError, renderReport, renderRoute, renderVerdict, replaySimulator, routeFromReport, summarize } from "@altpool/simulator";
 import { entityStatus } from "@altpool/monitor";
 
@@ -157,6 +159,20 @@ const liveDemo = async (mode: Mode) => {
   const route = routeFromReport(before);
   console.log(indent(renderRoute(route)));
   expect(route.target === "alt", `the router picked ${route.target}, expected alt`);
+
+  step("Prove it: send the same exit to the public mempool (ethrex) for real");
+  try {
+    const h: Hex = await ethrex().sendRawTransaction(encodeTx(getProfile(DEVNET.profile), tx));
+    expect(false, `the public mempool admitted the exit (${h})`);
+  } catch (e) {
+    const err = e as { code?: number | string; message: string };
+    const d = diagnoseError({ code: err.code ?? 0, message: err.message }, "public");
+    console.log(indent(renderVerdict({
+      mempool: "public", source: "send", verdict: "rejected", fix: d.fix, failed: { rule: d.rule, ercRule: d.ercRule },
+      error: { code: 0, message: err.message },
+    }).join("\n")));
+    info(dim("rejected on send, as predicted: nothing was admitted or charged"));
+  }
 
   step("Why the stake matters: the same exit if ExitRelay were unstaked");
   const whatIf = await createSimulator({ assumeUnstaked: true }).check(tx);

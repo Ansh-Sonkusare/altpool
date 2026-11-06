@@ -52,8 +52,20 @@ const tabBody = (r: EntityReport, tab: Tab, watched: NodeRef[], events: SessionE
   }
   if (tab === "pending") {
     if (!r.pending.length) return empty("Nothing pending.");
-    return table(th("Tx") + th("Status") + th("Age", true) + th("On nodes") + th("Flag"), r.pending.map((p) =>
-      `<tr>${td(txLink(p.hash))}${td(`<span class="font-mono">${esc(p.status)}</span> <span class="text-muted">as ${esc(p.role)}</span>`)}${td(p.ageMs !== undefined ? ago(p.ageMs) : "—", "text-right font-mono")}${td(nodeChips(Object.keys(p.nodes), watched))}${td(p.stuck ? chip("stuck", "bad") : `<span class="text-muted">—</span>`)}</tr>`));
+    const x = r.exposure;
+    const cost = new Map(x.txs.map((t) => [t.hash.toLowerCase(), t]));
+    const clash = new Set(x.keyClashes.flatMap((k) => k.hashes.map((h) => h.toLowerCase())));
+    const summary = `
+      <div class="grid gap-px border-b border-line bg-line sm:grid-cols-3">
+        <div class="bg-panel px-4 py-3 sm:px-5"><div class="label">Worst case owed</div><div class="font-mono text-[15px]">${eth(x.total)} <span class="text-muted">for ${num(x.txs.length)} pending</span></div></div>
+        <div class="bg-panel px-4 py-3 sm:px-5"><div class="label">${sq(x.uncovered ? "bad" : "ok")}Covered by balance</div><div class="font-mono text-[15px] ${x.uncovered ? "text-bad" : "text-accent"}">${x.uncovered ? `${num(x.uncovered)} at risk` : "all"}</div><div class="text-[12px] text-muted">${x.uncovered ? "the sidecar cancels the newest first" : `${eth(r.funds.balance)} balance`}</div></div>
+        <div class="bg-panel px-4 py-3 sm:px-5"><div class="label">${sq(x.keyClashes.length ? "warn" : "ok")}Nonce-key clashes</div><div class="font-mono text-[15px] ${x.keyClashes.length ? "text-warn" : "text-accent"}">${x.keyClashes.length ? num(x.keyClashes.length) : "none"}</div><div class="text-[12px] text-muted">${x.keyClashes.length ? "only one tx per key can land" : "every pending tx has its own key"}</div></div>
+      </div>`;
+    return summary + table(th("Tx") + th("Status") + th("Age", true) + th("Worst case", true) + th("Running total", true) + th("On nodes") + th("Flags"), r.pending.map((p) => {
+      const c = cost.get(p.hash.toLowerCase());
+      const flags = [p.stuck && chip("stuck", "bad"), c && !c.covered && chip("not covered", "bad"), clash.has(p.hash.toLowerCase()) && chip("key clash", "warn")].filter(Boolean).join("");
+      return `<tr>${td(txLink(p.hash))}${td(`<span class="font-mono">${esc(p.status)}</span> <span class="text-muted">as ${esc(p.role)}</span>`)}${td(p.ageMs !== undefined ? ago(p.ageMs) : "—", "text-right font-mono")}${td(c ? eth(c.maxCost, 5) : `<span class="text-faint">not paid by it</span>`, "text-right font-mono")}${td(c ? `<span class="${c.covered ? "" : "text-bad"}">${eth(c.cumulative, 5)}</span>` : "—", "text-right font-mono")}${td(nodeChips(Object.keys(p.nodes), watched))}${td(flags || `<span class="text-muted">—</span>`)}</tr>`;
+    }));
   }
   if (tab === "nodes") {
     return table(th("Node") + th("Status") + th("Latency", true) + th("Seen / included", true) + th("URL"), r.nodes.map((n) =>
@@ -85,7 +97,7 @@ export const renderEntity = (r: EntityReport, tab: Tab, watched: NodeRef[], even
   const perNode = r.nodes.filter((n) => n.reputation).map((n) => `${n.name} ${n.reputation!.opsSeen}/${n.reputation!.opsIncluded}`).join(" · ");
   const up = r.nodes.filter((n) => n.ok).length;
   const counts: Record<Tab, number> = { activity: r.inclusions.length, rejections: r.rejections.length, pending: r.pending.length, nodes: r.nodes.length };
-  const tabTone: Partial<Record<Tab, Tone>> = { rejections: r.rejections.length ? "bad" : undefined, pending: r.pending.some((p) => p.stuck) ? "bad" : undefined, nodes: up < r.nodes.length ? "bad" : undefined };
+  const tabTone: Partial<Record<Tab, Tone>> = { rejections: r.rejections.length ? "bad" : undefined, pending: r.pending.some((p) => p.stuck) || r.exposure.uncovered ? "bad" : r.exposure.keyClashes.length ? "warn" : undefined, nodes: up < r.nodes.length ? "bad" : undefined };
 
   return `
   <div class="mb-4 flex flex-wrap items-baseline gap-x-4 gap-y-1">

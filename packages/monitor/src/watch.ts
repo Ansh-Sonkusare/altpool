@@ -8,7 +8,7 @@
 //   --fee <eth>                  what the entity earns per tx (ExitRelay: 0.01), for the margin line
 //   --alert-webhook <url>        repeatable; POST each alert (Discord, Slack, Telegram sendMessage?chat_id=…)
 //   --mute <kind,…>              alert kinds to leave out: throttle unlocking unstaked low-balance stuck evicted rejected
-//   --fail-if <cond,…>           throttled banned unstaked unlocking low-balance stuck node-down rejections, or "all"
+//   --fail-if <cond,…>           throttled banned unstaked unlocking low-balance stuck node-down rejections uncovered key-clash, or "all"
 //   --throttle-warn-at <n>       sends left that count as "near throttling" (default 20)
 //   --low-balance-at <n>         txs left that count as low balance (default 5)
 //   --interval <ms>              fallback poll period (default 10000; live events trigger polls sooner)
@@ -69,6 +69,8 @@ const render = (s: EntityReport): string => {
     `  funds       ${eth(f.balance)}` + (f.avgCost !== undefined ? `, ~${eth(f.avgCost)} per tx` : "") +
       (f.txsLeft !== undefined ? `, ${(f.txsLeft <= lowBalanceAt ? yellow : plain)(`${f.txsLeft} txs left`)}` : "") +
       (f.marginPerTx !== undefined ? `, margin ${(f.marginPerTx >= 0n ? green : red)(eth(f.marginPerTx))} per tx` : ""),
+    `  exposure    ${s.exposure.txs.length ? `${eth(s.exposure.total)} worst case for ${s.exposure.txs.length} pending, ${s.exposure.uncovered ? red(`${s.exposure.uncovered} not covered by the balance`) : green("all covered")}` : dim("nothing pending that it pays for")}` +
+      (s.exposure.keyClashes.length ? yellow(`, ${s.exposure.keyClashes.length} nonce-key clash${s.exposure.keyClashes.length > 1 ? "es" : ""}`) : ""),
     `  pending     ${s.pending.length ? s.pending.map((p) => `${short(p.hash)} ${p.status} ${ago(p.ageMs)}${p.stuck ? red(" STUCK") : ""} on ${Object.keys(p.nodes).join("+")}`).join(", ") : dim("none")}`,
   ];
   for (const inc of s.inclusions.slice(0, 5))
