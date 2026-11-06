@@ -208,5 +208,10 @@ export const exitRelayAbi = [
     "type": "error",
     "name": "UnknownRoot",
     "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "VerifierReverted",
+    "inputs": []
   }
 ] as const;

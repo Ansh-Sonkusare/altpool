@@ -1,15 +1,18 @@
 // Deploys a fresh ExitRelay on the public devnet, funds its float, stakes it, and writes deployments.json.
 // Fresh per run on purpose (docs/03): a new address dodges the gateway's opsIncluded = 0 throttle.
+// ExitRelay verifies against a patched copy of the pool's verifier (see src/verifier-patch.ts); the pool keeps its own.
 import { existsSync, readFileSync, appendFileSync, writeFileSync } from "node:fs";
 import { setTimeout as sleep } from "node:timers/promises";
-import { createPublicClient, createWalletClient, formatEther, http, parseAbi, parseEther, type Hex } from "viem";
+import { createPublicClient, createWalletClient, formatEther, http, parseAbi, parseEther, type Address, type Hex } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { DEVNET, altDevnet, gateway } from "@altpool/core";
 import { EXIT_FEE } from "../src/exit";
+import { initcodeFor, patchVerifierRuntime } from "../src/verifier-patch";
 
 const ENV = new URL("../.env", import.meta.url);
 const ARTIFACT = new URL("../out/ExitRelay.sol/ExitRelay.json", import.meta.url);
 const DEPLOYMENTS = new URL("../deployments.json", import.meta.url);
+const G1_PROOF = new URL("../../prover/artifacts/g1-proof.json", import.meta.url);
 const FLOAT = parseEther("0.05");
 const STAKE = parseEther("0.012"); // strictly above minStake 0.01
 const MIN_BALANCE = parseEther("0.2");
@@ -44,11 +47,38 @@ if ((await balance()) < MIN_BALANCE) {
 }
 console.log(`deployer ${account.address} has ${formatEther(await balance())} ETH`);
 
+const original = await pub.getCode({ address: DEVNET.verifier });
+if (!original) throw new Error(`no code at verifier ${DEVNET.verifier}`);
+const patchedRuntime = patchVerifierRuntime(original);
+// No fixed gas: this devnet prices code deposit as state gas, so 2M ran out; viem estimates it.
+const verifierTx = await wallet.sendTransaction({ data: initcodeFor(patchedRuntime), to: null, type: "legacy" });
+const verifier = (await mined(verifierTx)).contractAddress!;
+if ((await pub.getCode({ address: verifier }))?.toLowerCase() !== patchedRuntime.toLowerCase()) {
+  throw new Error(`patched verifier ${verifier} runtime differs from the patch`);
+}
+console.log(`patched verifier ${verifier} (${verifierTx})`);
+
+if (!existsSync(G1_PROOF)) throw new Error("no prover/artifacts/g1-proof.json: run `bun run --filter @altpool/prover g1` first");
+const g1 = JSON.parse(readFileSync(G1_PROOF, "utf8"));
+const verifierAbi = parseAbi(["function verifyProof(bytes proof, uint256[6] input) view returns (bool)"]);
+const verdict = (address: Address, fee: bigint) =>
+  pub.readContract({
+    address,
+    abi: verifierAbi,
+    functionName: "verifyProof",
+    args: [g1.proof, [BigInt(g1.root), BigInt(g1.nullifierHash), BigInt(g1.recipient), BigInt(g1.relayer), fee, 0n]],
+  });
+for (const [fee, want] of [[BigInt(g1.fee), true], [BigInt(g1.fee) + 1n, false]] as const) {
+  const got = [await verdict(DEVNET.verifier, fee), await verdict(verifier, fee)];
+  if (got.some((v) => v !== want)) throw new Error(`fee ${fee}: original ${got[0]}, patched ${got[1]}, want ${want}`);
+}
+console.log("patched verifier agrees with the original on the G1 proof (true, then false at fee + 1)");
+
 // 18M gas: eth_estimateGas says ~14.85M (the HegotaSupport constructor CREATEs nine opcode helpers).
 const deployTx = await wallet.deployContract({
   abi: art.abi,
   bytecode: art.bytecode.object,
-  args: [DEVNET.pool, DEVNET.verifier, EXIT_FEE],
+  args: [DEVNET.pool, verifier, EXIT_FEE],
   value: FLOAT,
   gas: 18_000_000n,
   type: "legacy",
@@ -75,5 +105,8 @@ const [stake] = await pub.readContract({
 if (stake < STAKE) throw new Error(`stake not recorded for ${exitRelay}: ${stake}`);
 console.log(`staked ${formatEther(stake)} ETH, unstake delay ${DEVNET.unstakeDelaySec}s (${stakedAt})`);
 
-writeFileSync(DEPLOYMENTS, JSON.stringify({ chainId: DEVNET.chainId, exitRelay, stakedAt, deployTx }, null, 2) + "\n");
+writeFileSync(
+  DEPLOYMENTS,
+  JSON.stringify({ chainId: DEVNET.chainId, exitRelay, stakedAt, deployTx, verifier, verifierTx }, null, 2) + "\n",
+);
 console.log("wrote packages/contracts/deployments.json");

@@ -84,7 +84,7 @@ contract ExitRelayChecksTest is Test {
     function baseTx() internal view returns (ExitRelayChecks.TxView memory t) {
         t.frameCount = 3;
         t.expiry = frame(address(0x8141), 1, 10_000);
-        t.verify = frame(SELF, 1, 350_000);
+        t.verify = frame(SELF, 1, 450_000);
         t.withdraw = frame(address(pool), 2, 1_000_000);
         t.withdraw.stateGas = 250_000;
         t.maxCost = FEE;
@@ -155,7 +155,7 @@ contract ExitRelayChecksTest is Test {
         t.verify.mode = 2;
         expectStatic(e, t, baseWithdraw());
         t = baseTx();
-        t.verify.gas = 350_001;
+        t.verify.gas = 450_001;
         expectStatic(e, t, baseWithdraw());
     }
 
@@ -276,10 +276,10 @@ contract ExitRelayChecksTest is Test {
         h.checkState(pool, verifier, baseWithdraw(), ROOT_IDX, new bytes(256));
     }
 
-    function test_BadProof_verifierReverts() public {
+    function test_VerifierReverted() public {
         pool.setRoot(ROOT_IDX, ROOT);
         verifier.set(true, true);
-        vm.expectRevert(ExitRelayChecks.BadProof.selector);
+        vm.expectRevert(ExitRelayChecks.VerifierReverted.selector);
         h.checkState(pool, verifier, baseWithdraw(), ROOT_IDX, new bytes(256));
     }
 }

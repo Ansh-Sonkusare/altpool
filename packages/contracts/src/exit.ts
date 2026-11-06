@@ -5,9 +5,9 @@ import { getProfile } from "@forshtat/hegota-support/profiles";
 import { DEVNET, type WithdrawProof } from "@altpool/core";
 
 export const EXIT_FEE = 10n ** 16n;
-// Upper bound on total_gas_limit: 1.61M of frame gas plus intrinsic/calldata. ExitRelay requires
+// Upper bound on total_gas_limit: 1.71M of frame gas plus intrinsic/calldata. ExitRelay requires
 // max_cost = maxFeePerGas * total_gas_limit <= EXIT_FEE, so the fee cap is derived from this budget.
-const EXIT_GAS_BUDGET = 1_700_000n;
+const EXIT_GAS_BUDGET = 1_800_000n;
 export const EXIT_MAX_FEE_PER_GAS = EXIT_FEE / EXIT_GAS_BUDGET;
 
 const EXPIRY_VERIFIER: Address = "0x0000000000000000000000000000000000008141";
@@ -37,7 +37,7 @@ export function exitTx(
       frame(profile, "VERIFY", {
         scope: "EXECUTION_AND_PAYMENT",
         target: o.exitRelay,
-        execution: 350_000n,
+        execution: 450_000n,
         data: encodeAbiParameters([{ type: "uint256" }], [BigInt(p.rootIdx)]),
       }),
       frame(profile, "SENDER", {

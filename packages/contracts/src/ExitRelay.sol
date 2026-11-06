@@ -31,9 +31,9 @@ contract ExitRelay is HegotaSupport(Devnet.ERC8421_WORKSHOP) {
     fallback() external {
         ExitRelayChecks.TxView memory t = ExitRelayChecks.TxView({
             frameCount: txparam(TxParam.FRAME_COUNT),
-            expiry: _frame(0),
-            verify: _frame(1),
-            withdraw: _frame(2),
+            expiry: _frame(0, false),
+            verify: _frame(1, false),
+            withdraw: _frame(2, true),
             maxCost: txparam(TxParam.MAX_COST),
             nonceKeyCount: txparam(TxParam.NONCE_KEY_COUNT),
             nonceKey0: txparam(TxParam.NONCE_KEY_0),
@@ -58,13 +58,14 @@ contract ExitRelay is HegotaSupport(Devnet.ERC8421_WORKSHOP) {
         approve(Scope.EXECUTION_AND_PAYMENT);
     }
 
-    function _frame(uint256 i) private view returns (ExitRelayChecks.Frame memory) {
-        return ExitRelayChecks.Frame({
-            target: address(uint160(frameparam(i, FrameParam.RESOLVED_TARGET))),
-            mode: frameparam(i, FrameParam.MODE),
-            value: frameparam(i, FrameParam.VALUE),
-            gas: frameparam(i, FrameParam.EXECUTION_GAS_LIMIT),
-            stateGas: frameparam(i, FrameParam.STATE_GAS_LIMIT)
-        });
+    /// Value and state gas are only checked on the withdraw frame; skipping them elsewhere saves helper calls.
+    function _frame(uint256 i, bool full) private view returns (ExitRelayChecks.Frame memory f) {
+        f.target = address(uint160(frameparam(i, FrameParam.RESOLVED_TARGET)));
+        f.mode = frameparam(i, FrameParam.MODE);
+        f.gas = frameparam(i, FrameParam.EXECUTION_GAS_LIMIT);
+        if (full) {
+            f.value = frameparam(i, FrameParam.VALUE);
+            f.stateGas = frameparam(i, FrameParam.STATE_GAS_LIMIT);
+        }
     }
 }

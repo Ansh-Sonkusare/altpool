@@ -47,7 +47,7 @@ library ExitRelayChecks {
     uint256 internal constant MODE_VERIFY = 1;
     uint256 internal constant MODE_SENDER = 2;
     uint256 internal constant EXPIRY_GAS_MAX = 10_000;
-    uint256 internal constant VERIFY_GAS_MAX = 350_000;
+    uint256 internal constant VERIFY_GAS_MAX = 450_000;
     uint256 internal constant WITHDRAW_GAS_MIN = 700_000;
     uint256 internal constant WITHDRAW_GAS_MAX = 1_000_000;
     uint256 internal constant WITHDRAW_STATE_GAS_MAX = 250_000;
@@ -71,6 +71,7 @@ library ExitRelayChecks {
     error UnknownRoot();
     error NullifierSpent();
     error BadProof();
+    error VerifierReverted();
 
     function checkStatic(TxView memory t, Withdraw memory w, uint256 rootIdx, address self, address pool, uint256 fee)
         internal
@@ -117,11 +118,11 @@ library ExitRelayChecks {
             w.fee,
             0
         ];
-        // The v2.0 verifier reverts on some malformed proofs; any failure is BadProof.
+        // A revert (malformed input, or out of gas inside this frame) is kept apart from a false verdict.
         try verifier.verifyProof(proof, input) returns (bool ok) {
             if (!ok) revert BadProof();
         } catch {
-            revert BadProof();
+            revert VerifierReverted();
         }
     }
 }
