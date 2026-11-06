@@ -10,9 +10,17 @@
     "typecheck": "tsc -p .",
     "forge:build": "forge build",
     "forge:test": "forge test -vv",
-    "abi": "forge build && tsx scripts/export-abi.ts"
+    "abi": "forge build && tsx scripts/export-abi.ts",
+    "test": "forge test -vv",
+    "deploy": "bun scripts/deploy.ts",
+    "exit": "bun scripts/exit-smoke.ts"
   },
   "dependencies": {
-    "@forshtat/hegota-support": "0.0.1"
+    "@forshtat/hegota-support": "0.0.1",
+    "viem": "^2.57.10",
+    "@altpool/core": "workspace:*"
+  },
+  "devDependencies": {
+    "forge-std": "github:foundry-rs/forge-std#v1.9.7"
   }
 }

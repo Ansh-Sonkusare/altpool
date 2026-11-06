@@ -7,3 +7,4 @@ dist/
 packages/contracts/out/
 packages/contracts/cache/
 packages/contracts/lib/
+packages/prover/artifacts/

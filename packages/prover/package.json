@@ -8,9 +8,15 @@
   },
   "scripts": {
     "typecheck": "tsc -p .",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests",
+    "fetch": "bun scripts/fetch-artifacts.ts",
+    "convert": "bun scripts/convert-pk.ts",
+    "g1": "bun scripts/g1.ts"
   },
   "dependencies": {
-    "@altpool/core": "workspace:*"
+    "@altpool/core": "workspace:*",
+    "snarkjs": "0.1.20",
+    "circomlib": "0.0.20",
+    "viem": "^2.57.10"
   }
 }
