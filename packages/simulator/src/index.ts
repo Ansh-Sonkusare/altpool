@@ -9,3 +9,5 @@ import { todo, type AdmissionChecker, type AdmissionReport, type FrameTx } from 
 export const checkAdmission = (_tx: FrameTx): Promise<AdmissionReport> => todo("checkAdmission");
 
 export const simulator: AdmissionChecker = { check: checkAdmission };
+
+export { diagnoseError, diagnoseSimulation, diagnoseAdmission, decodeRevert, type Diagnosis, type NodeError } from "./rules";

@@ -13,7 +13,8 @@
   },
   "dependencies": {
     "@altpool/core": "workspace:*",
-    "@forshtat/hegota-support": "0.0.1"
+    "@forshtat/hegota-support": "0.0.1",
+    "viem": "^2.57.10"
   },
   "bin": {
     "frame-doctor": "./src/frame-doctor.ts"
