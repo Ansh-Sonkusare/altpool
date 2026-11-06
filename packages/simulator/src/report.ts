@@ -54,3 +54,11 @@ export const summarize = (r: AdmissionReport): string =>
     const v = r.verdicts[m];
     return `${m} ${v.verdict === "admitted" ? "✓" : `✗ ${v.failed?.rule ?? ""}`}`.trim();
   }).join(", ");
+
+/** One line for a routing decision, e.g. "route  alt via miner: public rejects …; alt admits; miner: VERIFY …". */
+export const renderRoute = (d: { target: string; node?: string; reason: string; verified: boolean; fixes: string[] }): string => {
+  const where = d.target === "public" ? c.green("public") : d.target === "alt" ? c.green(`alt via ${d.node}`) : c.red("nowhere");
+  const lines = [`  ${c.bold("route")}  ${where}${d.verified ? "" : c.dim(" (unverified)")}  ${c.dim(d.reason)}`];
+  for (const f of d.fixes) lines.push(`         ${c.yellow("fix:")} ${f}`);
+  return lines.join("\n");
+};

@@ -11,3 +11,5 @@ packages/prover/artifacts/
 .tmp/
 packages/falcon/out/
 packages/falcon/cache/
+
+docs/
