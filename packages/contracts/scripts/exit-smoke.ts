@@ -26,7 +26,7 @@ import { getProfile } from "@forshtat/hegota-support/profiles";
 import { DEVNET, altDevnet, ethrex, explorerTx, gateway, toWire, type WithdrawProof } from "@altpool/core";
 import { createNote, noteToString, prove, proveForRoot } from "../../prover/src/index";
 import { EXIT_FEE, exitTx, exitTxRR } from "../src/exit";
-import { MINER_SIDECAR, depositNote, sendExit } from "../src/flow";
+import { MINER_SIDECAR, depositNote, explorerExit, sendExit } from "../src/flow";
 import deployments from "../deployments.json";
 
 const rr = process.argv.includes("--rr");
@@ -132,9 +132,12 @@ const want = DEVNET.denomination - EXIT_FEE;
 console.log(`recipient balance ${formatEther(got)} ETH (want ${formatEther(want)})`);
 if (got !== want) throw new Error(`recipient balance ${got} != ${want}`);
 
+// The replay is a different tx for the same note (priority fee + 1 wei: new hash, same nullifier nonce key). Re-sending
+// the identical tx would file the rejection under the real exit's hash, and the explorer would show the exit "Rejected".
+const replayTx: FrameTx = { ...tx, fees: { ...tx.fees, maxPriorityFeePerGas: tx.fees.maxPriorityFeePerGas + 1n } };
 for (const sidecar of new Set([send.url, gw.url])) {
   try {
-    const replay = await gateway(sidecar).sendFrameTransaction(toWire(tx));
+    const replay = await gateway(sidecar).sendFrameTransaction(toWire(replayTx));
     throw new Error(`replay ADMITTED ${replay} by ${sidecar}`);
   } catch (e) {
     if (e instanceof Error && e.message.startsWith("replay ADMITTED")) throw e;
@@ -143,15 +146,15 @@ for (const sidecar of new Set([send.url, gw.url])) {
 }
 
 // Replay gate. The sidecars' rejection text is the public-mempool violation, not the cause, so re-simulate the
-// same tx after inclusion and require the consumed nonce key or ExitRelay's NullifierSpent.
-const after: unknown = await ethrex().call("ethrex_simulateFrameTransaction", [encodeTx(profile, tx), "latest"]);
+// replay after inclusion and require the consumed nonce key or ExitRelay's NullifierSpent.
+const after: unknown = await ethrex().call("ethrex_simulateFrameTransaction", [encodeTx(profile, replayTx), "latest"]);
 const sim = after && typeof after === "object" ? (after as { executionError?: string; revertData?: string }) : {};
 const cause = reason(new Error(`${sim.executionError ?? ""} ${sim.revertData ?? ""}`.trim()));
 console.log(`replay re-simulated: ${cause || JSON.stringify(after)}`);
 if (!/NullifierSpent|nonce/i.test(cause)) throw new Error(`replay not rejected for nonce key / NullifierSpent: ${JSON.stringify(after)}`);
 
 console.log(`deposit ${explorerTx(depositTx)}`);
-console.log(`exit    ${explorerTx(exitHash)}`);
+console.log(`exit    ${explorerExit(exitHash)}`);
 
 /** The `--rr` half: publish the root, prove against it, then gate on VERIFY touching no foreign storage. */
 async function exitRR(): Promise<FrameTx> {

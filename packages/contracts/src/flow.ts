@@ -2,10 +2,13 @@
 import { setTimeout as sleep } from "node:timers/promises";
 import { createPublicClient, http, parseAbi, type Account, type Chain, type Hex, type Transport, type WalletClient } from "viem";
 import type { FrameTx } from "@forshtat/hegota-support/tx";
-import { DEVNET, altDevnet, gateway, toWire, type Note } from "@altpool/core";
+import { DEVNET, altDevnet, explorerTx, gateway, toWire, type Note } from "@altpool/core";
 
 /** The miner's own sidecar. The gateway admits exits but does not gossip them to it. */
 export const MINER_SIDECAR = "https://altmempool.forshtat.com/rpc";
+
+/** Explorer link on the miner node's view: the explorer defaults to the gateway, which never sees exits sent here. */
+export const explorerExit = (hash: Hex) => `${explorerTx(hash)}?node=${encodeURIComponent(MINER_SIDECAR)}`;
 
 const poolAbi = parseAbi(["function deposit(bytes32 _commitment) payable"]);
 

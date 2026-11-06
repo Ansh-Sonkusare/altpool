@@ -8,7 +8,7 @@ import { encodeTx } from "@forshtat/hegota-support/tx";
 import { getProfile } from "@forshtat/hegota-support/profiles";
 import { DEVNET, altDevnet, ethrex, explorerTx, gateway } from "@altpool/core";
 import { createNote, noteToString, parseNote, prove } from "@altpool/prover";
-import { EXIT_FEE, deployments, depositNote, exitTx, sendExit } from "@altpool/contracts";
+import { EXIT_FEE, deployments, depositNote, explorerExit, exitTx, sendExit } from "@altpool/contracts";
 
 const [cmd, noteArg, recipientArg] = process.argv.slice(2);
 const pub = createPublicClient({ chain: altDevnet, transport: http(DEVNET.ethrexUrl) });
@@ -57,7 +57,7 @@ async function withdraw(noteStr: string, to?: string) {
   console.log(`included in block ${r.blockNumber}, status ${r.status}, gasUsed ${r.gasUsed}`);
   r.frames.forEach((f, i) => console.log(`  frame ${i}: status ${f.status} gasUsed ${f.gasUsed} stateGasUsed ${f.stateGasUsed}`));
   const after = await pub.getBalance({ address: recipient });
-  console.log(`recipient ${recipient}: ${formatEther(before)} -> ${formatEther(after)} ETH\n${explorerTx(r.hash)}`);
+  console.log(`recipient ${recipient}: ${formatEther(before)} -> ${formatEther(after)} ETH\n${explorerExit(r.hash)}`);
   const want = DEVNET.denomination - EXIT_FEE;
   if (after - before !== want) throw new Error(`recipient balance rose by ${after - before}, expected ${want}`);
 }
