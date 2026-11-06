@@ -54,7 +54,9 @@ export const Entity = ({ addr, choice, fee, alerts }: { addr: Address; choice: N
   const cap = Number(DEVNET.publicVerifyGasCap);
   const gasMax = Math.max(cap, Number(pin ?? 0n), Number(latest ?? 0n)) * 1.15;
   const stakeTone: Tone = !r ? "muted" : r.stake.withdrawTime ? "warn" : r.stake.isStaked ? "ok" : "bad";
-  const stakeWord = r ? (r.stake.withdrawTime ? "Unlocking" : r.stake.isStaked ? "Staked" : "Unstaked") : "";
+  const p = live.poll;
+  const pollLine = p && ` Last poll ${ago(now - p.at)} ago${p.ok ? "" : " (failed)"}, ${p.nextAt - now >= 500 ? `next in ${ago(p.nextAt - now)}` : "polling now"}.`;
+  const stakeWord = r ?(r.stake.withdrawTime ? "Unlocking" : r.stake.isStaked ? "Staked" : "Unstaked") : "";
 
   return (
     <div className="flex flex-col gap-6">
@@ -73,8 +75,8 @@ export const Entity = ({ addr, choice, fee, alerts }: { addr: Address; choice: N
           </div>
         </div>
         <Pulse state={live.error ? "err" : r ? "live" : undefined} word={live.error ? "Poll failed, retrying." : r ? "Live." : "Connecting."}>
-          {live.error ? live.error : r
-            ? <span title="A report is emitted when anything changed; the watcher checks every 10 s and on explorer events.">Last change {ago(now - r.updatedAt)} ago ({clockAt(r.updatedAt)}). Checks every 10 s and on explorer events, from {watched.map((n) => n.name).join(" + ")}.</span>
+          {live.error ? <>{live.error}{pollLine}</> : r
+            ? <span title="A report is emitted when anything changed; the watcher checks every 10 s and on explorer events.">Last change {ago(now - r.updatedAt)} ago ({clockAt(r.updatedAt)}).{pollLine} From {watched.map((n) => n.name).join(" + ")}, and on explorer events.</span>
             : `Reading ${watched.map((n) => n.name).join(" and ")}…`}
         </Pulse>
       </section>

@@ -23,6 +23,8 @@ export interface EntityLive {
   firstSeen: ReadonlySet<Hex>;
   events: SessionEvent[];
   sent: AlertSent[];
+  /** The latest finished poll (changed or not) and when the next is due. */
+  poll?: { at: number; ok: boolean; nextAt: number };
 }
 
 let seq = 0;
@@ -38,7 +40,6 @@ export const useEntityLive = (addr: Address, choice: NodeChoice, fee: bigint | u
     setS({ firstSeen: new Set(), events: [], sent: [] });
     let alive = true;
     let stop = () => {};
-    let retry: ReturnType<typeof setTimeout> | undefined;
     let seeded = false;
     const push = (kind: string, tone: Tone, text: string, hash?: string) =>
       alive && setS((p) => ({ ...p, events: [{ id: ++seq, at: Date.now(), kind, tone, text, hash }, ...p.events].slice(0, 40) }));
@@ -52,35 +53,27 @@ export const useEntityLive = (addr: Address, choice: NodeChoice, fee: bigint | u
       (hooks[k] as ((...x: unknown[]) => void) | undefined)?.(...a);
     };
     const start = () => {
-      let mine = true;
-      const unsub = watchEntity(addr, {
+      stop = watchEntity(addr, {
         nodes: nodesFor(choice), feePerTx: fee, intervalMs: POLL_MS,
+        onPoll: (poll) => setS((p) => ({ ...p, poll })),
         onStatus: (r) => {
-          if (!alive || !mine) return;
           const first = !seeded;
           seeded = true;
           setS((p) => ({ ...p, report: r, error: undefined, firstSeen: first ? new Set(r.inclusions.map((i) => i.hash)) : p.firstSeen }));
         },
-        onInclusion: (i) => { if (mine) push("included", "ok", `block ${num(i.block)}${i.verifyGas !== undefined ? `, VERIFY ${num(i.verifyGas)}` : ""}`, i.hash); },
-        onRejection: (r, ...a) => { if (mine) { push("rejected", "bad", `on ${r.nodes.join("+")}: ${r.failed?.rule ?? r.errorCode}`, r.hash); fire("onRejection", r, ...a); } },
-        onEviction: (e, ...a) => { if (mine) { push("evicted", "bad", `${e.kind}${e.reason ? `: ${e.reason}` : ""}`, e.hash); fire("onEviction", e, ...a); } },
-        onStuck: (t, ...a) => { if (mine) { push("stuck", "warn", `${t.status} for ${ago(t.ageMs ?? 0)}`, t.hash); fire("onStuck", t, ...a); } },
-        onThrottleWarning: (r, ...a) => { if (mine) { push("throttle warning", "warn", `${r.reputation.status}, ${r.headroom.untilThrottled} sends left`); fire("onThrottleWarning", r, ...a); } },
-        onLowBalance: (r, ...a) => { if (mine) { push("low balance", "warn", `${ethDp(r.funds.balance)}, ${r.funds.txsLeft} txs left`); fire("onLowBalance", r, ...a); } },
-        onStakeChange: (p, n, ...a) => { if (mine) { push("stake changed", "warn", `${n.isStaked ? "staked" : "unstaked"} ${ethDp(n.amount)}${n.withdrawTime ? ", unlocking" : ""}`); fire("onStakeChange", p, n, ...a); } },
-        onError: (e) => {
-          if (!alive || !mine) return;
-          setS((p) => ({ ...p, error: message(e) }));
-          // watchEntity only reports a poll when the data changed, so after an error a fresh watcher is the only way to clear it.
-          clearTimeout(retry);
-          retry = setTimeout(() => { stop(); start(); }, POLL_MS);
-        },
+        onInclusion: (i) => { push("included", "ok", `block ${num(i.block)}${i.verifyGas !== undefined ? `, VERIFY ${num(i.verifyGas)}` : ""}`, i.hash); },
+        onRejection: (r, ...a) => { push("rejected", "bad", `on ${r.nodes.join("+")}: ${r.failed?.rule ?? r.errorCode}`, r.hash); fire("onRejection", r, ...a); },
+        onEviction: (e, ...a) => { push("evicted", "bad", `${e.kind}${e.reason ? `: ${e.reason}` : ""}`, e.hash); fire("onEviction", e, ...a); },
+        onStuck: (t, ...a) => { push("stuck", "warn", `${t.status} for ${ago(t.ageMs ?? 0)}`, t.hash); fire("onStuck", t, ...a); },
+        onThrottleWarning: (r, ...a) => { push("throttle warning", "warn", `${r.reputation.status}, ${r.headroom.untilThrottled} sends left`); fire("onThrottleWarning", r, ...a); },
+        onLowBalance: (r, ...a) => { push("low balance", "warn", `${ethDp(r.funds.balance)}, ${r.funds.txsLeft} txs left`); fire("onLowBalance", r, ...a); },
+        onStakeChange: (p, n, ...a) => { push("stake changed", "warn", `${n.isStaked ? "staked" : "unstaked"} ${ethDp(n.amount)}${n.withdrawTime ? ", unlocking" : ""}`); fire("onStakeChange", p, n, ...a); },
+        onError: (e) => setS((p) => ({ ...p, error: message(e) })),
       });
-      stop = () => { mine = false; unsub(); };
     };
     // Deferred a tick so StrictMode's throwaway mount never starts a watcher.
     const boot = setTimeout(() => alive && start(), 0);
-    return () => { alive = false; clearTimeout(boot); clearTimeout(retry); stop(); };
+    return () => { alive = false; clearTimeout(boot); stop(); };
   }, [addr, choice, feeKey]);
   return s;
 };

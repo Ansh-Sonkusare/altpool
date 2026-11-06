@@ -99,6 +99,7 @@ const VerdictCell = ({ v, label, note }: { v?: MempoolVerdict; label: string; no
           {v.failed && <span className="font-mono text-[12.5px]/[19px] text-fg1">{v.failed.rule}{v.failed.ercRule ? ` (${v.failed.ercRule})` : ""}{v.failed.frameIndex !== undefined ? `, frame ${v.failed.frameIndex}` : ""}</span>}
           {(v.error?.revertReason || v.error?.message) && !ok && <span className="break-words font-mono text-[12px]/[18px] text-fg2">{v.error.revertReason ? `reverted: ${v.error.revertReason}` : v.error.message}</span>}
           {v.fix && <span className="text-[13px]/[20px] text-warn">Fix: {v.fix}</span>}
+          {checks.filter((c) => c.verdict === "warn").map((w, i) => <span key={i} className="text-[13px]/[20px] text-warn">Warning: {w.detail}</span>)}
           {checks.length > 0 && <span className="font-mono text-[11.5px] text-fg2">{checks.filter((c) => c.verdict === "pass").length} checks pass, {checks.filter((c) => c.verdict === "fail").length} fail</span>}
         </>
       ) : <span className="text-[13px]/[20px] text-fg2">{note ?? "not checked"}</span>}

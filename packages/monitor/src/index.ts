@@ -336,6 +336,8 @@ export interface WatchOptions extends Omit<ReportOptions, "cache" | "previous"> 
   /** Staked / unstaked flipped, or an unlock started (withdrawTime set): the entity is leaving the alt mempool's trust. */
   onStakeChange?: (prev: Stake, next: Stake, s: EntityReport) => void;
   onError?: (e: unknown) => void;
+  /** Every finished poll, changed or not: when it ended, whether it succeeded, and when the next one is due. */
+  onPoll?: (p: { at: number; ok: boolean; nextAt: number }) => void;
   /** Fallback poll period (default 10 s: the explorer calls are heavy on a shared devnet, and live events trigger polls anyway). */
   intervalMs?: number;
   throttleWarnAt?: number;
@@ -399,8 +401,11 @@ export const watchEntity = (entity: Address, opts: WatchOptions): (() => void) =
     if (running) { again = true; return; }
     running = true;
     clearTimeout(timer);
+    let ok = false;
     try {
       const s = await entityReport(entity, { ...opts, nodes, cache, previous: last });
+      if (stopped) return;
+      ok = true;
       samples.push({ t: s.updatedAt, h: s.headroom.untilThrottled });
       while (samples.length > 1 && s.updatedAt - samples[0]!.t > 10 * 60_000) samples.shift();
       s.throttleEta = etaFrom(samples);
@@ -409,12 +414,18 @@ export const watchEntity = (entity: Address, opts: WatchOptions): (() => void) =
       if (f !== lastPrint) { lastPrint = f; opts.onStatus?.(s); }
       last = s;
     } catch (e) {
+      if (stopped) return;
+      // The next good poll re-delivers onStatus even when the data is unchanged, so a caller showing the error recovers.
+      lastPrint = "";
       opts.onError?.(e);
     } finally {
       running = false;
       if (!stopped) {
+        const at = Date.now();
+        const wait = again ? 0 : opts.intervalMs ?? 10_000;
         if (again) { again = false; void poll(); }
-        else timer = setTimeout(poll, opts.intervalMs ?? 10_000);
+        else timer = setTimeout(poll, wait);
+        opts.onPoll?.({ at, ok, nextAt: at + wait });
       }
     }
   };
@@ -503,7 +514,11 @@ export const txReport = async (hash: Hex, o: Pick<ReportOptions, "nodes" | "ethr
   const records = await Promise.all(refs.map(async (ref) => {
     const gw = gatewayClient(ref.url);
     try { return { ref, gw, rec: await within(gw.admission(hash), ms, `${ref.name} getTransaction`) as any, error: undefined as string | undefined }; }
-    catch (e) { return { ref, gw, rec: undefined, error: errText(e) }; }
+    catch (e) {
+      // The sidecar answers -32600 "Frame transaction not found" for a tx it never saw: reachable, just not known.
+      const error = errText(e);
+      return { ref, gw, rec: undefined, error: /not found/i.test(error) ? undefined : error };
+    }
   }));
   const up = records.filter((r) => !r.error);
   const chain: Caller[] = [ethrexClient(o.ethrexUrl ?? DEVNET.ethrexUrl), ...up.map((r) => r.gw)];

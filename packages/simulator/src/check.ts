@@ -10,9 +10,9 @@ import { decodeTx, encodeTx, txHash as hashTx } from "@forshtat/hegota-support/t
 import { getProfile } from "@forshtat/hegota-support/profiles";
 import {
   DEVNET, ethrex as ethrexClient, gateway as gatewayClient, toWire,
-  type AdmissionChecker, type AdmissionReport, type FrameTx, type Hex, type MempoolVerdict, type RuleId,
+  type AdmissionChecker, type AdmissionReport, type FrameTx, type Hex, type MempoolVerdict, type RuleCheck, type RuleId,
 } from "@altpool/core";
-import { diagnoseAdmission, diagnoseError, diagnoseSimulation, type Diagnosis } from "./rules";
+import { decodeRevert, diagnoseAdmission, diagnoseError, diagnoseSimulation, type Diagnosis } from "./rules";
 import { entitiesOf, runModel, verifyGasOf, type Entity, type Reputation, type StakeInfo, type TraceFrame } from "./model";
 
 export const profile = getProfile(DEVNET.profile);
@@ -68,6 +68,22 @@ const withAddress = (d: Diagnosis | undefined, entities: Entity[]): Diagnosis | 
   const e = entities.find((x) => x.role === d.entity!.role);
   return e ? { ...d, entity: { role: e.role, address: e.address } } : d;
 };
+
+/** ethrex predicts the tx reverts after validation (docs/10 finding 9). The sidecar still admits it, so this warns and
+ *  never flips a verdict: the tx lands reverted and its payer pays the gas. */
+const executionWarning = (sim: any): RuleCheck | undefined => {
+  if (sim?.executionStatus !== "reverted") return undefined;
+  const frames: { gasUsed?: string; succeeded?: boolean }[] = sim.frames ?? [];
+  const frameIndex = frames.findIndex((f) => f.succeeded === false);
+  const reason = decodeRevert(sim.revertData ?? undefined) ?? sim.executionError ?? undefined;
+  const gas = frameIndex >= 0 && frames[frameIndex]!.gasUsed !== undefined ? ` after ${Number(frames[frameIndex]!.gasUsed).toLocaleString("en-US")} gas` : "";
+  return {
+    rule: "execution", verdict: "warn", ...(frameIndex >= 0 && { frameIndex }),
+    detail: `${frameIndex >= 0 ? `frame ${frameIndex}` : "the tx"} reverts in execution${gas}${reason ? `: ${reason}` : ""}. Admission still passes, so it would land reverted and the payer pays the gas.`,
+  };
+};
+const warnOn = (v: MempoolVerdict, w: RuleCheck | undefined): MempoolVerdict =>
+  w && v.verdict === "admitted" ? { ...v, checks: [...(v.checks ?? []), w] } : v;
 
 /** Estimator answers that say nothing: ones that depend on the placeholder limits it swaps into body frames, and the
  *  public-mempool gas cap it echoes (the alt sidecar has no cap; live Nov 6, a replayed exit came back with it). */
@@ -139,8 +155,10 @@ export const createSimulator = (opts: SimulatorOptions = {}) => {
     let pub: MempoolVerdict;
     let pubDiag: Diagnosis | undefined;
     let trace: TraceFrame[] | undefined;
+    let warning: RuleCheck | undefined;
     try {
       const sim = await node.simulateFrameTransaction(raw, true);
+      warning = executionWarning(sim);
       trace = (sim.erc7562Trace ?? undefined) as TraceFrame[] | undefined;
       pubDiag = explain(diagnoseSimulation(sim));
       pub = verdictOf("public", "simulate", pubDiag, pubDiag ? { error: { code: 0, message: pubDiag.detail, revertReason: pubDiag.revertReason } } : {});
@@ -176,7 +194,7 @@ export const createSimulator = (opts: SimulatorOptions = {}) => {
       alt = verdictOf("alt", "model", d, { checks: m.checks });
     }
 
-    return { txHash, verdicts: { public: pub, alt }, verifyGas: verifyGasOf(tx) };
+    return { txHash, verdicts: { public: warnOn(pub, warning), alt: warnOn(alt, warning) }, verifyGas: verifyGasOf(tx) };
   };
 
   const checker: AdmissionChecker & { check: typeof check } = { check };

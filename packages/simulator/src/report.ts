@@ -25,13 +25,14 @@ export const renderVerdict = (v: MempoolVerdict): string[] => {
   if (v.error?.revertReason) out.push(`         ${c.dim("revert:")} "${v.error.revertReason}"`);
   else if (!ok && v.error?.message) out.push(`         ${c.dim("node:")} ${v.error.message}`);
   if (v.fix) out.push(`         ${c.yellow("fix:")} ${v.fix}`);
+  for (const w of v.checks ?? []) if (w.verdict === "warn") out.push(`         ${c.yellow(`warn ${w.rule}:`)} ${w.detail ?? ""}`);
   return out;
 };
 
 export const renderChecks = (checks: RuleCheck[]): string =>
   "  " + c.dim("checks: ") + checks.map((k) => {
     const label = `${k.rule}${k.frameIndex !== undefined ? `#${k.frameIndex}` : ""}`;
-    return k.verdict === "pass" ? c.green(`✓${label}`) : k.verdict === "fail" ? c.red(`✗${label}`) : c.dim(`·${label}`);
+    return k.verdict === "pass" ? c.green(`✓${label}`) : k.verdict === "fail" ? c.red(`✗${label}`) : k.verdict === "warn" ? c.yellow(`!${label}`) : c.dim(`·${label}`);
   }).join(" ");
 
 export interface RenderOptions { verbose?: boolean; title?: string }

@@ -44,37 +44,23 @@ export const useEntity = (address: Address): { state: Live<EntityReport>; firstS
   const seeded = useRef(false);
   useEffect(() => {
     seeded.current = false;
-    // watchEntity calls onStatus only when the data changes (never again after a failed poll with identical data)
-    // and can call it once after it was stopped. So guard on `alive`, and after an error swap in a fresh watcher,
-    // whose first snapshot is always delivered.
-    let alive = true;
     let stop = () => {};
-    let retry: ReturnType<typeof setTimeout> | undefined;
-    const start = () => {
-      let mine = true;
-      const unsub = watchEntity(address, {
+    // Deferred a tick so StrictMode's throwaway mount never starts a watcher.
+    const boot = setTimeout(() => {
+      stop = watchEntity(address, {
         gateway: minerGateway,
         intervalMs: POLL_MS,
         onStatus: (s) => {
-          if (!alive || !mine) return;
           if (!seeded.current) {
             seeded.current = true;
             setFirstSeen(new Set(s.inclusions.map((i) => i.hash)));
           }
           setState({ status: "live", value: s, at: new Date() });
         },
-        onError: (e) => {
-          if (!alive || !mine) return;
-          setState((s) => ({ status: "error", error: message(e), snapshot: snapshotOf(s) }));
-          clearTimeout(retry);
-          retry = setTimeout(() => { stop(); start(); }, POLL_MS);
-        },
+        onError: (e) => setState((s) => ({ status: "error", error: message(e), snapshot: snapshotOf(s) })),
       });
-      stop = () => { mine = false; unsub(); };
-    };
-    // Deferred a tick so StrictMode's throwaway mount never starts a watcher.
-    const boot = setTimeout(() => alive && start(), 0);
-    return () => { alive = false; clearTimeout(boot); clearTimeout(retry); stop(); };
+    }, 0);
+    return () => { clearTimeout(boot); stop(); };
   }, [address]);
   return { state, firstSeen };
 };

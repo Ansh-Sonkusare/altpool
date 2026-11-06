@@ -38,6 +38,9 @@ const Pane = ({ title, v, note, pending, rolledBack, gap }: { title: string; v?:
         </dl>
       )}
       {v?.fix && <p className="m-0 border-l-2 border-ok/60 pl-3 text-sm/[21px] text-fg1"><span className="font-mono text-[12px] text-ok">fix </span>{v.fix}</p>}
+      {!gap && v?.checks?.filter((c) => c.verdict === "warn").map((w, i) => (
+        <p key={i} className="m-0 border-l-2 border-warn pl-3 text-sm/[21px] text-fg1"><span className="font-mono text-[12px] text-warn">warn {w.rule} </span>{w.detail}</p>
+      ))}
       {gap && (
         <p className="m-0 border-l-2 border-warn pl-3 text-sm/[21px] text-fg1">
           <span className="font-mono text-[12px] text-warn">gap </span>

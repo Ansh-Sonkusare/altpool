@@ -19,7 +19,7 @@ export type RuleId =
   | "nullifier-spent"  // ExitRelay VERIFY reverted: note already withdrawn
   | "unknown";
 
-export interface RuleCheck { rule: RuleId; frameIndex?: number; entity?: EntityRole; verdict: "pass" | "fail" | "skipped"; detail?: string }
+export interface RuleCheck { rule: RuleId; frameIndex?: number; entity?: EntityRole; verdict: "pass" | "fail" | "skipped" | "warn"; detail?: string }
 
 export interface MempoolVerdict {
   mempool: Mempool;
