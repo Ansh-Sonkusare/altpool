@@ -5,6 +5,10 @@ import { getProfile } from "@forshtat/hegota-support/profiles";
 import { DEVNET, type WithdrawProof } from "@altpool/core";
 
 export const EXIT_FEE = 10n ** 16n;
+// Upper bound on total_gas_limit: 1.61M of frame gas plus intrinsic/calldata. ExitRelay requires
+// max_cost = maxFeePerGas * total_gas_limit <= EXIT_FEE, so the fee cap is derived from this budget.
+const EXIT_GAS_BUDGET = 1_700_000n;
+export const EXIT_MAX_FEE_PER_GAS = EXIT_FEE / EXIT_GAS_BUDGET;
 
 const EXPIRY_VERIFIER: Address = "0x0000000000000000000000000000000000008141";
 const DEADLINE_GRID_SEC = 600;
@@ -14,7 +18,7 @@ const poolAbi = parseAbi([
 
 export function exitTx(
   p: WithdrawProof & { rootIdx: number },
-  o: { exitRelay: Address; pool?: Address; maxFeePerGas: bigint; maxPriorityFeePerGas: bigint; nowSec?: number },
+  o: { exitRelay: Address; pool?: Address; maxFeePerGas?: bigint; maxPriorityFeePerGas?: bigint; nowSec?: number },
 ): FrameTx {
   if (!isAddressEqual(p.relayer, o.exitRelay)) throw new Error(`proof relayer ${p.relayer} is not exitRelay ${o.exitRelay}`);
   const profile = getProfile(DEVNET.profile);
@@ -27,7 +31,7 @@ export function exitTx(
     nonceKeys: [BigInt(p.nullifierHash)],
     nonceSeq: 0n,
     signatures: [],
-    fees: { maxFeePerGas: o.maxFeePerGas, maxPriorityFeePerGas: o.maxPriorityFeePerGas },
+    fees: { maxFeePerGas: o.maxFeePerGas ?? EXIT_MAX_FEE_PER_GAS, maxPriorityFeePerGas: o.maxPriorityFeePerGas ?? 10n ** 9n },
     frames: [
       frame(profile, "VERIFY", { target: EXPIRY_VERIFIER, execution: 10_000n, data: toHex(BigInt(deadline), { size: 8 }) }),
       frame(profile, "VERIFY", {

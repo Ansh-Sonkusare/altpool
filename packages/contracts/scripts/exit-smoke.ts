@@ -51,10 +51,9 @@ function reason(e: unknown): string {
 }
 
 async function exitFor(p: WithdrawProof & { rootIdx: number }): Promise<FrameTx> {
-  const gasPrice = await pub.getGasPrice();
-  const tx = exitTx(p, { exitRelay: exitRelay!, maxFeePerGas: gasPrice * 3n + 2_000_000_000n, maxPriorityFeePerGas: 2_000_000_000n });
+  const tx = exitTx(p, { exitRelay: exitRelay! });
   const sim = await ethrex().simulateFrameTransaction(encodeTx(profile, tx)).then(
-    (r) => `valid=${r.canonicalMempoolValid} violation=${r.canonicalMempoolViolation ?? "-"}`,
+    (r) => `valid=${r.canonicalMempoolValid} violation=${r.canonicalMempoolViolation ?? "-"} maxCost=${"maxCost" in r ? String(r.maxCost) : "-"}`,
     (e) => `error ${reason(e)}`,
   );
   console.log(`public simulate (ethrex_simulateFrameTransaction): ${sim}`);
