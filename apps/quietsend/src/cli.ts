@@ -52,10 +52,14 @@ async function withdraw(noteStr: string, to?: string) {
   const proof = await prove(parseNote(noteStr), { recipient, relayer: exitRelay, fee: EXIT_FEE });
   const tx = exitTx(proof, { exitRelay });
   // Prefix budget, not one frame: the model sums expiry (10k) + VERIFY (450k); core's 350k default would reject every exit.
-  const sim = await createSimulator({ verifyGasMax: 460_000n, explorer: false }).check(tx);
-  console.log("simulator (checkAdmission):");
-  for (const v of [sim.verdicts.public, sim.verdicts.alt]) console.log(renderVerdict(v).join("\n"));
-  if (sim.verdicts.alt.checks?.length) console.log(renderChecks(sim.verdicts.alt.checks));
+  try {
+    const sim = await createSimulator({ verifyGasMax: 460_000n, explorer: false }).check(tx);
+    console.log("simulator (checkAdmission):");
+    for (const v of [sim.verdicts.public, sim.verdicts.alt]) console.log(renderVerdict(v).join("\n"));
+    if (sim.verdicts.alt.checks?.length) console.log(renderChecks(sim.verdicts.alt.checks));
+  } catch (e) {
+    console.log(`simulator: unavailable (${e instanceof Error ? e.message : String(e)})`);
+  }
   const sidecar = createAltMempoolClient({ httpUrl: MINER_SIDECAR, profile, name: "miner" });
   const client = pub.extend(altpoolActions({ sidecar, explorerUrl: DEVNET.explorerUrl }));
   const pre = await client.altpool.preflightFrameTransaction({ transaction: tx });
