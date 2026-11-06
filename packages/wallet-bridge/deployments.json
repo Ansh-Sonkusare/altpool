@@ -5,6 +5,11 @@
       "address": "0x9f1331a6e016620bab4674ecf3e233e72a92862a",
       "deployTx": "0xa9a12645d3d4ef970751bcc86ad77c727b0aba2107ee1e5d67919964ed492f3d",
       "deployedAt": "2026-11-06T20:59:02.429Z"
+    },
+    "0x7419F9c60aC12B877b7585eaA02824afcFf5387C": {
+      "address": "0x4157ee4dd18d5c8f6663cca2ba50f28544a8a4f2",
+      "deployTx": "0x7aabc2148a35c606a99da98a986b6d7771edf451429f0946a3c671ca90b83e15",
+      "deployedAt": "2026-11-06T21:17:14.917Z"
     }
   },
   "smoke": {
