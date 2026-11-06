@@ -3,6 +3,8 @@
 //   bun run demo             live, public devnet, on the deployed + staked ExitRelay (deployments.json): fresh key ->
 //                            deposit -> prove -> check (public ✗, alt ✓) -> what-if unstaked (alt ✗) -> sendExit ->
 //                            recipient 0 -> 0.1 − fee -> replay explained -> ExitRelay's reputation
+//   bun run demo --prepare   the slow half before the talk: fund, deposit, prove (minutes); saves the proof
+//   bun run demo --stage     the rest from the prepared proof, in about a minute
 //   bun run demo --fixture   offline backup: the captured paymaster run (r9-demo), unstaked -> staked
 // Live needs the prover artifacts (bun run --filter @altpool/prover fetch && bun run --filter @altpool/prover convert).
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
@@ -68,28 +70,23 @@ const ROOT = new URL("../../../", import.meta.url);
 const PROVER = [new URL("packages/prover/artifacts/withdraw.json", ROOT), new URL("packages/prover/artifacts/withdraw_proving_key.json", ROOT)];
 const STATE = new URL("../.demo-state.json", import.meta.url);
 
-const liveDemo = async () => {
-  if (PROVER.some((p) => !existsSync(p))) {
+type Mode = "full" | "prepare" | "stage";
+
+const liveDemo = async (mode: Mode) => {
+  if (mode !== "stage" && PROVER.some((p) => !existsSync(p))) {
     console.error("demo needs the prover artifacts: bun run --filter @altpool/prover fetch && bun run --filter @altpool/prover convert\nor run the offline backup: bun run demo --fixture");
     process.exit(2);
   }
-  // Imported here so --fixture runs without the 70 MB prover key.
-  const { createNote, noteToString, prove } = await import("@altpool/prover");
   const { EXIT_FEE, deployments, depositNote, explorerExit, exitTx, sendExit } = await import("@altpool/contracts");
   const exitRelay = deployments.exitRelay as Address | null;
   expect(Boolean(exitRelay), "packages/contracts/deployments.json has no exitRelay");
 
-  console.log(bold(`Altpool + QuietSend demo · public devnet, chain ${DEVNET.chainId}`));
+  console.log(bold(`Altpool + QuietSend demo · public devnet, chain ${DEVNET.chainId}${mode === "full" ? "" : ` · ${mode}`}`));
   const pub = createPublicClient({ chain: altDevnet, transport: http(DEVNET.ethrexUrl) });
   const miner = gateway(DEVNET.minerSidecarUrl);
-  const key = generatePrivateKey(); // fresh every run: never a published key
-  const me = privateKeyToAccount(key);
-  const wallet = createWalletClient({ account: me, chain: altDevnet, transport: http(DEVNET.ethrexUrl) });
-  const save = (o: Record<string, unknown>) => {
-    const prev = existsSync(STATE) ? JSON.parse(readFileSync(STATE, "utf8")) : {};
-    writeFileSync(STATE, JSON.stringify({ ...prev, ...o }, (_, v) => (typeof v === "bigint" ? v.toString() : v), 2) + "\n");
-  };
-  save({ startedAt: new Date().toISOString(), depositorKey: key, depositor: me.address, exitRelay });
+  const load = () => (existsSync(STATE) ? JSON.parse(readFileSync(STATE, "utf8")) : {});
+  const save = (o: Record<string, unknown>) =>
+    writeFileSync(STATE, JSON.stringify({ ...load(), ...o }, (_, v) => (typeof v === "bigint" ? v.toString() : v), 2) + "\n");
   const show = (r: AdmissionReport, title: string) => console.log(indent(renderReport(r, { title: `${title} · ${summarize(r)}` })));
 
   step("ExitRelay: one staked contract sends every exit");
@@ -97,24 +94,57 @@ const liveDemo = async () => {
   info(`${exitRelay} · ${relay.stake.isStaked ? "staked" : "UNSTAKED"} ${formatEther(relay.stake.amount)} ETH · reputation ${relay.reputation.status} (seen ${relay.reputation.opsSeen}, included ${relay.reputation.opsIncluded})`);
   expect(relay.stake.isStaked, "ExitRelay is not staked");
 
-  step("Deposit 0.1 ETH into the privacy pool from a fresh, faucet-funded key");
-  const need = DEVNET.denomination + parseEther("0.01");
-  await gateway().faucet(me.address);
-  for (let i = 0; i < 60 && (await pub.getBalance({ address: me.address })) < need; i++) await sleep(2000);
-  expect((await pub.getBalance({ address: me.address })) >= need, "the faucet did not pay out");
-  const note = createNote();
-  save({ note: noteToString(note) });
-  const depositTx = await depositNote(wallet, note);
-  save({ depositTx });
-  info(`depositor ${me.address} ${dim("(key and note saved to apps/demo/.demo-state.json, git-ignored)")}`);
-  linkTo(depositTx);
+  type Prepared = Awaited<ReturnType<typeof import("@altpool/prover").prove>> & { depositTx: Hex };
+  /** Fund, deposit, prove: the slow part (the proof takes minutes), so --prepare runs it before going on stage. */
+  const prepare = async (): Promise<Prepared> => {
+    // Imported here so --fixture and --stage run without the 70 MB prover key.
+    const { createNote, noteToString, prove } = await import("@altpool/prover");
+    const key = generatePrivateKey(); // fresh every run: never a published key
+    const me = privateKeyToAccount(key);
+    const wallet = createWalletClient({ account: me, chain: altDevnet, transport: http(DEVNET.ethrexUrl) });
+    save({ startedAt: new Date().toISOString(), depositorKey: key, depositor: me.address, exitRelay, prepared: null });
 
-  step("Prove the withdrawal to a brand-new wallet holding 0 ETH");
-  const recipient = privateKeyToAccount(generatePrivateKey()).address;
-  const t0 = Date.now();
-  const proof = await prove(note, { recipient, relayer: exitRelay!, fee: EXIT_FEE });
-  const tx = exitTx(proof, { exitRelay: exitRelay! });
-  info(`recipient ${recipient}: ${formatEther(await pub.getBalance({ address: recipient }))} ETH; proof in ${((Date.now() - t0) / 1000).toFixed(1)} s`);
+    step("Deposit 0.1 ETH into the privacy pool from a fresh, faucet-funded key");
+    const need = DEVNET.denomination + parseEther("0.01");
+    await gateway().faucet(me.address);
+    for (let i = 0; i < 60 && (await pub.getBalance({ address: me.address })) < need; i++) await sleep(2000);
+    expect((await pub.getBalance({ address: me.address })) >= need, "the faucet did not pay out");
+    const note = createNote();
+    save({ note: noteToString(note) });
+    const depositTx = await depositNote(wallet, note);
+    save({ depositTx });
+    info(`depositor ${me.address} ${dim("(key and note saved to apps/demo/.demo-state.json, git-ignored)")}`);
+    linkTo(depositTx);
+
+    step("Prove the withdrawal to a brand-new wallet holding 0 ETH");
+    const recipient = privateKeyToAccount(generatePrivateKey()).address;
+    const t0 = Date.now();
+    const proof = await prove(note, { recipient, relayer: exitRelay!, fee: EXIT_FEE });
+    info(`recipient ${recipient}, proof in ${((Date.now() - t0) / 1000).toFixed(1)} s`);
+    // Save the proof, not the tx: the tx carries a deadline (600 s grid) that must be fresh when it is sent.
+    const prepared = { ...proof, depositTx };
+    save({ prepared });
+    return prepared;
+  };
+
+  let prepared: Prepared;
+  if (mode === "stage") {
+    const p = load().prepared;
+    expect(Boolean(p), "nothing prepared: run bun run demo --prepare first");
+    prepared = { ...p, fee: BigInt(p.fee), refund: BigInt(p.refund) };
+    save({ prepared: null }); // one stage run per prepared note
+    step("Prepared before the talk: a deposit and a proof to a brand-new wallet");
+    info(`deposit ${dim(explorerTx(prepared.depositTx))}`);
+  } else {
+    prepared = await prepare();
+    if (mode === "prepare") {
+      console.log(`\n${bold("Ready.")} On stage: bun run demo --stage`);
+      return;
+    }
+  }
+  const { recipient, depositTx } = prepared;
+  const tx = exitTx(prepared, { exitRelay: exitRelay! });
+  info(`recipient ${recipient}: ${formatEther(await pub.getBalance({ address: recipient }))} ETH`);
   info(`frames: expiry VERIFY · ExitRelay VERIFY (proof check, reads the pool) · SENDER pool.withdraw · nonce key = nullifier hash · no signatures`);
 
   step("Before sending: will each mempool admit it?");
@@ -163,7 +193,8 @@ const liveDemo = async () => {
   info(`exit    ${explorerExit(r.hash)}`);
 };
 
-(process.argv.includes("--fixture") ? fixtureDemo() : liveDemo()).catch((e) => {
+const mode: Mode = process.argv.includes("--prepare") ? "prepare" : process.argv.includes("--stage") ? "stage" : "full";
+(process.argv.includes("--fixture") ? fixtureDemo() : liveDemo(mode)).catch((e) => {
   console.error(red(`\ndemo failed: ${(e as Error).message}`));
   process.exit(1);
 });
