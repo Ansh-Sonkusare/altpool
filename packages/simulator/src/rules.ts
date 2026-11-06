@@ -72,10 +72,13 @@ const fixFor = (rule: RuleId, mempool: Mempool, d: Partial<Diagnosis>): string =
       return "Don't read the EntryPoint sentinel's code during validation.";
     case "nullifier-spent":
       return "This note was already withdrawn. Use a fresh note.";
-    case "simulation":
+    case "simulation": {
+      const n = d.detail?.match(/Nonce mismatch: expected (\d+), got (\d+)/);
+      if (n) return `Nonce ${n[2]} is used up: rebuild the tx with nonceSeq ${n[1]} (or a fresh nonce key) and re-sign.`;
       return d.revertReason
         ? `VERIFY frame ${d.frameIndex ?? "?"} reverted: "${d.revertReason}". Fix the input the contract rejects.`
         : "Validation failed in simulation. Check the nonce, the payer's balance and the VERIFY frame's revert.";
+    }
     case "mempool":
       return "Mempool policy rejected it: wait for the pending tx on this nonce key, bump fees by at least 10%, use a fresh key, or let the entity's reputation recover.";
     case "admission":
