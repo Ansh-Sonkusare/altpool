@@ -8,7 +8,7 @@ import {ExitRelayChecks, IRootPool, IVerifier} from "./ExitRelayChecks.sol";
 
 /// ExitRelay whose VERIFY reads the root from an EIP-8272 recent-root reference (0xB6) instead of pool storage and
 /// skips isSpent, so it touches no foreign storage (FOCIL-eligible). Spec: derisk/notes/r13-recent-roots.md §5.
-/// Frames: 0 VERIFY expiry (0x8141), 1 VERIFY this contract with empty data, 2 SENDER pool.withdraw; the tx carries
+/// Frames: 0 VERIFY expiry (0x8141), 1 VERIFY this contract with 1 byte of data (empty would hit receive()), 2 SENDER pool.withdraw; the tx carries
 /// one recent-root reference { rootSource, publish slot, root }.
 contract ExitRelayRR is HegotaSupport(Devnet.ERC8421_WORKSHOP) {
     address public immutable pool;

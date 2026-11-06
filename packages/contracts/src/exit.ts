@@ -68,9 +68,10 @@ export function exitTx(p: WithdrawProof & { rootIdx: number }, o: ExitOpts & { e
 /** ExitRelayRR's namespace in the EIP-8272 predeploy: keccak256(abi.encodePacked(relay, bytes32(0))). */
 export const rootSourceOf = (exitRelayRR: Address): Hex => keccak256(encodePacked(["address", "bytes32"], [exitRelayRR, zeroHash]));
 
-/** ExitRelayRR exit: frame 1 carries no data; the root comes from the one recent-root reference (r13 §5). */
+/** ExitRelayRR exit: frame 1 carries one ignored byte; the root comes from the one recent-root reference (r13 §5). */
 export function exitTxRR(p: WithdrawProof & { rootSlot: bigint }, o: ExitOpts & { exitRelayRR: Address }): FrameTx {
-  const tx = buildExit(p, o.exitRelayRR, "0x", o);
+  // One byte, not "0x": empty calldata routes to receive(), which returns without APPROVE.
+  const tx = buildExit(p, o.exitRelayRR, "0x00", o);
   // newTx defaults this field to []; the 1337 codec encodes it as the envelope's last field.
   tx.recentRootReferences = [{ sourceId: rootSourceOf(o.exitRelayRR), slot: p.rootSlot, root: p.root }];
   return tx;
