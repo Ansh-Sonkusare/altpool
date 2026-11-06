@@ -177,7 +177,7 @@ const readNode = async (ref: NodeRef, entity: string, txLimit: number, ms: numbe
 };
 
 /** The leading VERIFY frames of an explorer admission record. */
-const prefixCount = (frames: { mode?: number | string }[] = []) => {
+const prefixCountOf = (frames: { mode?: number | string }[] = []) => {
   let n = 0;
   while (n < frames.length && Number(frames[n]!.mode) === 1) n++;
   return n;
@@ -254,7 +254,7 @@ export const entityReport = async (entity: Address, o: ReportOptions = {}): Prom
       within(home.gw.admission(t.hash), ms, "admission").catch(() => undefined),
     ]);
     if (!receipt?.blockNumber) return undefined; // not mined yet as far as the node knows
-    const n = prefixCount(rec?.admission?.frames);
+    const n = prefixCountOf(rec?.admission?.frames);
     const verifyGas = n && receipt.frameReceipts
       ? receipt.frameReceipts.slice(0, n).reduce((s: bigint, f: any) => s + big(typeof f.gasUsed === "object" ? f.gasUsed.execution : f.gasUsed), 0n)
       : undefined;
@@ -436,5 +436,114 @@ export const watchEntity = (entity: Address, opts: WatchOptions): (() => void) =
     clearTimeout(timer);
     clearTimeout(soon);
     for (const ws of [...sockets]) ws.close();
+  };
+};
+
+// ---------------------------------------------------------------- one transaction
+
+export interface TxEvent { kind: string; status?: TxStatus; at: number }
+export interface FrameInfo { index: number; mode: number; flags: number; target: Address | null; executionLimit: bigint; stateLimit: bigint }
+export interface FrameOutcome { status: "ok" | "failed"; gasUsed: bigint; stateGasUsed: bigint }
+
+export interface TxNodeView {
+  name: string;
+  url: string;
+  ok: boolean;
+  error?: string;
+  /** The node has a record of this tx. */
+  known: boolean;
+  /** How it arrived: "rpc" (sent to this node) or "gossip:<peer id>". */
+  source?: string;
+  receivedAt?: number;
+  outcome?: string;
+  status?: TxStatus;
+  errorCode?: number;
+  checks: RuleCheck[];
+  events: TxEvent[];
+}
+
+export interface TxReport {
+  hash: Hex;
+  sender?: Address;
+  payer?: Address;
+  nonce?: bigint;
+  nonceKeys?: bigint[];
+  frames: FrameInfo[];
+  /** Leading VERIFY frames. */
+  prefixCount: number;
+  receipt?: { block: number; success: boolean; gasUsed: bigint; cost?: bigint; frames: FrameOutcome[] };
+  verifyGas?: bigint;
+  /** The most advanced status any node reports, or the receipt's. */
+  status?: TxStatus;
+  nodes: TxNodeView[];
+  /** First node to record it, and how long each other node took to hear of it. */
+  firstSeen?: { node: string; at: number };
+  lag: { node: string; ms: number }[];
+  updatedAt: number;
+}
+
+/** One tx across nodes: each sidecar's admission record and lifecycle events, plus the receipt from ethrex. */
+export const txReport = async (hash: Hex, o: Pick<ReportOptions, "nodes" | "ethrexUrl" | "timeoutMs"> = {}): Promise<TxReport> => {
+  const refs = o.nodes ?? DEFAULT_NODES;
+  const ms = o.timeoutMs ?? 10_000;
+  const records = await Promise.all(refs.map(async (ref) => {
+    const gw = gatewayClient(ref.url);
+    try { return { ref, gw, rec: await within(gw.admission(hash), ms, `${ref.name} getTransaction`) as any, error: undefined as string | undefined }; }
+    catch (e) { return { ref, gw, rec: undefined, error: errText(e) }; }
+  }));
+  const up = records.filter((r) => !r.error);
+  const chain: Caller[] = [ethrexClient(o.ethrexUrl ?? DEVNET.ethrexUrl), ...up.map((r) => r.gw)];
+  const receiptRaw = await firstOf(chain, "eth_getTransactionReceipt", [hash], ms).catch(() => undefined);
+
+  const nodes: TxNodeView[] = records.map(({ ref, rec, error }) => {
+    const a = rec?.admission, e = rec?.entry;
+    const events: TxEvent[] = (rec?.events ?? []).map((x: any) => ({ kind: x.kind, status: x.status, at: Number(x.at) })).sort((x: TxEvent, y: TxEvent) => x.at - y.at);
+    return {
+      name: ref.name, url: ref.url, ok: !error, error,
+      known: Boolean(a || e || events.length),
+      source: a?.source ?? e?.source, receivedAt: a?.at ?? events[0]?.at ?? e?.submittedTime,
+      outcome: a?.outcome, status: e?.status ?? events[events.length - 1]?.status, errorCode: a?.errorCode,
+      checks: a?.checks ?? [], events,
+    };
+  });
+
+  const first = records.map((r) => r.rec).find((r) => r?.admission?.frames || r?.entry);
+  const a = first?.admission, e = first?.entry;
+  const frames: FrameInfo[] = (a?.frames ?? []).map((f: any, index: number) => ({
+    index, mode: Number(f.mode), flags: Number(f.flags), target: f.target ?? null,
+    executionLimit: big(f.limits?.execution), stateLimit: big(f.limits?.state),
+  }));
+  const prefixCount = prefixCountOf(frames);
+
+  let receipt: TxReport["receipt"];
+  let verifyGas: bigint | undefined;
+  if (receiptRaw?.blockNumber) {
+    const gasOf = (v: any) => big(typeof v === "object" && v ? v.execution : v);
+    const fr: FrameOutcome[] = (receiptRaw.frameReceipts ?? []).map((f: any) => ({
+      status: f.status === "0x1" || f.status === "success" || f.status === 1 ? "ok" : "failed",
+      gasUsed: gasOf(f.gasUsed), stateGasUsed: big(typeof f.gasUsed === "object" ? f.gasUsed?.state : f.stateGasUsed),
+    }));
+    const gasUsed = big(receiptRaw.gasUsed);
+    receipt = {
+      block: Number(receiptRaw.blockNumber), success: receiptRaw.status === "0x1" || receiptRaw.status === "success",
+      gasUsed, cost: receiptRaw.effectiveGasPrice !== undefined ? gasUsed * big(receiptRaw.effectiveGasPrice) : undefined, frames: fr,
+    };
+    if (prefixCount && fr.length) verifyGas = fr.slice(0, prefixCount).reduce((s, f) => s + f.gasUsed, 0n);
+  }
+
+  const statuses = nodes.map((n) => n.status).filter((s): s is TxStatus => Boolean(s));
+  let status = statuses.sort((x, y) => RANK[y] - RANK[x])[0];
+  if (receipt && (!status || RANK[status] < RANK.OnChain)) status = receipt.success ? "OnChain" : "Reverted";
+
+  const seen = nodes.filter((n) => n.receivedAt !== undefined).sort((x, y) => x.receivedAt! - y.receivedAt!);
+  const firstSeen = seen[0] ? { node: seen[0].name, at: seen[0].receivedAt! } : undefined;
+
+  return {
+    hash, sender: a?.sender ?? e?.sender, payer: e?.payer,
+    nonce: a?.nonce !== undefined ? big(a.nonce) : e?.nonce !== undefined ? big(e.nonce) : undefined,
+    nonceKeys: (a?.nonceKeys ?? e?.nonceKeys)?.map((k: string) => big(k)),
+    frames, prefixCount, receipt, verifyGas, status, nodes, firstSeen,
+    lag: firstSeen ? seen.slice(1).map((n) => ({ node: n.name, ms: n.receivedAt! - firstSeen.at })) : [],
+    updatedAt: Date.now(),
   };
 };
