@@ -5,9 +5,10 @@
 import "./style.css";
 import { parseEther } from "viem";
 import type { Address, Hex } from "@altpool/core";
-import { watchEntity, type EntityReport, type TxReport } from "@altpool/monitor";
+import { watchEntity, watchNetwork, type EntityReport, type NetworkReport, type TxReport } from "@altpool/monitor";
 import { renderCompare, renderEntity, type SessionEvent, type Tab } from "./entity";
 import { renderTx, watchTx } from "./tx";
+import { renderNetwork } from "./network";
 import { KNOWN, ago, clock, esc, eth, isAddress, isHash, lc, nodesFor, num, short, type NodeChoice, type Tone } from "./ui";
 
 const params = new URLSearchParams(location.search);
@@ -16,7 +17,7 @@ const store = {
   set: (k: string, v: string) => { try { localStorage.setItem(`altpool.${k}`, v); } catch { /* private mode */ } },
 };
 
-type Target = { kind: "entity"; addr: Address } | { kind: "compare"; addrs: Address[] } | { kind: "tx"; hash: Hex } | { kind: "none" };
+type Target = { kind: "entity"; addr: Address } | { kind: "compare"; addrs: Address[] } | { kind: "tx"; hash: Hex } | { kind: "network" } | { kind: "none" };
 const state = {
   target: { kind: "none" } as Target,
   node: ((params.get("node") as NodeChoice) || "both") as NodeChoice,
@@ -26,6 +27,7 @@ const state = {
   compare: {} as Record<string, EntityReport | undefined>,
   compareErrors: {} as Record<string, string | undefined>,
   tx: undefined as TxReport | undefined,
+  network: undefined as NetworkReport | undefined,
   error: undefined as string | undefined,
   events: [] as SessionEvent[],
   stop: undefined as (() => void) | undefined,
@@ -40,6 +42,7 @@ app.innerHTML = `
     <a href="?" class="flex items-center gap-2.5 whitespace-nowrap text-[17px] font-semibold text-ink no-underline">
       <span class="size-3.5 rotate-45 bg-accent" aria-hidden="true"></span>altpool <span class="text-accent">monitor</span>
     </a>
+    <a id="netlink" href="?view=network" class="font-mono text-[13px] text-muted no-underline hover:text-ink">network</a>
     <form id="f" class="flex min-w-0 flex-[1_1_360px]">
       <label for="q" class="sr-only">Entity address or transaction hash</label>
       <input id="q" spellcheck="false" autocomplete="off" placeholder="address, addresses (a,b) or tx hash, 0x…"
@@ -90,6 +93,7 @@ const render = () => {
   if (t.kind === "none") { view.innerHTML = startScreen(); return; }
   const loading = (what: string) =>
     `<div class="mt-16 text-center text-muted">${state.error ? `<span class="text-bad">${esc(state.error)}</span>` : `Reading ${esc(what)} from ${nodesFor(state.node).map((n) => n.name).join(" and ")}…`}</div>`;
+  if (t.kind === "network") { view.innerHTML = state.network ? renderNetwork(state.network) : loading("every entity"); return; }
   if (t.kind === "compare") { view.innerHTML = renderCompare(t.addrs, state.compare, state.compareErrors); return; }
   if (t.kind === "entity") view.innerHTML = state.entity ? renderEntity(state.entity, state.tab, nodesFor(state.node), state.events) : loading(short(t.addr));
   else view.innerHTML = state.tx ? renderTx(state.tx, nodesFor(state.node)) : loading(short(t.hash));
@@ -110,12 +114,15 @@ const go = (target: Target, push = true) => {
   state.compare = {};
   state.compareErrors = {};
   state.tx = undefined;
+  state.network = undefined;
   state.error = undefined;
   state.events = [];
   const q = new URLSearchParams();
   if (target.kind === "entity") q.set("entity", target.addr);
   if (target.kind === "compare") q.set("entity", target.addrs.join(","));
   if (target.kind === "tx") q.set("tx", target.hash);
+  if (target.kind === "network") q.set("view", "network");
+  document.querySelector<HTMLElement>("#netlink")!.className = `font-mono text-[13px] no-underline hover:text-ink ${target.kind === "network" ? "font-semibold text-ink" : "text-muted"}`;
   if (state.node !== "both") q.set("node", state.node);
   if (params.get("fee")) q.set("fee", params.get("fee")!);
   const url = q.size ? `?${q}` : location.pathname;
@@ -147,6 +154,22 @@ const go = (target: Target, push = true) => {
         state.error = `Poll failed: ${(e as Error)?.message ?? String(e)}. Retrying.`;
         setLive("err", "poll failed");
         if (!state.entity) render();
+      },
+    });
+  } else if (target.kind === "network") {
+    state.stop = watchNetwork({
+      nodes,
+      onReport: (r) => {
+        state.network = r;
+        state.error = undefined;
+        const up = r.nodes.filter((n) => n.ok).length;
+        setLive(up ? "on" : "err", `network · ${clock(r.updatedAt)}`);
+        render();
+      },
+      onError: (e) => {
+        state.error = `Network read failed: ${(e as Error)?.message ?? String(e)}. Retrying in 30 s.`;
+        setLive("err", "network read failed");
+        if (!state.network) render();
       },
     });
   } else if (target.kind === "compare") {
@@ -182,6 +205,7 @@ const go = (target: Target, push = true) => {
 };
 
 const targetFrom = (p: URLSearchParams): Target => {
+  if (p.get("view") === "network") return { kind: "network" };
   const tx = p.get("tx") ?? "";
   const addrs = [...new Set((p.get("entity") ?? "").split(",").map((s) => s.trim()).filter(isAddress))] as Address[];
   if (isHash(tx)) return { kind: "tx", hash: tx };

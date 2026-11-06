@@ -172,7 +172,7 @@ const readNode = async (ref: NodeRef, entity: string, txLimit: number, ms: numbe
     const [item, txs, adm] = await Promise.all([
       findReputationItem(gw, entity, ms, ref.name),
       within(gw.call("skandha_explorer_listTransactions", [{ limit: Math.min(txLimit, 200) }]), ms, `${ref.name} listTransactions`),
-      within(gw.call("skandha_explorer_listAdmissions", [{ outcome: "rejected", limit: Math.min(txLimit, 200) }]), ms, `${ref.name} listAdmissions`).catch(() => ({ items: [] })),
+      within(gw.call("skandha_explorer_listAdmissions", [{ outcome: "rejected", limit: 50 }]), ms, `${ref.name} listAdmissions`).catch(() => ({ items: [] })),
     ]);
     const reputation: Reputation | undefined = item && {
       opsSeen: Number(item.opsSeen ?? 0), opsIncluded: Number(item.opsIncluded ?? 0),
@@ -562,3 +562,4 @@ export const txReport = async (hash: Hex, o: Pick<ReportOptions, "nodes" | "ethr
   };
 };
 export * from "./alerts";
+export * from "./network";
