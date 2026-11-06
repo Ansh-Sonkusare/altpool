@@ -1,0 +1,4 @@
+{"tSec":11.204,"step":"staked quota-1 paymaster","pm":"0x6e989c01a3e3a94c973a62280a72ec335598490e"}
+{"tSec":13.54,"step":"first rejection of kind","i":110,"error":{"message":"payer 0x6e989C01a3e3A94C973A62280a72EC335598490e is throttled","code":-32504}}
+{"tSec":13.901,"step":"burst submitted","results":{"admitted":110,"rejected -32504: payer 0x6e989C01a3e3A94C973A62280a72EC335598490e is throttled":20},"reputation":{"address":"0x6e989C01a3e3A94C973A62280a72EC335598490e","opsSeen":110,"opsIncluded":0,"status":"throttled","isWhitelisted":false,"isBlacklisted":false,"stake":"0x2aa1efb94e0000","unstakeDelaySec":86400,"withdrawTime":"0x0","isStaked":true}}
+{"tSec":18.929,"step":"reputation","address":"0x6e989C01a3e3A94C973A62280a72EC335598490e","opsSeen":110,"opsIncluded":0,"status":"throttled","isWhitelisted":false,"isBlacklisted":false,"stake":"0x2aa1efb94e0000","unstakeDelaySec":86400,"withdrawTime":"0x0","isStaked":true}

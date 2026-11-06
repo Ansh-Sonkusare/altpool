@@ -1,0 +1,37 @@
+{
+  "endpoint": "public-gateway",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "skandha_explorer_listTransactions",
+    "params": [
+      {
+        "limit": 1
+      }
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "items": [
+        {
+          "txHash": "0x53b44da563b180982098c6afa5c2672cd738f0288ab05c8517a2a27bebcf7afd",
+          "sender": "0x51B7a2186FD518b6734e6504B63230F64c603A52",
+          "payer": "0x51B7a2186FD518b6734e6504B63230F64c603A52",
+          "nonce": "0x1",
+          "nonceKeys": [
+            "0x0"
+          ],
+          "status": "New",
+          "frames": 2,
+          "maxFeePerGas": "0x77359400",
+          "submittedTime": 1793952159981,
+          "lastUpdatedTime": 1793952168712,
+          "source": "rpc"
+        }
+      ],
+      "nextCursor": "1"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "endpoint": "public-gateway",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "ethrex_simulateFrameTransaction",
+    "params": [
+      "0x06c0",
+      "latest",
+      {
+        "trace": true
+      }
+    ]
+  },
+  "response": {
+    "error": {
+      "code": -32000,
+      "message": "Invalid params: Error decoding field 'chain_id' of type u64: InvalidLength"
+    },
+    "id": 1,
+    "jsonrpc": "2.0"
+  }
+}

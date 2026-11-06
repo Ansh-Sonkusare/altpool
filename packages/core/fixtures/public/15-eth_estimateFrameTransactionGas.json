@@ -1,0 +1,34 @@
+{
+  "endpoint": "public-gateway",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "eth_estimateFrameTransactionGas",
+    "params": [
+      {
+        "sender": "0x0000000000000000000000000000000000000001",
+        "frames": [
+          {
+            "mode": 0,
+            "flags": 0,
+            "target": null,
+            "limits": {
+              "execution": "0x10000",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          }
+        ]
+      }
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "error": {
+      "message": "frame transaction validation prefix not recognized",
+      "code": -32502
+    }
+  }
+}

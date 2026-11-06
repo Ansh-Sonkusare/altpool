@@ -1,0 +1,58 @@
+{
+  "endpoint": "https://altmempoolgateway.forshtat.com/rpc",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "eth_getTransactionReceipt",
+    "params": [
+      "0xd1e8b85331769d0718b2640d425c7d49d799a0973a0e56c3bde6bcc0df4a5905"
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "blockHash": "0x36fb3563d2cf1c77f2ec6a8b994613b98b34f2cc0eac6153d0d8902435c3532a",
+      "blockNumber": "0x4cc",
+      "contractAddress": null,
+      "cumulativeGasUsed": "0x3c91f",
+      "effectiveGasPrice": "0x3b9aca07",
+      "frameReceipts": [
+        {
+          "gasUsed": "0x64",
+          "logs": [],
+          "stateGasUsed": "0x0",
+          "status": "0x1"
+        },
+        {
+          "gasUsed": "0x2102",
+          "logs": [],
+          "stateGasUsed": "0x0",
+          "status": "0x1"
+        },
+        {
+          "gasUsed": "0xbb8",
+          "logs": [],
+          "stateGasUsed": "0x0",
+          "status": "0x1"
+        },
+        {
+          "gasUsed": "0x5951",
+          "logs": [],
+          "stateGasUsed": "0x2fd00",
+          "status": "0x1"
+        }
+      ],
+      "from": "0xf3fca5b73694dc2f717859b3bd1414658f5e5c61",
+      "gasUsed": "0x3c91f",
+      "logs": [],
+      "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "payer": "0x63cb4e38247e0d3d835ef026202a6e0c3925a3fc",
+      "status": "0x1",
+      "to": "0xf3fca5b73694dc2f717859b3bd1414658f5e5c61",
+      "transactionHash": "0xd1e8b85331769d0718b2640d425c7d49d799a0973a0e56c3bde6bcc0df4a5905",
+      "transactionIndex": "0x0",
+      "type": "0x6"
+    }
+  }
+}

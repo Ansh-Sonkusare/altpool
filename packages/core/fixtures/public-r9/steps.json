@@ -1,0 +1,90 @@
+[
+  {
+    "step": "start",
+    "tSec": 0.939,
+    "gateway": "https://altmempoolgateway.forshtat.com/rpc",
+    "chainId": 1337,
+    "funder": "0x72c4Cb077a96b36754399fDa6445e13ECA8bB463"
+  },
+  {
+    "step": "paymaster deployed",
+    "tSec": 2.936,
+    "pm": "0x63cb4e38247e0d3d835ef026202a6e0c3925a3fc",
+    "tx": "0xefb4ac64706efa483af6262c2305a3ba2c754b563e4b9a383a7444d831e2bc27"
+  },
+  {
+    "step": "t1 before stake",
+    "tSec": 4.687,
+    "canonical": {
+      "accepted": false,
+      "code": -32000,
+      "message": "Invalid params: Frame transaction validation-prefix simulation failed: StorageReadNonSender",
+      "rule": "STO"
+    },
+    "alt": {
+      "accepted": false,
+      "code": -32502,
+      "message": "unstaked payer accessed payer slot 0x0000000000000000000000000000000000000000000000000000000000000000",
+      "rule": "UNKNOWN"
+    }
+  },
+  {
+    "step": "paymaster staked",
+    "tSec": 11.169,
+    "tx": "0x47c69cc1d81f3a96883271664e36e37783f982df26c803a018a994dd7f480ed2"
+  },
+  {
+    "step": "t1 admitted",
+    "tSec": 18.438,
+    "hash": "0xd1e8b85331769d0718b2640d425c7d49d799a0973a0e56c3bde6bcc0df4a5905",
+    "admitMs": 7269
+  },
+  {
+    "step": "t1 included",
+    "tSec": 27.169,
+    "block": 1228,
+    "status": "0x1",
+    "frames": [
+      "0x1",
+      "0x1",
+      "0x1",
+      "0x1"
+    ],
+    "inclusionMs": 16000
+  },
+  {
+    "step": "t2 admitted",
+    "tSec": 30.166,
+    "hash": "0x5a3c6dcaf5eea5f6867690d24e0dfdf4711352df31e8dc7cf14bfb31267f5001",
+    "admitMs": 2993
+  },
+  {
+    "step": "t2 included",
+    "tSec": 47.919,
+    "block": 1231,
+    "status": "0x1",
+    "frames": [
+      "0x1",
+      "0x1",
+      "0x1",
+      "0x1"
+    ],
+    "inclusionMs": 20746
+  },
+  {
+    "step": "t3 quota exhausted",
+    "tSec": 62.684,
+    "canonical": {
+      "accepted": false,
+      "code": -32000,
+      "message": "Invalid params: Frame transaction validation-prefix simulation failed: StorageReadNonSender",
+      "rule": "STO"
+    },
+    "alt": {
+      "accepted": false,
+      "code": -32500,
+      "message": "validation frame 1: reverted with data 0x08c379a0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000156461696c792071756f7461206578686175737465640000000000000000000000",
+      "rule": "UNKNOWN"
+    }
+  }
+]

@@ -1,0 +1,57 @@
+{
+  "endpoint": "public-gateway",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "eth_estimateFrameTransactionGas",
+    "params": [
+      {
+        "chainId": "0x539",
+        "nonceKeys": [
+          "0x0"
+        ],
+        "nonceSeq": "0x1",
+        "sender": "0x5E22fC34ab4FC221c0762c8C0BC4a50101094cF1",
+        "frames": [
+          {
+            "mode": "0x1",
+            "flags": "0x3",
+            "target": null,
+            "limits": {
+              "execution": "0x1863c",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          },
+          {
+            "mode": "0x2",
+            "flags": "0x0",
+            "target": "0x78Cb10188B6F60276ce77cdC92549125C1976f9e",
+            "limits": {
+              "execution": "0xc350",
+              "state": "0x186a0"
+            },
+            "value": "0x0",
+            "data": "0x969b1cdb00000000000000000000000000000000000000000000000000000000000004d2"
+          }
+        ],
+        "fees": {
+          "maxPriorityFeePerGas": "0xf4240",
+          "maxFeePerGas": "0x77359400",
+          "maxFeePerBlobGas": "0x0"
+        },
+        "blobVersionedHashes": [],
+        "recentRootReferences": []
+      }
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "error": {
+      "message": "validation frame 0: reverted",
+      "code": -32500
+    }
+  }
+}

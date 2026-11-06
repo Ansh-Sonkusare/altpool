@@ -1,0 +1,17 @@
+{
+  "endpoint": "https://altmempoolgateway.forshtat.com/rpc",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "eth_getTransactionCount",
+    "params": [
+      "0x72c4Cb077a96b36754399fDa6445e13ECA8bB463",
+      "pending"
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": "0x1"
+  }
+}

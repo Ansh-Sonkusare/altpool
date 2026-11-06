@@ -1,0 +1,58 @@
+{
+  "endpoint": "https://altmempoolgateway.forshtat.com/rpc",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "eth_getTransactionReceipt",
+    "params": [
+      "0x5a3c6dcaf5eea5f6867690d24e0dfdf4711352df31e8dc7cf14bfb31267f5001"
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "blockHash": "0x6041fc303e772a870180a56b63abbccd18085f113a9465ebf5eaa7188c805ea5",
+      "blockNumber": "0x4cf",
+      "contractAddress": null,
+      "cumulativeGasUsed": "0xa424",
+      "effectiveGasPrice": "0x3b9aca07",
+      "frameReceipts": [
+        {
+          "gasUsed": "0x64",
+          "logs": [],
+          "stateGasUsed": "0x0",
+          "status": "0x1"
+        },
+        {
+          "gasUsed": "0x2102",
+          "logs": [],
+          "stateGasUsed": "0x0",
+          "status": "0x1"
+        },
+        {
+          "gasUsed": "0xbb8",
+          "logs": [],
+          "stateGasUsed": "0x0",
+          "status": "0x1"
+        },
+        {
+          "gasUsed": "0x3162",
+          "logs": [],
+          "stateGasUsed": "0x0",
+          "status": "0x1"
+        }
+      ],
+      "from": "0x675aebcd63403ff0e3788b334d6f8415311014a5",
+      "gasUsed": "0xa424",
+      "logs": [],
+      "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "payer": "0x63cb4e38247e0d3d835ef026202a6e0c3925a3fc",
+      "status": "0x1",
+      "to": "0x675aebcd63403ff0e3788b334d6f8415311014a5",
+      "transactionHash": "0x5a3c6dcaf5eea5f6867690d24e0dfdf4711352df31e8dc7cf14bfb31267f5001",
+      "transactionIndex": "0x0",
+      "type": "0x6"
+    }
+  }
+}

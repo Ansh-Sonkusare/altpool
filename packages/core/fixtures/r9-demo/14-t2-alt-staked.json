@@ -1,0 +1,84 @@
+{
+  "endpoint": "http://127.0.0.1:24337/rpc",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "eth_sendFrameTransaction",
+    "params": [
+      {
+        "chainId": "0x539",
+        "nonceKeys": [
+          "0x0"
+        ],
+        "nonceSeq": "0x0",
+        "sender": "0xFB30256917C8cB84476e3300C781bEa72a1CBbD6",
+        "frames": [
+          {
+            "mode": 1,
+            "flags": 2,
+            "target": null,
+            "limits": {
+              "execution": "0x7530",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          },
+          {
+            "mode": 1,
+            "flags": 1,
+            "target": "0x8438ad1c834623cff278ab6829a248e37c2d7e3f",
+            "limits": {
+              "execution": "0xea60",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          },
+          {
+            "mode": 2,
+            "flags": 0,
+            "target": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
+            "limits": {
+              "execution": "0xc350",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          },
+          {
+            "mode": 0,
+            "flags": 0,
+            "target": "0x8438ad1c834623cff278ab6829a248e37c2d7e3f",
+            "limits": {
+              "execution": "0x186a0",
+              "state": "0x3d090"
+            },
+            "value": "0x0",
+            "data": "0x67b95108"
+          }
+        ],
+        "signatures": [
+          {
+            "scheme": 1,
+            "signer": "0x",
+            "msg": "0x",
+            "signature": "0x018030511f4a0cefb8624eb6ff77643b7876761dd8f6573e9737ad5ca42e2932d35586c03c3edf72afe926cc0fac4da3ebfa76987d2fa7e2352918b77ba7a15347"
+          }
+        ],
+        "fees": {
+          "maxPriorityFeePerGas": "0x3b9aca00",
+          "maxFeePerGas": "0x77359400",
+          "maxFeePerBlobGas": "0x0"
+        },
+        "blobVersionedHashes": [],
+        "recentRootReferences": []
+      }
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": "0x24d4fe8139be9ca4ebe7538ce4b7a2043f140c321ade3a341918e39ad85434e5"
+  }
+}

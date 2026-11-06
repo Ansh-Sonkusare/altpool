@@ -1,0 +1,64 @@
+{
+  "endpoint": "https://altmempoolgateway.forshtat.com/rpc",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "eth_getTransactionReceipt",
+    "params": [
+      "0x47c69cc1d81f3a96883271664e36e37783f982df26c803a018a994dd7f480ed2"
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "blockHash": "0xbee17b66f95f5ca1f360ea4e19b1c0721a24d6f5622c2f34d52c26d57deb0c92",
+      "blockNumber": "0x4c9",
+      "contractAddress": null,
+      "cumulativeGasUsed": "0x3e3e7",
+      "effectiveGasPrice": "0x1e8480",
+      "from": "0x72c4cb077a96b36754399fda6445e13eca8bb463",
+      "gasUsed": "0x3e3e7",
+      "logs": [
+        {
+          "address": "0xfffffffffffffffffffffffffffffffffffffffe",
+          "blockHash": "0xbee17b66f95f5ca1f360ea4e19b1c0721a24d6f5622c2f34d52c26d57deb0c92",
+          "blockNumber": "0x4c9",
+          "blockTimestamp": "0x6aed905c",
+          "data": "0x000000000000000000000000000000000000000000000000002aa1efb94e0000",
+          "logIndex": "0x0",
+          "removed": false,
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x00000000000000000000000072c4cb077a96b36754399fda6445e13eca8bb463",
+            "0x00000000000000000000000063cb4e38247e0d3d835ef026202a6e0c3925a3fc"
+          ],
+          "transactionHash": "0x47c69cc1d81f3a96883271664e36e37783f982df26c803a018a994dd7f480ed2",
+          "transactionIndex": "0x0"
+        },
+        {
+          "address": "0xfffffffffffffffffffffffffffffffffffffffe",
+          "blockHash": "0xbee17b66f95f5ca1f360ea4e19b1c0721a24d6f5622c2f34d52c26d57deb0c92",
+          "blockNumber": "0x4c9",
+          "blockTimestamp": "0x6aed905c",
+          "data": "0x000000000000000000000000000000000000000000000000002aa1efb94e0000",
+          "logIndex": "0x1",
+          "removed": false,
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x00000000000000000000000063cb4e38247e0d3d835ef026202a6e0c3925a3fc",
+            "0x000000000000000000000000d51c04d7a0b01124e84de152f4e56d9eecb22d2f"
+          ],
+          "transactionHash": "0x47c69cc1d81f3a96883271664e36e37783f982df26c803a018a994dd7f480ed2",
+          "transactionIndex": "0x0"
+        }
+      ],
+      "logsBloom": "0x0000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000a000000000000000000000000000000002000010000000000000200000000000000000800000000000000000000000000004000000000000000000000000000000000000000000000000080000000000000000000000000000000002000000000008000000000000000000000020000000000000000000400000000000000000000000200000000000000000000000000000000000000000",
+      "status": "0x1",
+      "to": "0x63cb4e38247e0d3d835ef026202a6e0c3925a3fc",
+      "transactionHash": "0x47c69cc1d81f3a96883271664e36e37783f982df26c803a018a994dd7f480ed2",
+      "transactionIndex": "0x0",
+      "type": "0x0"
+    }
+  }
+}

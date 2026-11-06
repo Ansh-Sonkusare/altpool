@@ -1,0 +1,17 @@
+{
+  "endpoint": "public-gateway",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "rpc_modules",
+    "params": []
+  },
+  "response": {
+    "error": {
+      "code": -32601,
+      "message": "Method not found: rpc_modules"
+    },
+    "id": 1,
+    "jsonrpc": "2.0"
+  }
+}

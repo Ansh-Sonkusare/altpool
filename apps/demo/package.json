@@ -1,0 +1,22 @@
+{
+  "name": "@altpool/demo",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "test": "vitest run --passWithNoTests",
+    "demo": "tsx src/demo.ts"
+  },
+  "dependencies": {
+    "@altpool/core": "workspace:*",
+    "altpool": "workspace:*",
+    "@altpool/simulator": "workspace:*",
+    "@altpool/prover": "workspace:*",
+    "@altpool/contracts": "workspace:*",
+    "@altpool/monitor": "workspace:*"
+  }
+}

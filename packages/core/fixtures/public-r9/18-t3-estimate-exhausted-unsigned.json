@@ -1,0 +1,87 @@
+{
+  "endpoint": "https://altmempoolgateway.forshtat.com/rpc",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "eth_estimateFrameTransactionGas",
+    "params": [
+      {
+        "chainId": "0x539",
+        "nonceKeys": [
+          "0x0"
+        ],
+        "nonceSeq": "0x0",
+        "sender": "0xC2fD683dED472DCB3fFD13849A52D0117E0729b2",
+        "frames": [
+          {
+            "mode": 1,
+            "flags": 2,
+            "target": null,
+            "limits": {
+              "execution": "0x7530",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          },
+          {
+            "mode": 1,
+            "flags": 1,
+            "target": "0x63cb4e38247e0d3d835ef026202a6e0c3925a3fc",
+            "limits": {
+              "execution": "0xea60",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          },
+          {
+            "mode": 2,
+            "flags": 0,
+            "target": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
+            "limits": {
+              "execution": "0xc350",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          },
+          {
+            "mode": 0,
+            "flags": 0,
+            "target": "0x63cb4e38247e0d3d835ef026202a6e0c3925a3fc",
+            "limits": {
+              "execution": "0x186a0",
+              "state": "0x3d090"
+            },
+            "value": "0x0",
+            "data": "0x67b95108"
+          }
+        ],
+        "signatures": [
+          {
+            "scheme": 1,
+            "signer": "0x",
+            "msg": "0x",
+            "signature": "0x"
+          }
+        ],
+        "fees": {
+          "maxPriorityFeePerGas": "0x3b9aca00",
+          "maxFeePerGas": "0x77359400",
+          "maxFeePerBlobGas": "0x0"
+        },
+        "blobVersionedHashes": [],
+        "recentRootReferences": []
+      }
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "error": {
+      "message": "Invalid frame transaction signature",
+      "code": -32507
+    }
+  }
+}

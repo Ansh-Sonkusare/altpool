@@ -1,0 +1,21 @@
+{
+  "name": "altpool-monorepo",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.9.0",
+  "scripts": {
+    "build": "turbo build",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test",
+    "dev": "turbo dev",
+    "smoke": "pnpm --filter @altpool/core smoke",
+    "demo": "pnpm --filter @altpool/demo demo"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "tsx": "^4.23.15",
+    "turbo": "^2.11.10",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  }
+}

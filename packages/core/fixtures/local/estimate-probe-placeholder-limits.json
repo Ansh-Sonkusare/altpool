@@ -1,0 +1,74 @@
+{
+  "endpoint": "http://127.0.0.1:24337/rpc",
+  "request": {
+    "method": "eth_estimateFrameTransactionGas",
+    "params": [
+      {
+        "chainId": "0x539",
+        "nonceKeys": [
+          "0x0"
+        ],
+        "nonceSeq": "0x9",
+        "sender": "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc",
+        "frames": [
+          {
+            "mode": 1,
+            "flags": 3,
+            "target": null,
+            "limits": {
+              "execution": "0x7530",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          },
+          {
+            "mode": 2,
+            "flags": 0,
+            "target": "0x5544596212F91984C986A919C8026DF0576816f9",
+            "limits": {
+              "execution": "0x989680",
+              "state": "0x989680"
+            },
+            "value": "0x1",
+            "data": "0x"
+          }
+        ],
+        "signatures": [
+          {
+            "scheme": 1,
+            "signer": "0x",
+            "msg": "0x",
+            "signature": "0x015a9035ea745dc41a00b841aa545f1f5b9821754d909c42fd578df17c2775e4d944d4c7529e76459afbe1cbea2e517dc6dc9efc33d2686d0c4946687b6c4e06d6"
+          }
+        ],
+        "fees": {
+          "maxPriorityFeePerGas": "0x3b9aca00",
+          "maxFeePerGas": "0x77359400",
+          "maxFeePerBlobGas": "0x0"
+        },
+        "blobVersionedHashes": [],
+        "recentRootReferences": []
+      }
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "frames": [
+        {
+          "execution": "0x64",
+          "state": "0x0"
+        },
+        {
+          "execution": "0x64",
+          "state": "0x0"
+        }
+      ],
+      "cumulativeGasUsed": "0x65f6",
+      "maxFeePerGas": "0x3b9acbc0",
+      "maxPriorityFeePerGas": "0x3b9aca00"
+    }
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "endpoint": "sidecar",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "eth_getFrameTransactionReceipt",
+    "params": [
+      "0x1557f96d1bca1d39c1255865a952556cdc6a8118854311e5fd54528bdd56d69c"
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "cumulativeGasUsed": "0x65f6",
+      "payer": "0x9965507d1a55bcc2695c58ba16fb37d819b0a4dc",
+      "blockNumber": "0x45",
+      "status": "success",
+      "frameReceipts": [
+        {
+          "status": "success",
+          "gasUsed": {
+            "execution": "0x64",
+            "state": "0x0"
+          },
+          "logs": []
+        },
+        {
+          "status": "success",
+          "gasUsed": {
+            "execution": "0x64",
+            "state": "0x0"
+          },
+          "logs": [
+            {
+              "address": "0xfffffffffffffffffffffffffffffffffffffffe",
+              "data": "0x0000000000000000000000000000000000000000000000000000000000000001",
+              "topics": [
+                "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+                "0x0000000000000000000000009965507d1a55bcc2695c58ba16fb37d819b0a4dc",
+                "0x0000000000000000000000005544596212f91984c986a919c8026df0576816f9"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

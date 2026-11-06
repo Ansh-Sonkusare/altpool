@@ -1,0 +1,19 @@
+{
+  "name": "@altpool/core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./fixtures": "./src/fixtures.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "test": "vitest run --passWithNoTests",
+    "smoke": "tsx scripts/smoke.ts"
+  },
+  "dependencies": {
+    "@forshtat/hegota-support": "0.0.1",
+    "viem": "^2.57.10"
+  }
+}

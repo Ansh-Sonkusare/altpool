@@ -1,0 +1,19 @@
+{
+  "endpoint": "https://altmempoolgateway.forshtat.com/rpc",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "eth_sendRawTransaction",
+    "params": [
+      "0x06f8e5820539c1808094f3fca5b73694dc2f717859b3bd1414658f5e5c61f870ca010280c4827530808080de01019463cb4e38247e0d3d835ef026202a6e0c3925a3fcc482ea60808080de0280948943545177806ed17b9f23f0a21ee5948ecaa776c482c350808080e680809463cb4e38247e0d3d835ef026202a6e0c3925a3fcc8830186a08303d090808467b95108f848f846018080b84100881c365fd77a809e51d9d95cf7441aff40b550db6a3f7aec82c729f52f1daef761645b3eb97a14e72fe4b0a49ebd8c465b98755ff1666b755a396bee9c5bbe08cb843b9aca00847735940080c0c0"
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "error": {
+      "code": -32000,
+      "message": "Invalid params: Frame transaction validation-prefix simulation failed: StorageReadNonSender"
+    }
+  }
+}

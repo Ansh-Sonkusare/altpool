@@ -1,0 +1,71 @@
+{
+  "endpoint": "http://127.0.0.1:24337/rpc",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "eth_sendFrameTransaction",
+    "params": [
+      {
+        "chainId": "0x539",
+        "nonceKeys": [
+          "0x1a1aff44d4a"
+        ],
+        "nonceSeq": "0x0",
+        "sender": "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc",
+        "frames": [
+          {
+            "mode": 1,
+            "flags": 3,
+            "target": null,
+            "limits": {
+              "execution": "0xea60",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          },
+          {
+            "mode": 2,
+            "flags": 0,
+            "target": "0x5544596212F91984C986A919C8026DF0576816f9",
+            "limits": {
+              "execution": "0xc350",
+              "state": "0x0"
+            },
+            "value": "0x1",
+            "data": "0x"
+          }
+        ],
+        "signatures": [
+          {
+            "scheme": 1,
+            "signer": "0x",
+            "msg": "0x",
+            "signature": "0x01382e20b3149981d8248597e9322a919e49a479f5355c8af233e7f5e25fa522fa0478793cc780adbdbe7863825ba27b94400bcedfd9be1730ae8331f9bd0dd98e"
+          }
+        ],
+        "fees": {
+          "maxPriorityFeePerGas": "0x3b9aca00",
+          "maxFeePerGas": "0x77359400",
+          "maxFeePerBlobGas": "0x0"
+        },
+        "blobVersionedHashes": [],
+        "recentRootReferences": [
+          {
+            "sourceId": "0xc7d3fa9623ec3d975b264e36a916a4362441e24ba07d2c7ef305ab86084adaba",
+            "slot": "0xa0",
+            "root": "0x00844ca5ee2c02edc9035b46cfc3aff5d25e597669341c90b8383f0334d16ae4"
+          }
+        ]
+      }
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "error": {
+      "message": "EIP-8272 recent-root reference is not committed in the RECENT_ROOT_ADDRESS predeploy at head state",
+      "code": -32500
+    }
+  }
+}

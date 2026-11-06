@@ -1,0 +1,65 @@
+{
+  "endpoint": "http://127.0.0.1:24337/rpc",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "eth_sendFrameTransaction",
+    "params": [
+      {
+        "chainId": "0x539",
+        "nonceKeys": [
+          "0x1a1aff44d49"
+        ],
+        "nonceSeq": "0x0",
+        "sender": "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc",
+        "frames": [
+          {
+            "mode": 1,
+            "flags": 3,
+            "target": null,
+            "limits": {
+              "execution": "0xea60",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          },
+          {
+            "mode": 2,
+            "flags": 0,
+            "target": "0x5544596212F91984C986A919C8026DF0576816f9",
+            "limits": {
+              "execution": "0xc350",
+              "state": "0x0"
+            },
+            "value": "0x1",
+            "data": "0x"
+          }
+        ],
+        "signatures": [
+          {
+            "scheme": 1,
+            "signer": "0x",
+            "msg": "0x",
+            "signature": "0x01179db4af8e54431b8e9c89a63da06a8812a77159deff4e586676dfd84e70c6bd3d7354806dfae9dec41c06d76cee5147f1ee031561352aee013c7419725bf60c"
+          }
+        ],
+        "fees": {
+          "maxPriorityFeePerGas": "0x40f81480",
+          "maxFeePerGas": "0x81f02900",
+          "maxFeePerBlobGas": "0x0"
+        },
+        "blobVersionedHashes": [],
+        "recentRootReferences": []
+      }
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "error": {
+      "message": "Frame transaction cannot be replaced: fee too low",
+      "code": -32602
+    }
+  }
+}

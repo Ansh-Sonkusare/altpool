@@ -1,0 +1,62 @@
+{
+  "endpoint": "http://127.0.0.1:24337/rpc",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "eth_sendFrameTransaction",
+    "params": [
+      {
+        "chainId": "0x539",
+        "nonceKeys": [
+          "0x1a1aff44d47"
+        ],
+        "nonceSeq": "0x0",
+        "sender": "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc",
+        "frames": [
+          {
+            "mode": 1,
+            "flags": 3,
+            "target": null,
+            "limits": {
+              "execution": "0xea60",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          },
+          {
+            "mode": 2,
+            "flags": 0,
+            "target": "0x5544596212F91984C986A919C8026DF0576816f9",
+            "limits": {
+              "execution": "0xc350",
+              "state": "0x0"
+            },
+            "value": "0x1",
+            "data": "0x"
+          }
+        ],
+        "signatures": [
+          {
+            "scheme": 1,
+            "signer": "0x",
+            "msg": "0x",
+            "signature": "0x007b7c0c113b91a60fb265bcc97465ab66e97bcedc2c54dc02f663863829b5f7470d73311d145f1b9b1139eb5bd7bf25748d4846ff9a063b73081fcd84fe7062d1"
+          }
+        ],
+        "fees": {
+          "maxPriorityFeePerGas": "0x3b9aca00",
+          "maxFeePerGas": "0x77359400",
+          "maxFeePerBlobGas": "0x0"
+        },
+        "blobVersionedHashes": [],
+        "recentRootReferences": []
+      }
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": "0x87e11166ce1b27e1e874f847bb2fefab80a15ff7b43892e7a1ce9ff95366cd68"
+  }
+}

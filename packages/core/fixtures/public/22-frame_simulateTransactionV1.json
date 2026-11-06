@@ -1,0 +1,19 @@
+{
+  "endpoint": "public-gateway",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "frame_simulateTransactionV1",
+    "params": [
+      {}
+    ]
+  },
+  "response": {
+    "error": {
+      "code": -32601,
+      "message": "Method not found: frame_simulateTransactionV1"
+    },
+    "id": 1,
+    "jsonrpc": "2.0"
+  }
+}

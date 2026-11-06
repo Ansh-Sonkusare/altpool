@@ -1,0 +1,87 @@
+{
+  "endpoint": "http://127.0.0.1:24337/rpc",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "eth_sendFrameTransaction",
+    "params": [
+      {
+        "chainId": "0x539",
+        "nonceKeys": [
+          "0x0"
+        ],
+        "nonceSeq": "0x0",
+        "sender": "0x215b9fD23B7DdbD257Ab101970f58Df957c4bA71",
+        "frames": [
+          {
+            "mode": 1,
+            "flags": 2,
+            "target": null,
+            "limits": {
+              "execution": "0x7530",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          },
+          {
+            "mode": 1,
+            "flags": 1,
+            "target": "0x8438ad1c834623cff278ab6829a248e37c2d7e3f",
+            "limits": {
+              "execution": "0xea60",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          },
+          {
+            "mode": 2,
+            "flags": 0,
+            "target": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
+            "limits": {
+              "execution": "0xc350",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          },
+          {
+            "mode": 0,
+            "flags": 0,
+            "target": "0x8438ad1c834623cff278ab6829a248e37c2d7e3f",
+            "limits": {
+              "execution": "0x186a0",
+              "state": "0x3d090"
+            },
+            "value": "0x0",
+            "data": "0x67b95108"
+          }
+        ],
+        "signatures": [
+          {
+            "scheme": 1,
+            "signer": "0x",
+            "msg": "0x",
+            "signature": "0x01433d3d025671c62e583be88c578c3138fd0e6a33d631c1fb425a743fcf2dd5ef2f4f22fd90a098ef17fe5e9d87068bf59d017c4a47aeca2d9147f85f19eeaaa9"
+          }
+        ],
+        "fees": {
+          "maxPriorityFeePerGas": "0x3b9aca00",
+          "maxFeePerGas": "0x77359400",
+          "maxFeePerBlobGas": "0x0"
+        },
+        "blobVersionedHashes": [],
+        "recentRootReferences": []
+      }
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "error": {
+      "message": "validation frame 1: reverted with data 0x08c379a0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000156461696c792071756f7461206578686175737465640000000000000000000000",
+      "code": -32500
+    }
+  }
+}

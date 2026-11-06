@@ -1,0 +1,160 @@
+{
+  "endpoint": "http://127.0.0.1:24337/rpc",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "skandha_explorer_getTransaction",
+    "params": [
+      "0x886aa4fb56efeb2a33bfe88eba177223bca140ee7bcc85ce3a60771ed7ab6b51"
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "hash": "0x886aa4fb56efeb2a33bfe88eba177223bca140ee7bcc85ce3a60771ed7ab6b51",
+      "entry": null,
+      "admission": {
+        "id": 12,
+        "txHash": "0x886aa4fb56efeb2a33bfe88eba177223bca140ee7bcc85ce3a60771ed7ab6b51",
+        "sender": "0x215b9fD23B7DdbD257Ab101970f58Df957c4bA71",
+        "nonce": "0x0",
+        "nonceKeys": [
+          "0x0"
+        ],
+        "at": 1793953091727,
+        "source": "rpc",
+        "outcome": "rejected",
+        "errorCode": -32500,
+        "checks": [
+          {
+            "rule": "gas-limit",
+            "verdict": "pass"
+          },
+          {
+            "rule": "recent-root",
+            "verdict": "pass"
+          },
+          {
+            "rule": "prefix",
+            "verdict": "pass"
+          },
+          {
+            "rule": "structure",
+            "verdict": "pass"
+          },
+          {
+            "rule": "signature",
+            "verdict": "pass"
+          },
+          {
+            "rule": "simulation",
+            "verdict": "fail",
+            "detail": "validation frame 1: reverted with data 0x08c379a0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000156461696c792071756f7461206578686175737465640000000000000000000000"
+          },
+          {
+            "rule": "trace-alignment",
+            "verdict": "skipped"
+          },
+          {
+            "rule": "OP-061",
+            "verdict": "skipped"
+          },
+          {
+            "rule": "execution",
+            "verdict": "skipped"
+          },
+          {
+            "rule": "mempool",
+            "verdict": "skipped"
+          },
+          {
+            "rule": "out-of-gas",
+            "verdict": "skipped"
+          },
+          {
+            "rule": "OP-011",
+            "verdict": "skipped"
+          },
+          {
+            "rule": "create",
+            "verdict": "skipped"
+          },
+          {
+            "rule": "storage",
+            "verdict": "skipped"
+          },
+          {
+            "rule": "COD-010",
+            "verdict": "skipped"
+          },
+          {
+            "rule": "entrypoint-access",
+            "verdict": "skipped"
+          }
+        ],
+        "frames": [
+          {
+            "mode": 1,
+            "flags": 2,
+            "target": null,
+            "limits": {
+              "execution": "0x7530",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          },
+          {
+            "mode": 1,
+            "flags": 1,
+            "target": "0x8438ad1c834623cff278ab6829a248e37c2d7e3f",
+            "limits": {
+              "execution": "0xea60",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          },
+          {
+            "mode": 2,
+            "flags": 0,
+            "target": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
+            "limits": {
+              "execution": "0xc350",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          },
+          {
+            "mode": 0,
+            "flags": 0,
+            "target": "0x8438ad1c834623cff278ab6829a248e37c2d7e3f",
+            "limits": {
+              "execution": "0x186a0",
+              "state": "0x3d090"
+            },
+            "value": "0x0",
+            "data": "0x67b95108"
+          }
+        ],
+        "frameStatuses": [
+          "not-run",
+          "not-run",
+          "not-run",
+          "not-run"
+        ]
+      },
+      "events": [
+        {
+          "seq": 40,
+          "txHash": "0x886aa4fb56efeb2a33bfe88eba177223bca140ee7bcc85ce3a60771ed7ab6b51",
+          "at": 1793953091738,
+          "kind": "rejected",
+          "reason": "validation frame 1: reverted with data 0x08c379a0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000156461696c792071756f7461206578686175737465640000000000000000000000"
+        }
+      ]
+    }
+  }
+}

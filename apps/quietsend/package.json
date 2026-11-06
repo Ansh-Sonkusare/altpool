@@ -1,0 +1,24 @@
+{
+  "name": "quietsend",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "test": "vitest run --passWithNoTests",
+    "start": "tsx src/cli.ts"
+  },
+  "dependencies": {
+    "@altpool/core": "workspace:*",
+    "altpool": "workspace:*",
+    "@altpool/simulator": "workspace:*",
+    "@altpool/prover": "workspace:*",
+    "@altpool/contracts": "workspace:*"
+  },
+  "bin": {
+    "quietsend": "./src/cli.ts"
+  }
+}

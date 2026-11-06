@@ -1,0 +1,32 @@
+{
+  "endpoint": "public-ethrex-root",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "ethrex_simulateFrameTransaction",
+    "params": [
+      "0x06f8a5820539c180019451b7a2186fd518b6734e6504b63230f64c603a52f1ca010380c4827530808080e580809495d326f25522158375d758d5548c60281f8989ffc682c35082c350808501000003e8f848f846018080b841003a0d0b67db6c23aa5a99236a4e06831a89b17e8a4918b28020c0a6da6bdaca933d350eae4e3e80dba01c81fb530d9d58418c95eae8d232737597666290914703cb8477359400847735940080c0c0",
+      "latest",
+      {
+        "trace": true
+      }
+    ]
+  },
+  "response": {
+    "id": 1,
+    "jsonrpc": "2.0",
+    "result": {
+      "canonicalMempoolValid": false,
+      "canonicalMempoolViolation": "Invalid Transaction: Nonce mismatch: expected 2, got 1",
+      "erc7562Trace": null,
+      "erc7562TraceError": null,
+      "executionError": "Invalid Transaction: Nonce mismatch: expected 2, got 1",
+      "executionStatus": null,
+      "frames": null,
+      "gasUsed": null,
+      "maxCost": "0x10b2d42de2800",
+      "payer": null,
+      "prefixShape": "SelfVerify"
+    }
+  }
+}

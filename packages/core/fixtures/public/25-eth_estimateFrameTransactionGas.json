@@ -1,0 +1,109 @@
+{
+  "endpoint": "public-gateway",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "eth_estimateFrameTransactionGas",
+    "params": [
+      {
+        "chainId": "0x539",
+        "nonceKeys": [
+          "0x0"
+        ],
+        "nonceSeq": "0x2",
+        "sender": "0x67908b60E4BE3D7CED4D3ed2CcE51362DDCFbbC7",
+        "frames": [
+          {
+            "mode": "0x1",
+            "flags": "0x2",
+            "target": null,
+            "limits": {
+              "execution": "0x4e20",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          },
+          {
+            "mode": "0x1",
+            "flags": "0x1",
+            "target": "0x4B94121F0343a95C90e9fd6bb3E0d6Fa7448Ed0c",
+            "limits": {
+              "execution": "0x12d90",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x766c4f37000000000000000000000000a146f7390a8023bdc771fd4b92031ab5825a7e28"
+          },
+          {
+            "mode": "0x2",
+            "flags": "0x4",
+            "target": "0xB343620fE0F4125aCB960E7613dDcd7a3Ce0f494",
+            "limits": {
+              "execution": "0x61a80",
+              "state": "0x81b320"
+            },
+            "value": "0x0",
+            "data": "0xe7fb71b800000000000000000000000067908b60e4be3d7ced4d3ed2cce51362ddcfbbc72952221bed73415f0129bc64fbc91e43bb182b8e07757572d97c8b1642dddfe33dc76036d35a08e730f9e350963952a25ce1cf4b434410124ee48728f6514a72000000000000000000000000000000000000000000000000000000000000000a"
+          },
+          {
+            "mode": "0x2",
+            "flags": "0x4",
+            "target": "0xa146F7390A8023BdC771fD4b92031AB5825a7E28",
+            "limits": {
+              "execution": "0x7530",
+              "state": "0x0"
+            },
+            "value": "0xde0b66856f4fc00",
+            "data": "0x"
+          },
+          {
+            "mode": "0x2",
+            "flags": "0x0",
+            "target": "0x53aF43F3d696bef8e7FB022B8A707f7103f952a0",
+            "limits": {
+              "execution": "0xea60",
+              "state": "0x3d090"
+            },
+            "value": "0x0",
+            "data": "0xa9059cbb000000000000000000000000a146f7390a8023bdc771fd4b92031ab5825a7e28000000000000000000000000000000000000000000000000000000008f0d1800"
+          },
+          {
+            "mode": "0x0",
+            "flags": "0x0",
+            "target": "0x4B94121F0343a95C90e9fd6bb3E0d6Fa7448Ed0c",
+            "limits": {
+              "execution": "0xea60",
+              "state": "0x186a0"
+            },
+            "value": "0x0",
+            "data": "0x14aaa61b"
+          }
+        ],
+        "signatures": [
+          {
+            "scheme": "0x1",
+            "signer": "0x",
+            "msg": "0x",
+            "signature": "0x005d1910dd5e3c08af609e741731fb92b1c89b44b809085615db44f49935e90e7f5a705bc3e12fc28ddca00ce669b32c71e2d9ce6ee7278790d00eade60a8b183f"
+          }
+        ],
+        "fees": {
+          "maxPriorityFeePerGas": "0x77359400",
+          "maxFeePerGas": "0xb2d05e00",
+          "maxFeePerBlobGas": "0x0"
+        },
+        "blobVersionedHashes": [],
+        "recentRootReferences": []
+      }
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "error": {
+      "message": "Invalid frame transaction signature",
+      "code": -32507
+    }
+  }
+}

@@ -1,0 +1,154 @@
+{
+  "endpoint": "public-gateway",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "skandha_explorer_getTransaction",
+    "params": [
+      "0x7c55efcd72390927262aaba64cbf7c7d77a135eb3c2e737cd8ae022d2b5ad907"
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "hash": "0x7c55efcd72390927262aaba64cbf7c7d77a135eb3c2e737cd8ae022d2b5ad907",
+      "entry": null,
+      "admission": {
+        "id": 5,
+        "txHash": "0x7c55efcd72390927262aaba64cbf7c7d77a135eb3c2e737cd8ae022d2b5ad907",
+        "sender": "0x0a7d37e6f58d3e83a5a0655fc5aeec3372e781b6",
+        "nonce": "0x8",
+        "nonceKeys": [
+          "0x0"
+        ],
+        "at": 1793951871733,
+        "source": "rpc",
+        "outcome": "rejected",
+        "errorCode": -32502,
+        "checks": [
+          {
+            "rule": "gas-limit",
+            "verdict": "pass"
+          },
+          {
+            "rule": "recent-root",
+            "verdict": "pass"
+          },
+          {
+            "rule": "prefix",
+            "verdict": "pass"
+          },
+          {
+            "rule": "structure",
+            "verdict": "pass"
+          },
+          {
+            "rule": "signature",
+            "verdict": "pass"
+          },
+          {
+            "rule": "simulation",
+            "verdict": "pass"
+          },
+          {
+            "rule": "trace-alignment",
+            "verdict": "pass"
+          },
+          {
+            "rule": "OP-061",
+            "verdict": "pass"
+          },
+          {
+            "rule": "execution",
+            "verdict": "pass"
+          },
+          {
+            "rule": "trace-alignment",
+            "frameIndex": 0,
+            "entity": "payer",
+            "verdict": "pass"
+          },
+          {
+            "rule": "out-of-gas",
+            "frameIndex": 0,
+            "entity": "payer",
+            "verdict": "pass"
+          },
+          {
+            "rule": "OP-011",
+            "frameIndex": 0,
+            "entity": "payer",
+            "verdict": "pass"
+          },
+          {
+            "rule": "create",
+            "frameIndex": 0,
+            "entity": "payer",
+            "verdict": "pass"
+          },
+          {
+            "rule": "storage",
+            "frameIndex": 0,
+            "entity": "payer",
+            "verdict": "pass"
+          },
+          {
+            "rule": "COD-010",
+            "frameIndex": 0,
+            "entity": "payer",
+            "verdict": "fail",
+            "detail": "payer accesses un-deployed contract address 0x0000000000000000000000000000000000000005 with opcode STATICCALL"
+          },
+          {
+            "rule": "entrypoint-access",
+            "frameIndex": 0,
+            "entity": "payer",
+            "verdict": "pass"
+          },
+          {
+            "rule": "mempool",
+            "verdict": "skipped"
+          }
+        ],
+        "frames": [
+          {
+            "mode": 1,
+            "flags": 3,
+            "target": null,
+            "limits": {
+              "execution": "0xaae60",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x70de920d00000000000000000000000000000000000000000000000000000000000000401ee92b5099497b5e8feaf8e6496addd7dd173611beec97035655d1d55b370c9200000000000000000000000000000000000000000000000000000000000007c01d905bdd0a70883b9588e7da8025cb8cbe558509cbf2bcc9403733732195072717e7d7462ad3295c0641891601088b678d4012d4dd83520ac6a997527e31d0012e349aae91afb5e83a7b6da83ddaf34e4e44013d6d8a2ea09ada8720432978ae2d68790e7feff14494f799af6363d6db9fb9518c22e013700a02a96a310db3f71c8e0b388cff0c91ce11dfb10177b1b337b8cb81ad28713c72c0504d513d88400f1f0bd37dba20edfed910491799e9a8a846e7d0a24295708828747d72d742671aaa41306c1cf42e9478449789a99d93221bf0eebcd4f800df4d8dadf21754002f78b0abf203cfb9ec7f60e9c2247f94ee239deece216b09d1ae47943c25723013f4919ddbede98fc71f04249d95a51ae828c1f172491383f7fb8139262fe9912b464bece748c97383719c2fefa5104f0668b1bb39d45239a7769d26f0df72ae1cff1137fec43f63861dcbcded0b8756367f9f384c948a83fb657824dcbacdaa0c7ee0d89649d4f3401e54574e741477ee0b93b1272e2d4c430f9933f7881ad70c5f3ba988a61d1f284332e1bfc8864cb928c651404b739a55b598452ae88f8b013cc7584753726c1f8f9a3c65cc49c250bb61348ef578f390840843c90beb6a2188bc9c7010e88887fd33623966646ea20ee22985c2be54a104e48d122f45e30768502ce3380b5cc67518e756b6ef6186105aa16a7758a311008a2568acefa6074899cc78a05071f7718aa2361e3ed08eee92cafafb1858e462ec1fd2d80a4506e3d2e3625e96de535a01fb4a1377e17a4cd3d2d5bae6037387f4383d96bfcc08de62864d325b86f081bb077a055bf0983d3a762c1bf01520071ac953e5eb1421a28fdebed724604d3ec01dd6b15b0c389a145365a1cd334540d7d07b2f92ca1f284bfbc1525cd39b49485eb9c081be018f45eaee898f6e9f1445bc7e0df7d62a3f000a712a2cadb70fd3ee98f6432de4f705f9a54e0e10a926227559607bd12fb3406936a6806062dc91106ac5060da1ecd7c0534998db5e48d0fccd613dc02ccd552fcf90faad8bbe6bfc5191e038cd30abd7695872547550f7b7e676e53020744c7a6d45ba9f3280136e49f890759554fd4247cd50782ebb77df2249ded70901c1774d21b116f57a33143ae28deadcf30e50b1280b87e1ca73d8a648f7c703f8f6b6e147f4295518f843ccbc47e7ae5f34a47759d37917111fb660a5cc002b11db6fc44c87e8c9a2218160c8a51c3b9a32e8051df9ed7cd580eaf26fee6f1941e1d88b380261724be6ac479f3fd8d91d571ce6c9402a9005895c9b0baacf2a156700b5f56a93381c44f3175614eb50c72c98d64d4d977a470935f8c0875f129e6431026493cf8f44df1ac97f146afc5bd503071b9f6aa949ef6dd25b0a3116de17c8408093d0e52bd0dc795ce6b9e99c68338ee7f9c453608b57a53ccac50c0d70b107f96f0ad8d856357cf8b36ccc53db66c3892803a704b6265e67493e2e29de7eb475446a9a98926a78d982f7f2097450f013463b8d4307d2c5f54ae00a84d1f99571cf3a646cc17db1b79a95a57f42fd58c063e2eec4095bd486018b0c1431bff2005bfd7d012d1234c97a0ff768bcc5f1c7cdb710c673118c9817de24103d50ef14836545c8d43bdcf0de5eefad5325afdda404fbcfe769751d5aa30dea6da1ccaef82d117c7d7b83fba556f7af24078ce37204f478c6d0998af854301bf760afb058309d1907e1a4b3c948ff8ed8d1562f1da450686a5cb80cc2c61e0c430b4450c2967b7bcc432851fb4eca5f1e484b3c842954b7603f4687a83b2e7d492ab52cc67cbdf19917082d6c0cc25f11299cbb7cf6fabd10ef00101b0326fa8707c8e1949adfbef6b39b355627190bfc9efc78114b578853782d15be0d259fd4d433e9de6400fd620c79b137094ea0bda8692f49655ffe5bf2da8c59e31a6ad03aff2b93127a10df9fa2004e364e68a4427300713170970974df266209188e47682251e1a602eee27e14d39392df1b282c5893d68cb149d56ac059b6b712a1524a3e1b8f5c5ff5e8297a888ff23ebab85de7871d1bc2a8af2a20124f861205725e539aa67183862b00aef5b18ef2f1d632184648d1c5a0945af1966ca2128912ec035b156bb5ac29c547b3940b17626d5ddf7835d3af9eaf3840e4eaab24118ee091b137ee6d1f59366de6244b8fdb94fd188873d8826e7b5efca3bb000f816b49ea7371e741eedbcef92febac11cc8b977d9281cdc9347281528164f320ec3ecc663fefba0d36b50b153a5ac46993ff3645a74b2b870d12804c310d3c0d4e52b7afe7f0cb797477b71183a79fef48f1c88915cefeb4d7a90ffa75aeb905e71a2c1edcea9b579fea47294b719685ae159583ef714a1405831a5db3b491305cbf1a3717c6263dfedcd39f0f6b7063bd41b6263cc3114318d834440256f722919cf319e10b05afc57c673376df5fca32c39a648baaeba7427792b2b6cd212aee5923d3e06f246d17dbbb37471a9b53a2f32d91a2cbab5d0726494ba6e08305ba64da69d331515dd84723aacf4193eea5c4b6db239ed25873b84387d6036023041051c81c70ce4867c5cea219e95041d27db0a6f907fd38f351667acaeb6a0548ef23e6688806e487ead0f9970d034f8c04f0a8d19693a612558d94f6e40f008bc83a49d8bd369ab22b1e48158e356cf6c97c9c1702f2d5f3ae62727e8bd22100d72f227e01ab9383627ca5085387cef7cdbd616d94d83a426a12693708e327ca7073163646886d3db616b8c1d9c6091c9ab714372364a90a76d5a296ad92"
+          },
+          {
+            "mode": 2,
+            "flags": 0,
+            "target": "0x0a7d37e6f58d3e83a5a0655fc5aeec3372e781b6",
+            "limits": {
+              "execution": "0x61a80",
+              "state": "0x6ddd0"
+            },
+            "value": "0x0",
+            "data": "0xa6fb97d1124ae3aa7d96a9ee0bed32326ca7810d5003ec0b3507e1eb8b5136ababd481cf000000000000000000000000b357908492a2e9a1c11a65735192c11a8f1cf1fa00000000000000000000000000000000000000000000000000013f6a72b10e00"
+          }
+        ],
+        "frameStatuses": [
+          "success",
+          "success"
+        ]
+      },
+      "events": [
+        {
+          "seq": 11,
+          "txHash": "0x7c55efcd72390927262aaba64cbf7c7d77a135eb3c2e737cd8ae022d2b5ad907",
+          "at": 1793951871764,
+          "kind": "rejected",
+          "reason": "payer accesses un-deployed contract address 0x0000000000000000000000000000000000000005 with opcode STATICCALL"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "endpoint": "https://altmempoolgateway.forshtat.com/rpc",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "eth_sendFrameTransaction",
+    "params": [
+      {
+        "chainId": "0x539",
+        "nonceKeys": [
+          "0x0"
+        ],
+        "nonceSeq": "0x0",
+        "sender": "0xf3FcA5B73694Dc2F717859B3bD1414658F5E5C61",
+        "frames": [
+          {
+            "mode": 1,
+            "flags": 2,
+            "target": null,
+            "limits": {
+              "execution": "0x7530",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          },
+          {
+            "mode": 1,
+            "flags": 1,
+            "target": "0x63cb4e38247e0d3d835ef026202a6e0c3925a3fc",
+            "limits": {
+              "execution": "0xea60",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          },
+          {
+            "mode": 2,
+            "flags": 0,
+            "target": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
+            "limits": {
+              "execution": "0xc350",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          },
+          {
+            "mode": 0,
+            "flags": 0,
+            "target": "0x63cb4e38247e0d3d835ef026202a6e0c3925a3fc",
+            "limits": {
+              "execution": "0x186a0",
+              "state": "0x3d090"
+            },
+            "value": "0x0",
+            "data": "0x67b95108"
+          }
+        ],
+        "signatures": [
+          {
+            "scheme": 1,
+            "signer": "0x",
+            "msg": "0x",
+            "signature": "0x00881c365fd77a809e51d9d95cf7441aff40b550db6a3f7aec82c729f52f1daef761645b3eb97a14e72fe4b0a49ebd8c465b98755ff1666b755a396bee9c5bbe08"
+          }
+        ],
+        "fees": {
+          "maxPriorityFeePerGas": "0x3b9aca00",
+          "maxFeePerGas": "0x77359400",
+          "maxFeePerBlobGas": "0x0"
+        },
+        "blobVersionedHashes": [],
+        "recentRootReferences": []
+      }
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "error": {
+      "message": "unstaked payer accessed payer slot 0x0000000000000000000000000000000000000000000000000000000000000000",
+      "data": {
+        "payer": "0x63cB4E38247e0d3d835Ef026202A6e0C3925a3FC"
+      },
+      "code": -32502
+    }
+  }
+}

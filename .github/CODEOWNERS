@@ -1,0 +1,10 @@
+# Fill in GitHub handles, then turn on "Require review from Code Owners" for main.
+# packages/core/           @devA @devB @devC
+# packages/prover/         @devA
+# packages/contracts/      @devA
+# packages/sdk/            @devB
+# apps/quietsend/          @devB
+# packages/simulator/      @devC
+# packages/monitor/        @devC
+# apps/monitor-web/        @devC
+# apps/demo/               @devC

@@ -1,0 +1,29 @@
+{
+  "endpoint": "public-gateway",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "skandha_explorer_info",
+    "params": []
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "protocolVersion": 1,
+      "chainId": 1337,
+      "version": "v4.1.1",
+      "commit": "",
+      "bundlingMode": "manual",
+      "p2pEnabled": true,
+      "latestSeq": 24,
+      "oldestSeq": 1,
+      "historyCapacity": 10000,
+      "bootId": "9c7ea46a50c67b59",
+      "minInclusionDenominator": 10,
+      "throttlingSlack": 10,
+      "banSlack": 50,
+      "faucetEnabled": true
+    }
+  }
+}

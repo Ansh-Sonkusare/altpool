@@ -1,0 +1,19 @@
+{
+  "endpoint": "http://127.0.0.1:24337/rpc",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "eth_sendRawTransaction",
+    "params": [
+      "0x06f8e5820539c1808094215b9fd23b7ddbd257ab101970f58df957c4ba71f870ca010280c4827530808080de0101948438ad1c834623cff278ab6829a248e37c2d7e3fc482ea60808080de0280948943545177806ed17b9f23f0a21ee5948ecaa776c482c350808080e68080948438ad1c834623cff278ab6829a248e37c2d7e3fc8830186a08303d090808467b95108f848f846018080b84101433d3d025671c62e583be88c578c3138fd0e6a33d631c1fb425a743fcf2dd5ef2f4f22fd90a098ef17fe5e9d87068bf59d017c4a47aeca2d9147f85f19eeaaa9cb843b9aca00847735940080c0c0"
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "error": {
+      "code": -32000,
+      "message": "Invalid params: Frame transaction validation-prefix simulation failed: StorageReadNonSender"
+    }
+  }
+}

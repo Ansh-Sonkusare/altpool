@@ -1,0 +1,57 @@
+{
+  "endpoint": "public-gateway",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "eth_estimateFrameTransactionGas",
+    "params": [
+      {
+        "chainId": "0x539",
+        "nonceKeys": [
+          "0x0"
+        ],
+        "nonceSeq": "0x1",
+        "sender": "0x51B7a2186FD518b6734e6504B63230F64c603A52",
+        "frames": [
+          {
+            "mode": "0x1",
+            "flags": "0x3",
+            "target": null,
+            "limits": {
+              "execution": "0x7530",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          },
+          {
+            "mode": "0x0",
+            "flags": "0x0",
+            "target": "0x95d326f25522158375D758D5548C60281f8989ff",
+            "limits": {
+              "execution": "0xc350",
+              "state": "0xc350"
+            },
+            "value": "0x0",
+            "data": "0x01000003e8"
+          }
+        ],
+        "fees": {
+          "maxPriorityFeePerGas": "0x77359400",
+          "maxFeePerGas": "0x77359400",
+          "maxFeePerBlobGas": "0x0"
+        },
+        "blobVersionedHashes": [],
+        "recentRootReferences": []
+      }
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "error": {
+      "message": "Invalid Transaction: Nonce mismatch: expected 2, got 1",
+      "code": -32500
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "endpoint": "public-gateway",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "skandha_explorer_peers",
+    "params": []
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": [
+      {
+        "peerId": "16Uiu2HAmDwBgD2fQPeaB79RR8uWe7XirXrF7BzgKouwHdSMT6qAs",
+        "direction": "outbound",
+        "connectedAt": 1793951685487,
+        "lastReceivedAt": 1793952127729,
+        "agentVersion": "skandha",
+        "supportedMempools": [
+          "QmcFZKUX9qoo3StwVycJTAhwdiqbEjcwNvQVK246p3z1rk"
+        ]
+      }
+    ]
+  }
+}

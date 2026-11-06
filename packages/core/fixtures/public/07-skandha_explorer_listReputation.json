@@ -1,0 +1,262 @@
+{
+  "endpoint": "public-gateway",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "skandha_explorer_listReputation",
+    "params": [
+      {
+        "limit": 20
+      }
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "items": [
+        {
+          "address": "0x004ecC066292c1fE27109f96C3FD1413053e5D73",
+          "opsSeen": 14,
+          "opsIncluded": 12,
+          "status": "ok",
+          "isWhitelisted": false,
+          "isBlacklisted": false,
+          "stake": "0x2aa1efb94e0000",
+          "unstakeDelaySec": 86400,
+          "withdrawTime": "0x0",
+          "isStaked": true
+        },
+        {
+          "address": "0x0520de9be71b79C37f0e3A605b2fe6Fbc594847E",
+          "opsSeen": 3,
+          "opsIncluded": 3,
+          "status": "ok",
+          "isWhitelisted": false,
+          "isBlacklisted": false,
+          "stake": "0x0",
+          "unstakeDelaySec": 0,
+          "withdrawTime": "0x0",
+          "isStaked": false
+        },
+        {
+          "address": "0x058fC5752B063765946Af729311bae7CE032e3a2",
+          "opsSeen": 1,
+          "opsIncluded": 1,
+          "status": "ok",
+          "isWhitelisted": false,
+          "isBlacklisted": false,
+          "stake": "0x0",
+          "unstakeDelaySec": 0,
+          "withdrawTime": "0x0",
+          "isStaked": false
+        },
+        {
+          "address": "0x0C2f8127424E1072f6ce7FB37C1f7F0CEe383Ee4",
+          "opsSeen": 1,
+          "opsIncluded": 1,
+          "status": "ok",
+          "isWhitelisted": false,
+          "isBlacklisted": false,
+          "stake": "0x0",
+          "unstakeDelaySec": 0,
+          "withdrawTime": "0x0",
+          "isStaked": false
+        },
+        {
+          "address": "0x0c99FE76869e0e86E4d43A72cC244aA09f2B9910",
+          "opsSeen": 1,
+          "opsIncluded": 1,
+          "status": "ok",
+          "isWhitelisted": false,
+          "isBlacklisted": false,
+          "stake": "0x0",
+          "unstakeDelaySec": 0,
+          "withdrawTime": "0x0",
+          "isStaked": false
+        },
+        {
+          "address": "0x10a7eBbc180F5386bEE4d9571F17fd395354704D",
+          "opsSeen": 1,
+          "opsIncluded": 1,
+          "status": "ok",
+          "isWhitelisted": false,
+          "isBlacklisted": false,
+          "stake": "0x0",
+          "unstakeDelaySec": 0,
+          "withdrawTime": "0x0",
+          "isStaked": false
+        },
+        {
+          "address": "0x14970814120b08E4b976C1E0072c16BB493BBE7e",
+          "opsSeen": 3,
+          "opsIncluded": 2,
+          "status": "ok",
+          "isWhitelisted": false,
+          "isBlacklisted": false,
+          "stake": "0x0",
+          "unstakeDelaySec": 0,
+          "withdrawTime": "0x0",
+          "isStaked": false
+        },
+        {
+          "address": "0x193c3E11310ccbBd9a0A2A805441fEAacC9bd57B",
+          "opsSeen": 1,
+          "opsIncluded": 1,
+          "status": "ok",
+          "isWhitelisted": false,
+          "isBlacklisted": false,
+          "stake": "0x2aa1efb94e0000",
+          "unstakeDelaySec": 86400,
+          "withdrawTime": "0x0",
+          "isStaked": true
+        },
+        {
+          "address": "0x239bB61113E6cBD1415626c4687A36E15ABCB93d",
+          "opsSeen": 27,
+          "opsIncluded": 27,
+          "status": "ok",
+          "isWhitelisted": false,
+          "isBlacklisted": false,
+          "stake": "0x0",
+          "unstakeDelaySec": 0,
+          "withdrawTime": "0x0",
+          "isStaked": false
+        },
+        {
+          "address": "0x29381cDa4aAD43c0A3Fb15569ec1D6e0568d9C81",
+          "opsSeen": 3,
+          "opsIncluded": 3,
+          "status": "ok",
+          "isWhitelisted": false,
+          "isBlacklisted": false,
+          "stake": "0x0",
+          "unstakeDelaySec": 0,
+          "withdrawTime": "0x0",
+          "isStaked": false
+        },
+        {
+          "address": "0x2aEe5BB5160C878bA0B9b7C6ade6b1B18653aa2b",
+          "opsSeen": 0,
+          "opsIncluded": 1,
+          "status": "ok",
+          "isWhitelisted": false,
+          "isBlacklisted": false,
+          "stake": "0x0",
+          "unstakeDelaySec": 0,
+          "withdrawTime": "0x0",
+          "isStaked": false
+        },
+        {
+          "address": "0x354127Ba9D914F859248129B3DbC0918Dde48575",
+          "opsSeen": 0,
+          "opsIncluded": 1,
+          "status": "ok",
+          "isWhitelisted": false,
+          "isBlacklisted": false,
+          "stake": "0x0",
+          "unstakeDelaySec": 0,
+          "withdrawTime": "0x0",
+          "isStaked": false
+        },
+        {
+          "address": "0x4979a720B2Dc4AA0AFdDf1AC8d497f9fF1cCbF43",
+          "opsSeen": 1,
+          "opsIncluded": 1,
+          "status": "ok",
+          "isWhitelisted": false,
+          "isBlacklisted": false,
+          "stake": "0x2aa1efb94e0000",
+          "unstakeDelaySec": 86400,
+          "withdrawTime": "0x0",
+          "isStaked": true
+        },
+        {
+          "address": "0x4b124373c515878c1a4979da295d6f9cA62FF848",
+          "opsSeen": 1,
+          "opsIncluded": 1,
+          "status": "ok",
+          "isWhitelisted": false,
+          "isBlacklisted": false,
+          "stake": "0x2386f26fc10000",
+          "unstakeDelaySec": 86400,
+          "withdrawTime": "0x0",
+          "isStaked": true
+        },
+        {
+          "address": "0x4B94121F0343a95C90e9fd6bb3E0d6Fa7448Ed0c",
+          "opsSeen": 6,
+          "opsIncluded": 5,
+          "status": "ok",
+          "isWhitelisted": false,
+          "isBlacklisted": false,
+          "stake": "0x2aa1efb94e0000",
+          "unstakeDelaySec": 86400,
+          "withdrawTime": "0x0",
+          "isStaked": true
+        },
+        {
+          "address": "0x4c87D72A84be078Ae3011c44dA3E2eCDEe35eA71",
+          "opsSeen": 0,
+          "opsIncluded": 1,
+          "status": "ok",
+          "isWhitelisted": false,
+          "isBlacklisted": false,
+          "stake": "0x0",
+          "unstakeDelaySec": 0,
+          "withdrawTime": "0x0",
+          "isStaked": false
+        },
+        {
+          "address": "0x50a22527cbB78136f9Ba81265b382bBE43f635f2",
+          "opsSeen": 0,
+          "opsIncluded": 1,
+          "status": "ok",
+          "isWhitelisted": false,
+          "isBlacklisted": false,
+          "stake": "0x0",
+          "unstakeDelaySec": 0,
+          "withdrawTime": "0x0",
+          "isStaked": false
+        },
+        {
+          "address": "0x51B7a2186FD518b6734e6504B63230F64c603A52",
+          "opsSeen": 1,
+          "opsIncluded": 0,
+          "status": "ok",
+          "isWhitelisted": false,
+          "isBlacklisted": false,
+          "stake": "0x0",
+          "unstakeDelaySec": 0,
+          "withdrawTime": "0x0",
+          "isStaked": false
+        },
+        {
+          "address": "0x52fbf81bAD237e818A35ab9B23864bE0287767cb",
+          "opsSeen": 0,
+          "opsIncluded": 4,
+          "status": "ok",
+          "isWhitelisted": false,
+          "isBlacklisted": false,
+          "stake": "0x0",
+          "unstakeDelaySec": 0,
+          "withdrawTime": "0x0",
+          "isStaked": false
+        },
+        {
+          "address": "0x5884d4d5588321049aD61cE6Dd6518F5127168F1",
+          "opsSeen": 0,
+          "opsIncluded": 0,
+          "status": "ok",
+          "isWhitelisted": false,
+          "isBlacklisted": false,
+          "stake": "0x0",
+          "unstakeDelaySec": 0,
+          "withdrawTime": "0x0",
+          "isStaked": false
+        }
+      ],
+      "nextCursor": "20"
+    }
+  }
+}

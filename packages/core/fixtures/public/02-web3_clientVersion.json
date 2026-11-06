@@ -1,0 +1,14 @@
+{
+  "endpoint": "public-gateway",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "web3_clientVersion",
+    "params": []
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": "skandha/v4.1.1-"
+  }
+}

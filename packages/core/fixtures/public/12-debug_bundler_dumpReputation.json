@@ -1,0 +1,341 @@
+{
+  "endpoint": "public-gateway",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "debug_bundler_dumpReputation",
+    "params": [
+      "0x00000000000000000000000000000000000000aa"
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": [
+      {
+        "address": "0x8499969c380a508b1b67Fc77d65A20B5e304D1d9",
+        "opsSeen": "0x2",
+        "opsIncluded": "0x1",
+        "status": "0x0"
+      },
+      {
+        "address": "0xB37f515cDFCbb445F9c2AC2e253509f7935D7C4A",
+        "opsSeen": "0x1",
+        "opsIncluded": "0x1",
+        "status": "0x0"
+      },
+      {
+        "address": "0xd6d1dAa6D87D4A29cd7FB1Df7C266CFe32420f9d",
+        "opsSeen": "0x1",
+        "opsIncluded": "0x0",
+        "status": "0x0"
+      },
+      {
+        "address": "0xD7F393bC2f11B462A0468BE6D1E1b23E9f017ef6",
+        "opsSeen": "0x0",
+        "opsIncluded": "0x0",
+        "status": "0x0"
+      },
+      {
+        "address": "0xD6EE54F463D330dCD417AC60Fda7f69639bEe5CB",
+        "opsSeen": "0x0",
+        "opsIncluded": "0x0",
+        "status": "0x0"
+      },
+      {
+        "address": "0x10a7eBbc180F5386bEE4d9571F17fd395354704D",
+        "opsSeen": "0x1",
+        "opsIncluded": "0x1",
+        "status": "0x0"
+      },
+      {
+        "address": "0xd254366DeE9D4D2dE2F11982cabEAF94a16a3e0C",
+        "opsSeen": "0x1",
+        "opsIncluded": "0x1",
+        "status": "0x0"
+      },
+      {
+        "address": "0x239bB61113E6cBD1415626c4687A36E15ABCB93d",
+        "opsSeen": "0x1b",
+        "opsIncluded": "0x1b",
+        "status": "0x0"
+      },
+      {
+        "address": "0x004ecC066292c1fE27109f96C3FD1413053e5D73",
+        "opsSeen": "0xe",
+        "opsIncluded": "0xc",
+        "status": "0x0"
+      },
+      {
+        "address": "0xb357bb4ce9A5c8c03bF106E5652d3a7014FDE225",
+        "opsSeen": "0x7",
+        "opsIncluded": "0x11",
+        "status": "0x0"
+      },
+      {
+        "address": "0xe803Cdd42424358C4Bd66e15D56c8348E21A26Cd",
+        "opsSeen": "0xb",
+        "opsIncluded": "0xb",
+        "status": "0x0"
+      },
+      {
+        "address": "0x058fC5752B063765946Af729311bae7CE032e3a2",
+        "opsSeen": "0x0",
+        "opsIncluded": "0x0",
+        "status": "0x0"
+      },
+      {
+        "address": "0xEc3B35b9Bace4E9249e74Fb2977F879bE1C82D4E",
+        "opsSeen": "0x0",
+        "opsIncluded": "0x0",
+        "status": "0x0"
+      },
+      {
+        "address": "0x4B94121F0343a95C90e9fd6bb3E0d6Fa7448Ed0c",
+        "opsSeen": "0x6",
+        "opsIncluded": "0x5",
+        "status": "0x0"
+      },
+      {
+        "address": "0xB44b1A1a19fE7959aCfC58d4b91c29BF691d3bAd",
+        "opsSeen": "0x4",
+        "opsIncluded": "0x4",
+        "status": "0x0"
+      },
+      {
+        "address": "0x6c5DDa5d96A87f7D90b07C8643196180B15F2F29",
+        "opsSeen": "0x1",
+        "opsIncluded": "0x1",
+        "status": "0x0"
+      },
+      {
+        "address": "0xe8CC33DDd7Aa454c2Ce7f9473CC51d68352dD57d",
+        "opsSeen": "0x1",
+        "opsIncluded": "0x1",
+        "status": "0x0"
+      },
+      {
+        "address": "0xEfc07B6B4e47f3b82e19Fbe2e88c8F8fCbf8Bc01",
+        "opsSeen": "0x0",
+        "opsIncluded": "0x1",
+        "status": "0x0"
+      },
+      {
+        "address": "0x9127B9F1297edA2f04916C82d4B41fa53Bb179A5",
+        "opsSeen": "0x6",
+        "opsIncluded": "0x7",
+        "status": "0x0"
+      },
+      {
+        "address": "0x354127Ba9D914F859248129B3DbC0918Dde48575",
+        "opsSeen": "0x0",
+        "opsIncluded": "0x1",
+        "status": "0x0"
+      },
+      {
+        "address": "0xa8e54bFecB1fBD2267c2da4d86f9ab8027493b6B",
+        "opsSeen": "0x3",
+        "opsIncluded": "0x3",
+        "status": "0x0"
+      },
+      {
+        "address": "0xD39e89114F035fB8266A374d7f33E26c4BeB1509",
+        "opsSeen": "0x1",
+        "opsIncluded": "0x1",
+        "status": "0x0"
+      },
+      {
+        "address": "0x0c99FE76869e0e86E4d43A72cC244aA09f2B9910",
+        "opsSeen": "0x1",
+        "opsIncluded": "0x1",
+        "status": "0x0"
+      },
+      {
+        "address": "0xF3e63d269daE09032EA950cd9722733e9b3F2d37",
+        "opsSeen": "0x7",
+        "opsIncluded": "0x6",
+        "status": "0x0"
+      },
+      {
+        "address": "0x67908b60E4BE3D7CED4D3ed2CcE51362DDCFbbC7",
+        "opsSeen": "0x0",
+        "opsIncluded": "0x0",
+        "status": "0x0"
+      },
+      {
+        "address": "0xf0Cd59BDB45aA63357933851c7493911cfbDeAF8",
+        "opsSeen": "0x1",
+        "opsIncluded": "0x0",
+        "status": "0x0"
+      },
+      {
+        "address": "0xC0321f65155430bfc12999Df7057d36916ff8Fe1",
+        "opsSeen": "0x0",
+        "opsIncluded": "0x0",
+        "status": "0x0"
+      },
+      {
+        "address": "0x5884d4d5588321049aD61cE6Dd6518F5127168F1",
+        "opsSeen": "0x0",
+        "opsIncluded": "0x0",
+        "status": "0x0"
+      },
+      {
+        "address": "0xC820598D74b7B7633C648a3718415DA98cE834C7",
+        "opsSeen": "0x2",
+        "opsIncluded": "0x1",
+        "status": "0x0"
+      },
+      {
+        "address": "0xfff46438127E7DB708515fdDf46F9Aed002d6c80",
+        "opsSeen": "0x4",
+        "opsIncluded": "0x4",
+        "status": "0x0"
+      },
+      {
+        "address": "0x52fbf81bAD237e818A35ab9B23864bE0287767cb",
+        "opsSeen": "0x0",
+        "opsIncluded": "0x4",
+        "status": "0x0"
+      },
+      {
+        "address": "0x4b124373c515878c1a4979da295d6f9cA62FF848",
+        "opsSeen": "0x1",
+        "opsIncluded": "0x1",
+        "status": "0x0"
+      },
+      {
+        "address": "0xe21C17E012932d81182F76baA9e1AB21269c3088",
+        "opsSeen": "0x0",
+        "opsIncluded": "0x1",
+        "status": "0x0"
+      },
+      {
+        "address": "0x87345490052Dff33b97A08Ce1288B02A7EBf2e6d",
+        "opsSeen": "0x2",
+        "opsIncluded": "0x2",
+        "status": "0x0"
+      },
+      {
+        "address": "0xaa2CE0CF46F71CCC5Db3408Cf0B5378676817b1a",
+        "opsSeen": "0x0",
+        "opsIncluded": "0x1",
+        "status": "0x0"
+      },
+      {
+        "address": "0x4c87D72A84be078Ae3011c44dA3E2eCDEe35eA71",
+        "opsSeen": "0x0",
+        "opsIncluded": "0x1",
+        "status": "0x0"
+      },
+      {
+        "address": "0x0520de9be71b79C37f0e3A605b2fe6Fbc594847E",
+        "opsSeen": "0x3",
+        "opsIncluded": "0x3",
+        "status": "0x0"
+      },
+      {
+        "address": "0x4979a720B2Dc4AA0AFdDf1AC8d497f9fF1cCbF43",
+        "opsSeen": "0x1",
+        "opsIncluded": "0x1",
+        "status": "0x0"
+      },
+      {
+        "address": "0x50a22527cbB78136f9Ba81265b382bBE43f635f2",
+        "opsSeen": "0x0",
+        "opsIncluded": "0x1",
+        "status": "0x0"
+      },
+      {
+        "address": "0x14970814120b08E4b976C1E0072c16BB493BBE7e",
+        "opsSeen": "0x3",
+        "opsIncluded": "0x2",
+        "status": "0x0"
+      },
+      {
+        "address": "0x7d3383134eadE47de5734e29513faa5DEF1F57d4",
+        "opsSeen": "0x0",
+        "opsIncluded": "0x1",
+        "status": "0x0"
+      },
+      {
+        "address": "0x82b42C57C0c05796FdBcb8D5686197E57D7eD60d",
+        "opsSeen": "0x2",
+        "opsIncluded": "0x2",
+        "status": "0x0"
+      },
+      {
+        "address": "0x7503eD4e90B0cAB850412Fd8bf318B8e269f9996",
+        "opsSeen": "0x3",
+        "opsIncluded": "0x3",
+        "status": "0x0"
+      },
+      {
+        "address": "0xE8f0DBfb2e9876F4D5906029E5768ee10D1758a3",
+        "opsSeen": "0x0",
+        "opsIncluded": "0x2",
+        "status": "0x0"
+      },
+      {
+        "address": "0x51B7a2186FD518b6734e6504B63230F64c603A52",
+        "opsSeen": "0x1",
+        "opsIncluded": "0x0",
+        "status": "0x0"
+      },
+      {
+        "address": "0x2aEe5BB5160C878bA0B9b7C6ade6b1B18653aa2b",
+        "opsSeen": "0x0",
+        "opsIncluded": "0x1",
+        "status": "0x0"
+      },
+      {
+        "address": "0x95d326f25522158375D758D5548C60281f8989ff",
+        "opsSeen": "0x1",
+        "opsIncluded": "0x1",
+        "status": "0x0"
+      },
+      {
+        "address": "0x193c3E11310ccbBd9a0A2A805441fEAacC9bd57B",
+        "opsSeen": "0x1",
+        "opsIncluded": "0x1",
+        "status": "0x0"
+      },
+      {
+        "address": "0xCD85baf6F46B5153a483015494B9eac50635F6c8",
+        "opsSeen": "0x0",
+        "opsIncluded": "0x1",
+        "status": "0x0"
+      },
+      {
+        "address": "0x5E22fC34ab4FC221c0762c8C0BC4a50101094cF1",
+        "opsSeen": "0x1",
+        "opsIncluded": "0x0",
+        "status": "0x0"
+      },
+      {
+        "address": "0x0C2f8127424E1072f6ce7FB37C1f7F0CEe383Ee4",
+        "opsSeen": "0x1",
+        "opsIncluded": "0x1",
+        "status": "0x0"
+      },
+      {
+        "address": "0xB1538a36122FDe2DCe87EFaebb874f4662385C69",
+        "opsSeen": "0x0",
+        "opsIncluded": "0x2",
+        "status": "0x0"
+      },
+      {
+        "address": "0x29381cDa4aAD43c0A3Fb15569ec1D6e0568d9C81",
+        "opsSeen": "0x3",
+        "opsIncluded": "0x3",
+        "status": "0x0"
+      },
+      {
+        "address": "0x73dC294A453595229776b229f5A510E195AC986A",
+        "opsSeen": "0x0",
+        "opsIncluded": "0x1",
+        "status": "0x0"
+      }
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "endpoint": "public-gateway",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "debug_bundler_getStakeStatus",
+    "params": [
+      "0x004ecC066292c1fE27109f96C3FD1413053e5D73",
+      "0xd51c04d7a0b01124e84de152f4e56d9eecb22d2f"
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "stakeInfo": {
+        "addr": "0x004ecC066292c1fE27109f96C3FD1413053e5D73",
+        "stake": "12000000000000000",
+        "unstakeDelaySec": "86400",
+        "withdrawTime": "0"
+      },
+      "isStaked": true
+    }
+  }
+}

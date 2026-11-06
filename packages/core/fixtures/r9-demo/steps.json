@@ -1,0 +1,90 @@
+[
+  {
+    "step": "start",
+    "tSec": 0.045,
+    "gateway": "http://127.0.0.1:24337/rpc",
+    "chainId": 1337,
+    "funder": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC"
+  },
+  {
+    "step": "paymaster deployed",
+    "tSec": 1.089,
+    "pm": "0x8438ad1c834623cff278ab6829a248e37c2d7e3f",
+    "tx": "0xb280342c21bd4887d2072c9b82a32481012f906e17e21956d47b108db4008a5e"
+  },
+  {
+    "step": "t1 before stake",
+    "tSec": 1.144,
+    "canonical": {
+      "accepted": false,
+      "code": -32000,
+      "message": "Invalid params: Frame transaction validation-prefix simulation failed: StorageReadNonSender",
+      "rule": "STO"
+    },
+    "alt": {
+      "accepted": false,
+      "code": -32502,
+      "message": "unstaked payer accessed payer slot 0x0000000000000000000000000000000000000000000000000000000000000000",
+      "rule": "UNKNOWN"
+    }
+  },
+  {
+    "step": "paymaster staked",
+    "tSec": 7.199,
+    "tx": "0xdc44a3a81f82da032b52220630d3d37fc14050a41f6795d6a63b2d1909abd190"
+  },
+  {
+    "step": "t1 admitted",
+    "tSec": 7.221,
+    "hash": "0xbecfe1bbf41fc5f06d797fc763cd26e64aba45c560fe85ab2628002d14f71e41",
+    "admitMs": 22
+  },
+  {
+    "step": "t1 included",
+    "tSec": 19.328,
+    "block": 101,
+    "status": "0x1",
+    "frames": [
+      "0x1",
+      "0x1",
+      "0x1",
+      "0x1"
+    ],
+    "inclusionMs": 12129
+  },
+  {
+    "step": "t2 admitted",
+    "tSec": 19.361,
+    "hash": "0x24d4fe8139be9ca4ebe7538ce4b7a2043f140c321ade3a341918e39ad85434e5",
+    "admitMs": 30
+  },
+  {
+    "step": "t2 included",
+    "tSec": 37.515,
+    "block": 104,
+    "status": "0x1",
+    "frames": [
+      "0x1",
+      "0x1",
+      "0x1",
+      "0x1"
+    ],
+    "inclusionMs": 18184
+  },
+  {
+    "step": "t3 quota exhausted",
+    "tSec": 37.562,
+    "canonical": {
+      "accepted": false,
+      "code": -32000,
+      "message": "Invalid params: Frame transaction validation-prefix simulation failed: StorageReadNonSender",
+      "rule": "STO"
+    },
+    "alt": {
+      "accepted": false,
+      "code": -32500,
+      "message": "validation frame 1: reverted with data 0x08c379a0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000156461696c792071756f7461206578686175737465640000000000000000000000",
+      "rule": "UNKNOWN"
+    }
+  }
+]

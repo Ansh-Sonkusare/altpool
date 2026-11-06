@@ -1,0 +1,19 @@
+{
+  "endpoint": "http://127.0.0.1:24337/rpc",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "skandha_frameTransactionStatus",
+    "params": [
+      "0xdf791faa1ce4508fe3e40b04f7cd0c8e123eb27f793bb298325fcd9aa610cd0a"
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "error": {
+      "message": "Frame transaction not found",
+      "code": -32600
+    }
+  }
+}

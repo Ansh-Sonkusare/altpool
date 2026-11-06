@@ -1,0 +1,58 @@
+{
+  "endpoint": "http://127.0.0.1:24337/rpc",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "eth_getTransactionReceipt",
+    "params": [
+      "0x24d4fe8139be9ca4ebe7538ce4b7a2043f140c321ade3a341918e39ad85434e5"
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "blockHash": "0x571c1b50abad283bb00a0779d68d6466af84b6d6ce4dd6368f20593be28c02b5",
+      "blockNumber": "0x68",
+      "contractAddress": null,
+      "cumulativeGasUsed": "0xa43c",
+      "effectiveGasPrice": "0x3b9acdb2",
+      "frameReceipts": [
+        {
+          "gasUsed": "0x64",
+          "logs": [],
+          "stateGasUsed": "0x0",
+          "status": "0x1"
+        },
+        {
+          "gasUsed": "0x2102",
+          "logs": [],
+          "stateGasUsed": "0x0",
+          "status": "0x1"
+        },
+        {
+          "gasUsed": "0xbb8",
+          "logs": [],
+          "stateGasUsed": "0x0",
+          "status": "0x1"
+        },
+        {
+          "gasUsed": "0x3162",
+          "logs": [],
+          "stateGasUsed": "0x0",
+          "status": "0x1"
+        }
+      ],
+      "from": "0xfb30256917c8cb84476e3300c781bea72a1cbbd6",
+      "gasUsed": "0xa43c",
+      "logs": [],
+      "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "payer": "0x8438ad1c834623cff278ab6829a248e37c2d7e3f",
+      "status": "0x1",
+      "to": "0xfb30256917c8cb84476e3300c781bea72a1cbbd6",
+      "transactionHash": "0x24d4fe8139be9ca4ebe7538ce4b7a2043f140c321ade3a341918e39ad85434e5",
+      "transactionIndex": "0x0",
+      "type": "0x6"
+    }
+  }
+}

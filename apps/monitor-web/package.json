@@ -1,0 +1,22 @@
+{
+  "name": "@altpool/monitor-web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "test": "echo no tests",
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@altpool/core": "workspace:*",
+    "@altpool/monitor": "workspace:*"
+  },
+  "devDependencies": {
+    "vite": "^7.0.0"
+  }
+}

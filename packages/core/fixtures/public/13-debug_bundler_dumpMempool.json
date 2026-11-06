@@ -1,0 +1,200 @@
+{
+  "endpoint": "public-gateway",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "debug_bundler_dumpMempool",
+    "params": []
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": [
+      {
+        "chainId": "0x539",
+        "nonceKeys": [
+          "0x0"
+        ],
+        "nonceSeq": "0x2",
+        "sender": "0x67908b60E4BE3D7CED4D3ed2CcE51362DDCFbbC7",
+        "frames": [
+          {
+            "mode": "0x1",
+            "flags": "0x2",
+            "target": null,
+            "limits": {
+              "execution": "0x4e20",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          },
+          {
+            "mode": "0x1",
+            "flags": "0x1",
+            "target": "0x4B94121F0343a95C90e9fd6bb3E0d6Fa7448Ed0c",
+            "limits": {
+              "execution": "0x12d90",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x766c4f37000000000000000000000000a146f7390a8023bdc771fd4b92031ab5825a7e28"
+          },
+          {
+            "mode": "0x2",
+            "flags": "0x4",
+            "target": "0xB343620fE0F4125aCB960E7613dDcd7a3Ce0f494",
+            "limits": {
+              "execution": "0x61a80",
+              "state": "0x81b320"
+            },
+            "value": "0x0",
+            "data": "0xe7fb71b800000000000000000000000067908b60e4be3d7ced4d3ed2cce51362ddcfbbc72952221bed73415f0129bc64fbc91e43bb182b8e07757572d97c8b1642dddfe33dc76036d35a08e730f9e350963952a25ce1cf4b434410124ee48728f6514a72000000000000000000000000000000000000000000000000000000000000000a"
+          },
+          {
+            "mode": "0x2",
+            "flags": "0x4",
+            "target": "0xa146F7390A8023BdC771fD4b92031AB5825a7E28",
+            "limits": {
+              "execution": "0x7530",
+              "state": "0x0"
+            },
+            "value": "0xde0b66856f4fc00",
+            "data": "0x"
+          },
+          {
+            "mode": "0x2",
+            "flags": "0x0",
+            "target": "0x53aF43F3d696bef8e7FB022B8A707f7103f952a0",
+            "limits": {
+              "execution": "0xea60",
+              "state": "0x3d090"
+            },
+            "value": "0x0",
+            "data": "0xa9059cbb000000000000000000000000a146f7390a8023bdc771fd4b92031ab5825a7e28000000000000000000000000000000000000000000000000000000008f0d1800"
+          },
+          {
+            "mode": "0x0",
+            "flags": "0x0",
+            "target": "0x4B94121F0343a95C90e9fd6bb3E0d6Fa7448Ed0c",
+            "limits": {
+              "execution": "0xea60",
+              "state": "0x186a0"
+            },
+            "value": "0x0",
+            "data": "0x14aaa61b"
+          }
+        ],
+        "signatures": [
+          {
+            "scheme": "0x1",
+            "signer": "0x",
+            "msg": "0x",
+            "signature": "0x005d1910dd5e3c08af609e741731fb92b1c89b44b809085615db44f49935e90e7f5a705bc3e12fc28ddca00ce669b32c71e2d9ce6ee7278790d00eade60a8b183f"
+          }
+        ],
+        "fees": {
+          "maxPriorityFeePerGas": "0x77359400",
+          "maxFeePerGas": "0xb2d05e00",
+          "maxFeePerBlobGas": "0x0"
+        },
+        "blobVersionedHashes": [],
+        "recentRootReferences": []
+      },
+      {
+        "chainId": "0x539",
+        "nonceKeys": [
+          "0x0"
+        ],
+        "nonceSeq": "0x1",
+        "sender": "0x5E22fC34ab4FC221c0762c8C0BC4a50101094cF1",
+        "frames": [
+          {
+            "mode": "0x1",
+            "flags": "0x3",
+            "target": null,
+            "limits": {
+              "execution": "0x1863c",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          },
+          {
+            "mode": "0x2",
+            "flags": "0x0",
+            "target": "0x78Cb10188B6F60276ce77cdC92549125C1976f9e",
+            "limits": {
+              "execution": "0xc350",
+              "state": "0x186a0"
+            },
+            "value": "0x0",
+            "data": "0x969b1cdb00000000000000000000000000000000000000000000000000000000000004d2"
+          }
+        ],
+        "signatures": [
+          {
+            "scheme": "0x0",
+            "signer": "0x",
+            "msg": "0x",
+            "signature": "0xff8d124d0ae45e65b3b25d8c0e8c40dbf3ce4166a129ed0894d509111a6b083fc9a0d6b09601bc090a2ddd338b57fb8aafc0633d95d089ca98d1f0018085a0dd7a6ea53fbd9c4f597ee515fa9014dd10143da23b1392e82605ec389efc7a6197c90ff9a41a78d3cc7be869af58567e2cfaf2fc41824549020480ef3b14f53cf7fcc601434a1f4c807b8a542132cc61dd687ad28db76cb4989c246e6737b51fa187b0aac7fedabf12911a1a6f4f201d57322a5189b51d666ba981e1bdd5e9e883e8cb1d45d6f51deea20b000f1a2b39020b1940a7939b26876dbb03f0a00a69ec4fecc51238bf84df676058ba5deab22d1f16a06502c3c47de25aee07d789a9f1b8861c724950e572042620a6c9f6b18377af171354d5ec7e1c9ff610a67c5f916e14c3bb8c4c3633f46c6f8d4e9f2add9dbac7e257375f63bf0aa667f799a794c4a3a8b7aef279807a2cc3bdf4dc59c3a8351dbfce1810bfeb24875eb33a10d2f3b726717dd98099000674d82cfe18d2e3df0a67be1075bfd758d97422a38b2cc5c65fb3626fe16959a5e0fe10b8e92dc52a17997f15b6d13941010f8166e9585b98d776148afff43914eea4b6a3b76ed579bdfc4d231e0b4e2a99e14149644620ef669f5ff5c9e573285f32739c2eaaedef5a20528b81ce94c161ba69815308e4b3c7330c4f3a219db345808db5f6435a9b9b2f2cc99e27e9851684748622f7e6757de9de95ccf285fe143533d7d41e7c08fd79bc33cbc0b06bb7487609ac03c25ab1fae7167c20fdf165b75ffab77fb6b7ef2606f67110d460536a5afdb4abf5e1a8d1fc6a8d3834af9e48550efab53a0398ba88c97e318f0fc2add0d4ec22b023f3dadf03492ffb74a2a960afbb80e32dbfaeb665336c5f7740e8e77d37fbb470f703d85e38234afdfbc334b4b3d0f8950691e81c548350549262f8e61b338726121c8d75f2eb99992d3c440da7c703774ae4974fa3f6474ddddeaeb82536dc3dfbfe12d9013e6dab2fa1a6a62394dce4764616b1c0b00efd1c89458ed9c50910af00313e069ca1880c6aa8b7b52cb1e1453a7c519675bed14fa62ca6b6cb489e9b0b4b3be0be03b55d647305c3f403bfbf4f6765c901a574df237818b77b1f44126c39c5c8b0806706899482ec6daff99a1222b44f02862d667bebbdd95783bd671ba2618aebeef030f0fe28d3aa1dd0301f6d76a86bd1a65219472d4302146eeb074c7d9d79547ed4526ba35a3600b91cb1022bd93a5d2c682e576e8fc84fcdfe9b812eba7140cc810b118b5bebbaf7153019d0ab8cda5b38eae5edca06074252981090287f1fe76598d9e7e1bd8f42763830016cc8ee509568c3b2ca03d1cc127fb0ca19f6fb8d9ede6e66a31d99db986644bb17cfcff2acc2cf574aee8bb0ae0f43bace194403dad945cfa7bce495801200836300f32f86060ca7d552dc403738c7ccac3872f2ee2017093a550bb376b1b2a6fe818e43f9f2a9427b72e74cc94a9a8652bc1a858a37e2d1337fce4af016eb6c3f8fc5200a49bccfced4f7e56aa27693be27a06766a9554d5b135376aec1d8c7d57e58562f02e96498b1e66741ba2cd99e2234d385fa6e94aa557b8a6c0de5228b30ea61945fac50c1821259c5341a80c8f5eca8499c43c4a74e9c01885bac88031b65c607a5484d0fe314476dde96c8dd1de995f3a5b47007c2c65bcaf13d4bb466ac8bdc05aeb671735358d412cf8406d6604e0d26ae6525764eaff2f15d02fbed65af434cee743eb544dfee0cb4de723f4657a636b6452a33b28308f85b22ce78461d88674f8b20df05e2b1c8aebf87a086064c392cb4560930f28fdf5a591c7d82b7ecc50fa88b3fcd35d50abe414c5fd7926d2d60dc87d68f6fb987cf535cac9841073dec19432d9eebd41e35df68b0e5435f3dab61ea46feb80337bc665c51d9a013fc5f02e1cb041124aa031ac157cc9d104dacaf782873846ed85348706e613429e39473d853a0b3f0e8df89da9c59a643c698a92bc64a6cb51858afba9783951a9c1f355d9edb35275dd024b2bd5814e9a167ad008c8d1a49d5336a81935af71414cb14cb0648a97941348363fa319d41385efe3ce3eb1c34f815edf8257385adca4c048a71d37cefbc8163539f4014bbf5fe5e98b1123259dbdeb2aac302189b6adf28c4b34654393192d7005c392d5bf95fd51d36066a23f44a1afad1a8c0468663407bff9836bfc79ee2ef66ff706a3e104687f66ba1be6f20dc593372d6b8d6850a6f6fc5e5a8c8bc54ca5f9b709531a52072dd7c0604ab11f5876d6fdcf382742591d3261deffc13cf4f1af3595920ac0c309e2bf98fb14f7b53813825217081eb91ff5dddef51535c1987a7ef9ae7ba4b8e73e2f5e1878b34967dcd282a3b23b2d01cd2e3f2f63cae738ce30299538fc4f21dffcd2508c508d972464889e9b9d46b69179226e0dc185dbb04d63ce35d8b90226c968ecee8c53c4833a6d45080b556cb06c6bcb9f447fa61d3e86957a03d359cb0e3e101d6703f3a91c3d843bb9834137873399041d5daeb92ae40809ea0c747c48218a3b6fbf64f24d400f033f0a5b982c9b3080c0be9e29a0ba4b6d4e69d6f6dc5a2be4ccda84b1bd69520473bb6d5b9b527d9536caf56b94a980a321ac2e1d8c8e80f107c6a2ef7f76143f10174ab964159fb164aedf7ee3c24c4ca9806295960d069d48ae1376f79a45cbec9a4ecf153e866d3ec84742a0faafe01c39f3b057c053e56649378d8ecf4eb57004b455bbf782f69d87fb68c7e50aa88e334e56bc3157615240a58db186be438d5973f06e4d09e50f79c164083f7d53ae90a90b05fd6410beff878d779950e4a048d15e80f146d0740d9d70830ca74a4da60340e072d9746a335d0e5424eaf106164eaf5cb735cbf3a2e8a9790361bcd0fb1a734de3ebc2ade50e7b02b9194a4f36aafaf1ee89d7842a5320721703f7ffdb01470fb699be65d39d7e82b9b01419f8c020b1db58faf8849856a87430ac2e870e8214325db95cd342b426472513fa80e2c566c5ba8e66c24ff96facc36004dbd1aa85628e19018a5b7b9adbb054367f918ed2903872cc283309b7f5a4ca6bd7b2492591ce6e2890b7fec0d78bdfadac1425c37805acc8c05cd8b3f971883fe3dc9a4e779f5d685fe4c69f7be5e36d740da82fc749160689b7570f8cf79443ec9609935b8712a41621ad7163b52604192a6585654669d8be5f86bff9b1ecbd7dfe75f57b3f3ae78ff05b93dde45934c644ebc46190902a470afa38ee3e7d17959d93bf889e5d1c094ab200df0790c7895d41d49177f2433da83752b19aa64125351f9c0e63c8cf516b0cd22361c72eab7ceebd4423131c8711af717c991578696fb4dff6dcd74fe0191b14f549556bf3690"
+          }
+        ],
+        "fees": {
+          "maxPriorityFeePerGas": "0xf4240",
+          "maxFeePerGas": "0x77359400",
+          "maxFeePerBlobGas": "0x0"
+        },
+        "blobVersionedHashes": [],
+        "recentRootReferences": []
+      },
+      {
+        "chainId": "0x539",
+        "nonceKeys": [
+          "0x0"
+        ],
+        "nonceSeq": "0x1",
+        "sender": "0x51B7a2186FD518b6734e6504B63230F64c603A52",
+        "frames": [
+          {
+            "mode": "0x1",
+            "flags": "0x3",
+            "target": null,
+            "limits": {
+              "execution": "0x7530",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          },
+          {
+            "mode": "0x0",
+            "flags": "0x0",
+            "target": "0x95d326f25522158375D758D5548C60281f8989ff",
+            "limits": {
+              "execution": "0xc350",
+              "state": "0xc350"
+            },
+            "value": "0x0",
+            "data": "0x01000003e8"
+          }
+        ],
+        "signatures": [
+          {
+            "scheme": "0x1",
+            "signer": "0x",
+            "msg": "0x",
+            "signature": "0x003a0d0b67db6c23aa5a99236a4e06831a89b17e8a4918b28020c0a6da6bdaca933d350eae4e3e80dba01c81fb530d9d58418c95eae8d232737597666290914703"
+          }
+        ],
+        "fees": {
+          "maxPriorityFeePerGas": "0x77359400",
+          "maxFeePerGas": "0x77359400",
+          "maxFeePerBlobGas": "0x0"
+        },
+        "blobVersionedHashes": [],
+        "recentRootReferences": []
+      }
+    ]
+  }
+}
