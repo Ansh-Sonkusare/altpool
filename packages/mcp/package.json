@@ -1,0 +1,29 @@
+{
+  "name": "@altpool/mcp",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "bin": {
+    "altpool-mcp": "./src/server.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "test": "vitest run --passWithNoTests",
+    "start": "bun src/server.ts",
+    "smoke": "bun scripts/smoke.ts"
+  },
+  "dependencies": {
+    "@altpool/core": "workspace:*",
+    "@altpool/simulator": "workspace:*",
+    "@altpool/monitor": "workspace:*",
+    "altpool": "workspace:*",
+    "@forshtat/hegota-support": "0.0.1",
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "zod": "^4.6.7",
+    "viem": "^2.57.10",
+    "@altpool/contracts": "workspace:*"
+  }
+}
