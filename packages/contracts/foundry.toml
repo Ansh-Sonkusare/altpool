@@ -9,3 +9,17 @@ evm_version = "cancun"
 remappings = ["@forshtat/hegota-support/=../../node_modules/@forshtat/hegota-support/", "forge-std/=../../node_modules/forge-std/src/"]
 # bun hoists dependencies into the repo root node_modules
 allow_paths = ["node_modules", "../../node_modules"]
+
+# tornado-core v2.0 (ERC20Tornado) is solc 0.5.17; the default profile only compiles src/ and test/, so the 0.8.28 project
+# never sees it. Build with: forge build --profile tornado
+[profile.tornado]
+src = "vendor/tornado-core-v2.0/contracts"
+out = "out/tornado"
+cache_path = "cache/tornado"
+test = "vendor" # no .t.sol here; keeps the 0.8.28 tests out of this 0.5 build
+solc_version = "0.5.17"
+via_ir = false
+evm_version = "petersburg"
+optimizer = true
+optimizer_runs = 200
+remappings = ["@openzeppelin/contracts/=vendor/openzeppelin-contracts-2.4.0/contracts/"]
