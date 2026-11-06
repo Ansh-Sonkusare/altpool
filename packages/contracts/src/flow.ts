@@ -1,9 +1,10 @@
 // The deposit and send halves of an exit, shared by scripts/exit-smoke.ts, the quietsend CLI and apps/demo.
-import { createPublicClient, http, parseAbi, type Account, type Chain, type Hex, type Transport, type WalletClient } from "viem";
+import { createPublicClient, http, parseAbi, type Account, type Address, type Chain, type Hex, type Transport, type WalletClient } from "viem";
 import type { FrameTx } from "@forshtat/hegota-support/tx";
 import { getProfile } from "@forshtat/hegota-support/profiles";
 import { altpoolActions, createAltMempoolClient } from "altpool";
 import { DEVNET, altDevnet, explorerTx, type Note } from "@altpool/core";
+import { WETH9, erc20PoolAbi, wethAbi } from "./pools";
 
 /** The miner's own sidecar (core's DEVNET.minerSidecarUrl, env MINER_SIDECAR_URL). The gateway admits exits but does not gossip them to it. */
 export const MINER_SIDECAR = DEVNET.minerSidecarUrl;
@@ -26,6 +27,20 @@ export async function depositNote(wallet: WalletClient<Transport, Chain, Account
   const receipt = await createPublicClient({ chain: altDevnet, transport: http(DEVNET.ethrexUrl) }).waitForTransactionReceipt({ hash, timeout: 180_000 });
   if (receipt.status !== "success") throw new Error(`deposit ${hash} reverted`);
   return hash;
+}
+
+/** Wrap one denomination of ETH, approve the ERC20 pool, and deposit the note: the WETH-pool counterpart of depositNote. */
+export async function depositNoteWeth(wallet: WalletClient<Transport, Chain, Account>, note: Note, pool: Address): Promise<Hex> {
+  const pub = createPublicClient({ chain: altDevnet, transport: http(DEVNET.ethrexUrl) });
+  const step = async (hash: Hex, what: string) => {
+    const receipt = await pub.waitForTransactionReceipt({ hash, timeout: 180_000 });
+    if (receipt.status !== "success") throw new Error(`${what} ${hash} reverted`);
+    return hash;
+  };
+  const tx = { gas: 2_000_000n, type: "legacy" } as const;
+  await step(await wallet.writeContract({ address: WETH9, abi: wethAbi, functionName: "deposit", value: DEVNET.denomination, ...tx }), "WETH deposit");
+  await step(await wallet.writeContract({ address: WETH9, abi: wethAbi, functionName: "approve", args: [pool, DEVNET.denomination], ...tx }), "WETH approve");
+  return step(await wallet.writeContract({ address: pool, abi: erc20PoolAbi, functionName: "deposit", args: [note.commitment], ...tx }), "pool deposit");
 }
 
 export interface ExitResult {

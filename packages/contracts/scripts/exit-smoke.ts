@@ -3,6 +3,7 @@
 // opcode read in ExitRelay's VERIFY worked on this devnet.
 // `--rr` runs the same exit through ExitRelayRR: publish the pool root to EIP-8272, prove against it, carry it as a
 // recent-root reference, and assert from the ERC-7562 trace that VERIFY read no foreign storage.
+// `--weth` exits a WETH note from the ERC20Tornado pool through ExitRelayToken (fee paid in WETH), then unwraps the fees.
 import { readFileSync } from "node:fs";
 import { setTimeout as sleep } from "node:timers/promises";
 import {
@@ -26,13 +27,20 @@ import { getProfile } from "@forshtat/hegota-support/profiles";
 import { DEVNET, altDevnet, ethrex, explorerTx, gateway, toWire, type WithdrawProof } from "@altpool/core";
 import { createNote, noteToString, prove, proveForRoot } from "@altpool/prover";
 import { EXIT_FEE, exitTx, exitTxRR } from "../src/exit";
-import { MINER_SIDECAR, depositNote, explorerExit, sendExit } from "../src/flow";
+import { MINER_SIDECAR, depositNote, depositNoteWeth, explorerExit, sendExit } from "../src/flow";
+import { WETH9, wethAbi } from "../src/pools";
 import deployments from "../deployments.json";
 
 const rr = process.argv.includes("--rr");
-const contract = rr ? "ExitRelayRR" : "ExitRelay";
-const exitRelay = (rr ? (deployments as Record<string, unknown>).exitRelayRR : deployments.exitRelay) as Address | null | undefined;
-if (!exitRelay) throw new Error(`deployments.json has no ${rr ? "exitRelayRR" : "exitRelay"}: run \`bun run --filter @altpool/contracts deploy\` first`);
+const weth = process.argv.includes("--weth");
+if (rr && weth) throw new Error("--rr and --weth are separate flows");
+const contract = rr ? "ExitRelayRR" : weth ? "ExitRelayToken" : "ExitRelay";
+const deployed = deployments as Record<string, unknown>;
+const exitKey = rr ? "exitRelayRR" : weth ? "exitRelayWETH" : "exitRelay";
+const exitRelay = deployed[exitKey] as Address | null | undefined;
+if (!exitRelay) throw new Error(`deployments.json has no ${exitKey}: run \`bun run --filter @altpool/contracts deploy${weth ? " -- --weth" : ""}\` first`);
+const pool = (weth ? deployed.wethPool : DEVNET.pool) as Address | undefined;
+if (!pool) throw new Error("deployments.json has no wethPool: run `bun scripts/deploy-weth-pool.ts` first");
 const errorAbi = (JSON.parse(readFileSync(new URL(`../out/${contract}.sol/${contract}.json`, import.meta.url), "utf8")).abi as Abi).filter(
   (x) => x.type === "error",
 );
@@ -59,7 +67,7 @@ function reason(e: unknown): string {
 }
 
 async function exitFor(p: WithdrawProof & { rootIdx: number }): Promise<FrameTx> {
-  return report(exitTx(p, { exitRelay: exitRelay! }));
+  return report(exitTx(p, { exitRelay: exitRelay!, pool }));
 }
 
 async function report(tx: FrameTx): Promise<FrameTx> {
@@ -74,10 +82,10 @@ async function report(tx: FrameTx): Promise<FrameTx> {
 }
 
 if (process.argv.includes("--junk")) {
-  const root = await pub.readContract({ address: DEVNET.pool, abi: poolAbi, functionName: "getLastRoot" });
+  const root = await pub.readContract({ address: pool!, abi: poolAbi, functionName: "getLastRoot" });
   let rootIdx = -1;
   for (let i = 0; i < DEVNET.rootHistorySize && rootIdx < 0; i++) {
-    if ((await pub.readContract({ address: DEVNET.pool, abi: poolAbi, functionName: "roots", args: [BigInt(i)] })) === root) rootIdx = i;
+    if ((await pub.readContract({ address: pool!, abi: poolAbi, functionName: "roots", args: [BigInt(i)] })) === root) rootIdx = i;
   }
   if (rootIdx < 0) throw new Error(`last root ${root} not in roots(0..99)`);
   const tx = await exitFor({
@@ -109,17 +117,20 @@ const minBalance = DEVNET.denomination + parseEther("0.01");
 for (let i = 0; i < 60 && (await pub.getBalance({ address: depositor.address })) < minBalance; i++) await sleep(2000);
 
 const note = createNote();
-const depositTx = await depositNote(wallet, note);
-console.log(`deposited ${formatEther(DEVNET.denomination)} ETH (${depositTx}); note ${noteToString(note)}`);
+const depositTx = weth ? await depositNoteWeth(wallet, note, pool) : await depositNote(wallet, note);
+console.log(`deposited ${formatEther(DEVNET.denomination)} ${weth ? "WETH" : "ETH"} (${depositTx}); note ${noteToString(note)}`);
 
 const recipient = randomAddress();
 let tx: FrameTx;
 if (rr) tx = await exitRR();
 else {
-  const proof = await prove(note, { recipient, relayer: exitRelay, fee: EXIT_FEE });
+  const proof = await prove(note, { recipient, relayer: exitRelay, fee: EXIT_FEE }, pool);
   console.log(`proved for recipient ${recipient}, rootIdx ${proof.rootIdx}`);
   tx = await exitFor(proof);
 }
+
+const wethOf = (address: Address) => pub.readContract({ address: WETH9, abi: wethAbi, functionName: "balanceOf", args: [address] });
+const relayWethBefore = weth ? await wethOf(exitRelay) : 0n;
 
 const r = await sendExit(tx, { sendUrl: send.url });
 const exitHash = r.hash;
@@ -127,10 +138,20 @@ console.log(`exit sent ${exitHash}`);
 console.log(`included in block ${r.blockNumber}, status ${r.status}${r.gasUsed === undefined ? "" : `, gasUsed ${r.gasUsed}`}`);
 r.frames.forEach((f, i) => console.log(`  frame ${i}: status ${f.status} gasUsed ${f.gasUsed} stateGasUsed ${f.stateGasUsed}`));
 
-const got = await pub.getBalance({ address: recipient });
 const want = DEVNET.denomination - EXIT_FEE;
-console.log(`recipient balance ${formatEther(got)} ETH (want ${formatEther(want)})`);
-if (got !== want) throw new Error(`recipient balance ${got} != ${want}`);
+if (weth) {
+  // The recipient is paid in WETH and still holds no ETH; the fee WETH lands on the relay, not in its ETH float.
+  const [gotWeth, gotEth, relayWeth] = [await wethOf(recipient), await pub.getBalance({ address: recipient }), await wethOf(exitRelay)];
+  console.log(`recipient ${formatEther(gotWeth)} WETH (want ${formatEther(want)}), ${formatEther(gotEth)} ETH (want 0)`);
+  if (gotWeth !== want) throw new Error(`recipient WETH ${gotWeth} != ${want}`);
+  if (gotEth !== 0n) throw new Error(`recipient ETH ${gotEth} != 0`);
+  console.log(`relay WETH +${formatEther(relayWeth - relayWethBefore)} (want ${formatEther(EXIT_FEE)})`);
+  if (relayWeth - relayWethBefore !== EXIT_FEE) throw new Error(`relay WETH rose by ${relayWeth - relayWethBefore}, want ${EXIT_FEE}`);
+} else {
+  const got = await pub.getBalance({ address: recipient });
+  console.log(`recipient balance ${formatEther(got)} ETH (want ${formatEther(want)})`);
+  if (got !== want) throw new Error(`recipient balance ${got} != ${want}`);
+}
 
 // The replay is a different tx for the same note (priority fee + 1 wei: new hash, same nullifier nonce key). Re-sending
 // the identical tx would file the rejection under the real exit's hash, and the explorer would show the exit "Rejected".
@@ -153,8 +174,23 @@ const cause = reason(new Error(`${sim.executionError ?? ""} ${sim.revertData ?? 
 console.log(`replay re-simulated: ${cause || JSON.stringify(after)}`);
 if (!/NullifierSpent|nonce/i.test(cause)) throw new Error(`replay not rejected for nonce key / NullifierSpent: ${JSON.stringify(after)}`);
 
+if (weth) await unwrapFees();
+
 console.log(`deposit ${explorerTx(depositTx)}`);
 console.log(`exit    ${explorerExit(exitHash)}`);
+
+/** Anyone can convert the relay's fee WETH into its ETH float; the depositor pays that tx's gas, so the relay's ETH moves only by the unwrap. */
+async function unwrapFees() {
+  const abi = parseAbi(["function unwrapFees() returns (uint256)"]);
+  const ethBefore = await pub.getBalance({ address: exitRelay! });
+  const fees = await wethOf(exitRelay!);
+  const hash = await wallet.writeContract({ address: exitRelay!, abi, functionName: "unwrapFees", gas: 500_000n, type: "legacy" });
+  const receipt = await pub.waitForTransactionReceipt({ hash, timeout: 180_000 });
+  if (receipt.status !== "success") throw new Error(`unwrapFees ${hash} reverted`);
+  const rose = (await pub.getBalance({ address: exitRelay! })) - ethBefore;
+  console.log(`unwrapFees ${hash}: relay WETH ${formatEther(fees)} -> ${formatEther(await wethOf(exitRelay!))}, relay ETH +${formatEther(rose)}, gasUsed ${receipt.gasUsed}`);
+  if (rose !== fees || (await wethOf(exitRelay!)) !== 0n) throw new Error(`unwrap: relay ETH rose ${rose}, WETH was ${fees}`);
+}
 
 /** The `--rr` half: publish the root, prove against it, then gate on VERIFY touching no foreign storage. */
 async function exitRR(): Promise<FrameTx> {
