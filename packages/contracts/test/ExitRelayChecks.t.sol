@@ -86,7 +86,7 @@ contract ExitRelayChecksTest is Test {
         t.expiry = frame(address(0x8141), 1, 10_000);
         t.verify = frame(SELF, 1, 450_000);
         t.withdraw = frame(address(pool), 2, 1_000_000);
-        t.withdraw.stateGas = 250_000;
+        t.withdraw.stateGas = 300_000;
         t.maxCost = FEE;
         t.nonceKeyCount = 1;
         t.nonceKey0 = uint256(NH);
@@ -177,7 +177,7 @@ contract ExitRelayChecksTest is Test {
         t.withdraw.gas = 1_000_001;
         expectStatic(e, t, baseWithdraw());
         t = baseTx();
-        t.withdraw.stateGas = 250_001;
+        t.withdraw.stateGas = 300_001;
         expectStatic(e, t, baseWithdraw());
     }
 

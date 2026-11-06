@@ -1,8 +1,8 @@
 {
   "chainId": 1337,
-  "exitRelay": "0x02d0bd03d2dd34ee5047e16b022c5eed0c21bbe5",
-  "stakedAt": "0x9044dba5d83671b6a4c7f97854f005692f729b69e20fba33b21594071354cc75",
-  "deployTx": "0x99056d1b41030c29495f2e3591532491c5bb2a48e47393dcdb56e4108b4dc9b8",
-  "verifier": "0xe4091e26925d73b7ecd4bab6fc1286e227528c91",
-  "verifierTx": "0xdfd71de0915be0bdd648bcab0ee62d0e3e31343de21accefe0899cee38b55605"
+  "exitRelay": "0x2576dcb7c8dc6c19cd6e39c8d49de03389b0ea6f",
+  "stakedAt": "0xe60f892d470fbafb01070ef27f87ac0eb0a4dbc077ef129715a0d558c2905f07",
+  "deployTx": "0x875380e6d0dd8b94d726d101be4f5f173c03e2c6acda44b187add509819b105c",
+  "verifier": "0x43168942ab0d0272c7a7efd6f6540266afb7c1b3",
+  "verifierTx": "0x82a0767dfa28ce4094f1710b5f311efe145a7dacf2741aa779c497e207a54c60"
 }

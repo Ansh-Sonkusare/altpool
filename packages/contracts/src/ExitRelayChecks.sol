@@ -50,7 +50,8 @@ library ExitRelayChecks {
     uint256 internal constant VERIFY_GAS_MAX = 450_000;
     uint256 internal constant WITHDRAW_GAS_MIN = 700_000;
     uint256 internal constant WITHDRAW_GAS_MAX = 1_000_000;
-    uint256 internal constant WITHDRAW_STATE_GAS_MAX = 250_000;
+    /// EIP-8037 at 1530 gas/state byte: fresh recipient account (120 B) 183,600 + nullifier slot (64 B) 97,920 = 281,520.
+    uint256 internal constant WITHDRAW_STATE_GAS_MAX = 300_000;
     uint256 internal constant ROOT_HISTORY = 100;
     uint256 internal constant PROOF_LENGTH = 256;
     bytes4 internal constant WITHDRAW_SELECTOR = 0x21a0adb6;
