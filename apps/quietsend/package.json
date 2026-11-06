@@ -16,7 +16,9 @@
     "altpool": "workspace:*",
     "@altpool/simulator": "workspace:*",
     "@altpool/prover": "workspace:*",
-    "@altpool/contracts": "workspace:*"
+    "@altpool/contracts": "workspace:*",
+    "viem": "^2.57.10",
+    "@forshtat/hegota-support": "0.0.1"
   },
   "bin": {
     "quietsend": "./src/cli.ts"
