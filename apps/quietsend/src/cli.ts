@@ -9,6 +9,7 @@ import { AltpoolSdkError, altpoolActions, createAltMempoolClient } from "altpool
 import { DEVNET, altDevnet, explorerTx, gateway } from "@altpool/core";
 import { createNote, noteToString, parseNote, prove } from "@altpool/prover";
 import { EXIT_FEE, MINER_SIDECAR, deployments, depositNote, explorerExit, exitTx } from "@altpool/contracts";
+import { createSimulator, renderChecks, renderVerdict } from "@altpool/simulator";
 
 const [cmd, noteArg, recipientArg] = process.argv.slice(2);
 const pub = createPublicClient({ chain: altDevnet, transport: http(DEVNET.ethrexUrl) });
@@ -50,6 +51,11 @@ async function withdraw(noteStr: string, to?: string) {
   }
   const proof = await prove(parseNote(noteStr), { recipient, relayer: exitRelay, fee: EXIT_FEE });
   const tx = exitTx(proof, { exitRelay });
+  // Prefix budget, not one frame: the model sums expiry (10k) + VERIFY (450k); core's 350k default would reject every exit.
+  const sim = await createSimulator({ verifyGasMax: 460_000n, explorer: false }).check(tx);
+  console.log("simulator (checkAdmission):");
+  for (const v of [sim.verdicts.public, sim.verdicts.alt]) console.log(renderVerdict(v).join("\n"));
+  if (sim.verdicts.alt.checks?.length) console.log(renderChecks(sim.verdicts.alt.checks));
   const sidecar = createAltMempoolClient({ httpUrl: MINER_SIDECAR, profile, name: "miner" });
   const client = pub.extend(altpoolActions({ sidecar, explorerUrl: DEVNET.explorerUrl }));
   const pre = await client.altpool.preflightFrameTransaction({ transaction: tx });
