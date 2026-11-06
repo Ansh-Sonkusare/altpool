@@ -1,0 +1,37 @@
+{
+  "name": "@altpool/site",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "test": "echo no tests",
+    "dev": "vite",
+    "prove": "bun server/prove.ts",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@altpool/contracts": "workspace:*",
+    "@altpool/core": "workspace:*",
+    "@altpool/monitor": "workspace:*",
+    "@altpool/prover": "workspace:*",
+    "@altpool/simulator": "workspace:*",
+    "@forshtat/hegota-support": "0.0.1",
+    "altpool": "workspace:*",
+    "buffer": "^6.0.3",
+    "circomlib": "0.0.20",
+    "react": "^19",
+    "react-dom": "^19",
+    "snarkjs": "0.1.20",
+    "viem": "^2.57.10",
+    "websnark": "github:tornadocash/websnark#2041cfa5fa0b71cd5cca9022a4eeea4afe28c9f7"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^5",
+    "tailwindcss": "^4",
+    "vite": "^7.0.0"
+  }
+}

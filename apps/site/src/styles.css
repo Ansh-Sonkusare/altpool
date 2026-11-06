@@ -1,0 +1,40 @@
+/* One 1200px framed column with hairline sides and crosshair section marks; dark, amber LED accent. */
+@import "tailwindcss";
+
+/* The design's tokens only: Tailwind's default palette is cleared so every colour comes from here. */
+@theme {
+  --color-*: initial;
+  --color-bg: #09090b; --color-band: #0c0c0f; --color-s1: #0f0f12;
+  --color-ln: rgba(255,255,255,.08); --color-ln2: rgba(255,255,255,.14); --color-x: rgba(255,255,255,.35);
+  --color-fg: #ededef; --color-fg1: #c9c9d1; --color-fg2: #8b8b94; --color-dim: #5c5c66;
+  --color-amber: #f1c98c; --color-amberbg: rgba(241,201,140,.06); --color-amberln: rgba(241,201,140,.45);
+  --color-ok: #7be0b0; --color-okt: #9fd9b8; --color-okbg: rgba(123,224,176,.08); --color-okln: rgba(123,224,176,.35);
+  --color-bad: #f47c7c; --color-warn: #f5b547; --color-warnbg: rgba(245,181,71,.1); --color-warnln: rgba(245,181,71,.4); --color-kw: #c3a6ff;
+  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-serif: "Instrument Serif", Georgia, serif;
+  --animate-bl: bl 2.2s ease-in-out infinite;
+  --animate-pop: pop .7s ease;
+}
+
+@keyframes bl { 50% { opacity: .35; } }
+@keyframes pop { 0% { opacity: .2; transform: translateY(6px); } 100% { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { animation: none !important; transition: none !important; } }
+
+@layer base {
+  :root { color-scheme: dark; }
+  html { scroll-behavior: smooth; scroll-padding-top: 90px; }
+  body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 400 16px/1.55 var(--font-sans); padding: 0 16px; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration: none; }
+  a:hover { color: var(--color-fg); }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--color-amber); outline-offset: 2px; border-radius: 6px; }
+}
+
+/* The "+" marks where a section's top rule meets the frame's sides. Needs a positioned box. */
+@utility crosshair {
+  &::before, &::after { content: "+"; position: absolute; top: -11px; font: 14px/20px var(--font-mono); color: var(--color-x); }
+  &::before { left: -5px; }
+  &::after { right: -5px; }
+}
+
