@@ -1,0 +1,20 @@
+{
+  "endpoint": "sidecar",
+  "step": "step_6_tx_violating_canonical",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "eth_sendRawTransaction",
+    "params": [
+      "0x06f8ba820539c1800894529766ed998390c74d6943f1b6e9819c694145d8f2cb010380c583011170808001e50280948943545177806ed17b9f23f0a21ee5948ecaa776c782c35083030d40843b9aca0080f85cf85a01940d6c100024a365f9df046e10bf075615758e683c80b8410178e6c9f746dd178ed6f589a402ded5d4b335220c970e322d9a2214fb8bde6ce6525785d4f7d54871d955b6de19b5092a6a4ad1bc79bceba3a01bb26cfd167359cb8477359400847735940080c0c0"
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "error": {
+      "code": -32000,
+      "message": "Invalid params: Frame transaction validation-prefix simulation failed: StorageReadNonSender"
+    }
+  }
+}

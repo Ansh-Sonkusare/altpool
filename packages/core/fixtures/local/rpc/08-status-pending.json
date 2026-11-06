@@ -1,0 +1,78 @@
+{
+  "endpoint": "sidecar",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "skandha_frameTransactionStatus",
+    "params": [
+      "0xe315a079f2a3c1d0f0034a6e1675b5f5384cda1deee0599ac6f850378a582e95"
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "tx": {
+        "chainId": "0x539",
+        "nonceKeys": [
+          "0x0"
+        ],
+        "nonceSeq": "0x1",
+        "sender": "0x9bAaB117304f7D6517048e371025dB8f89a8DbE5",
+        "frames": [
+          {
+            "mode": "0x1",
+            "flags": "0x2",
+            "target": null,
+            "limits": {
+              "execution": "0x7530",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          },
+          {
+            "mode": "0x1",
+            "flags": "0x1",
+            "target": "0x1Eb835EB7BEEEE9E6bbFe08F16a2d2eF668204bd",
+            "limits": {
+              "execution": "0x7530",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          },
+          {
+            "mode": "0x2",
+            "flags": "0x0",
+            "target": "0x5544596212F91984C986A919C8026DF0576816f9",
+            "limits": {
+              "execution": "0xc350",
+              "state": "0x0"
+            },
+            "value": "0x1",
+            "data": "0x"
+          }
+        ],
+        "signatures": [
+          {
+            "scheme": "0x0",
+            "signer": "0x",
+            "msg": "0x",
+            "signature": "0x"
+          }
+        ],
+        "fees": {
+          "maxPriorityFeePerGas": "0x3b9aca00",
+          "maxFeePerGas": "0x77359400",
+          "maxFeePerBlobGas": "0x0"
+        },
+        "blobVersionedHashes": [],
+        "recentRootReferences": []
+      },
+      "sender": "0x9bAaB117304f7D6517048e371025dB8f89a8DbE5",
+      "payer": "0x1Eb835EB7BEEEE9E6bbFe08F16a2d2eF668204bd",
+      "status": "New"
+    }
+  }
+}

@@ -1,0 +1,1 @@
+{"ok":true,"step":"step_4_wallet_deploy","summary":"ExampleWallet deployed: 0x3d0c50550c138c18aded6d35394f3329c58ea9f3\nowner: 0x0d6c100024A365f9DF046e10bF075615758E683c\nbalance: 0.01 ETH\nnext: yarn step_5_tx_wallet","wallet":"0x3d0c50550c138c18aded6d35394f3329c58ea9f3","owner":"0x0d6c100024A365f9DF046e10bF075615758E683c","reused":false}

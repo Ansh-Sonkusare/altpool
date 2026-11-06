@@ -1,0 +1,338 @@
+{
+  "endpoint": "sidecar",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "skandha_explorer_getTransaction",
+    "params": [
+      "0x896286715b2b674c5e9f6d671c8e949a8124f3f4ee71b1e010410dfbbdb66040"
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "hash": "0x896286715b2b674c5e9f6d671c8e949a8124f3f4ee71b1e010410dfbbdb66040",
+      "entry": {
+        "txHash": "0x896286715b2b674c5e9f6d671c8e949a8124f3f4ee71b1e010410dfbbdb66040",
+        "sender": "0x98f1f65cBBfF37D2B716E7c099827Cd2181FED70",
+        "payer": "0x8438Ad1C834623CfF278AB6829a248E37C2D7E3f",
+        "nonce": "0x0",
+        "nonceKeys": [
+          "0x0"
+        ],
+        "status": "Cancelled",
+        "frames": 4,
+        "maxFeePerGas": "0x77359400",
+        "submittedTime": 1793956046426,
+        "lastUpdatedTime": 1793956095745,
+        "source": "rpc",
+        "tx": {
+          "chainId": "0x539",
+          "nonceKeys": [
+            "0x0"
+          ],
+          "nonceSeq": "0x0",
+          "sender": "0x98f1f65cBBfF37D2B716E7c099827Cd2181FED70",
+          "frames": [
+            {
+              "mode": 1,
+              "flags": 2,
+              "target": null,
+              "limits": {
+                "execution": "0x7530",
+                "state": "0x0"
+              },
+              "value": "0x0",
+              "data": "0x"
+            },
+            {
+              "mode": 1,
+              "flags": 1,
+              "target": "0x8438Ad1C834623CfF278AB6829a248E37C2D7E3f",
+              "limits": {
+                "execution": "0xea60",
+                "state": "0x0"
+              },
+              "value": "0x0",
+              "data": "0x"
+            },
+            {
+              "mode": 2,
+              "flags": 0,
+              "target": "0x5544596212F91984C986A919C8026DF0576816f9",
+              "limits": {
+                "execution": "0xc350",
+                "state": "0x0"
+              },
+              "value": "0x0",
+              "data": "0x"
+            },
+            {
+              "mode": 0,
+              "flags": 0,
+              "target": "0x8438Ad1C834623CfF278AB6829a248E37C2D7E3f",
+              "limits": {
+                "execution": "0x186a0",
+                "state": "0x3d090"
+              },
+              "value": "0x0",
+              "data": "0x67b95108"
+            }
+          ],
+          "signatures": [
+            {
+              "scheme": 1,
+              "signer": "0x",
+              "msg": "0x",
+              "signature": "0x00142543c84b980151b4b40ac82517f6fc204f094b28a4ae998797f5b2e27360076aab15f3dd195b2f069457cbea820b2429a4f275c9b189e4e95a06da70f55dd1"
+            }
+          ],
+          "fees": {
+            "maxPriorityFeePerGas": "0x77359400",
+            "maxFeePerGas": "0x77359400",
+            "maxFeePerBlobGas": "0x0"
+          },
+          "blobVersionedHashes": [],
+          "recentRootReferences": []
+        },
+        "revertReason": "relayed 4 times without being included in a block"
+      },
+      "admission": {
+        "id": 4,
+        "txHash": "0x896286715b2b674c5e9f6d671c8e949a8124f3f4ee71b1e010410dfbbdb66040",
+        "sender": "0x98f1f65cBBfF37D2B716E7c099827Cd2181FED70",
+        "nonce": "0x0",
+        "nonceKeys": [
+          "0x0"
+        ],
+        "at": 1793956046421,
+        "source": "rpc",
+        "outcome": "dropped",
+        "checks": [
+          {
+            "rule": "gas-limit",
+            "verdict": "pass"
+          },
+          {
+            "rule": "recent-root",
+            "verdict": "pass"
+          },
+          {
+            "rule": "prefix",
+            "verdict": "pass"
+          },
+          {
+            "rule": "structure",
+            "verdict": "pass"
+          },
+          {
+            "rule": "signature",
+            "verdict": "pass"
+          },
+          {
+            "rule": "simulation",
+            "verdict": "pass"
+          },
+          {
+            "rule": "trace-alignment",
+            "verdict": "pass"
+          },
+          {
+            "rule": "OP-061",
+            "verdict": "pass"
+          },
+          {
+            "rule": "execution",
+            "verdict": "pass"
+          },
+          {
+            "rule": "trace-alignment",
+            "frameIndex": 0,
+            "entity": "sender",
+            "verdict": "pass"
+          },
+          {
+            "rule": "out-of-gas",
+            "frameIndex": 0,
+            "entity": "sender",
+            "verdict": "pass"
+          },
+          {
+            "rule": "OP-011",
+            "frameIndex": 0,
+            "entity": "sender",
+            "verdict": "pass"
+          },
+          {
+            "rule": "create",
+            "frameIndex": 0,
+            "entity": "sender",
+            "verdict": "pass"
+          },
+          {
+            "rule": "storage",
+            "frameIndex": 0,
+            "entity": "sender",
+            "verdict": "pass"
+          },
+          {
+            "rule": "COD-010",
+            "frameIndex": 0,
+            "entity": "sender",
+            "verdict": "pass"
+          },
+          {
+            "rule": "entrypoint-access",
+            "frameIndex": 0,
+            "entity": "sender",
+            "verdict": "pass"
+          },
+          {
+            "rule": "trace-alignment",
+            "frameIndex": 1,
+            "entity": "payer",
+            "verdict": "pass"
+          },
+          {
+            "rule": "out-of-gas",
+            "frameIndex": 1,
+            "entity": "payer",
+            "verdict": "pass"
+          },
+          {
+            "rule": "OP-011",
+            "frameIndex": 1,
+            "entity": "payer",
+            "verdict": "pass"
+          },
+          {
+            "rule": "create",
+            "frameIndex": 1,
+            "entity": "payer",
+            "verdict": "pass"
+          },
+          {
+            "rule": "storage",
+            "frameIndex": 1,
+            "entity": "payer",
+            "verdict": "pass"
+          },
+          {
+            "rule": "COD-010",
+            "frameIndex": 1,
+            "entity": "payer",
+            "verdict": "pass"
+          },
+          {
+            "rule": "entrypoint-access",
+            "frameIndex": 1,
+            "entity": "payer",
+            "verdict": "pass"
+          },
+          {
+            "rule": "mempool",
+            "verdict": "pass"
+          }
+        ],
+        "frames": [
+          {
+            "mode": 1,
+            "flags": 2,
+            "target": null,
+            "limits": {
+              "execution": "0x7530",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          },
+          {
+            "mode": 1,
+            "flags": 1,
+            "target": "0x8438ad1c834623cff278ab6829a248e37c2d7e3f",
+            "limits": {
+              "execution": "0xea60",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          },
+          {
+            "mode": 2,
+            "flags": 0,
+            "target": "0x5544596212F91984C986A919C8026DF0576816f9",
+            "limits": {
+              "execution": "0xc350",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          },
+          {
+            "mode": 0,
+            "flags": 0,
+            "target": "0x8438ad1c834623cff278ab6829a248e37c2d7e3f",
+            "limits": {
+              "execution": "0x186a0",
+              "state": "0x3d090"
+            },
+            "value": "0x0",
+            "data": "0x67b95108"
+          }
+        ],
+        "frameStatuses": [
+          "success",
+          "success",
+          "success",
+          "success"
+        ]
+      },
+      "events": [
+        {
+          "seq": 10,
+          "txHash": "0x896286715b2b674c5e9f6d671c8e949a8124f3f4ee71b1e010410dfbbdb66040",
+          "at": 1793956046429,
+          "kind": "admitted",
+          "status": "New"
+        },
+        {
+          "seq": 12,
+          "txHash": "0x896286715b2b674c5e9f6d671c8e949a8124f3f4ee71b1e010410dfbbdb66040",
+          "at": 1793956055764,
+          "kind": "statusChanged",
+          "status": "Submitted"
+        },
+        {
+          "seq": 14,
+          "txHash": "0x896286715b2b674c5e9f6d671c8e949a8124f3f4ee71b1e010410dfbbdb66040",
+          "at": 1793956065754,
+          "kind": "statusChanged",
+          "status": "Submitted"
+        },
+        {
+          "seq": 15,
+          "txHash": "0x896286715b2b674c5e9f6d671c8e949a8124f3f4ee71b1e010410dfbbdb66040",
+          "at": 1793956075745,
+          "kind": "statusChanged",
+          "status": "Submitted"
+        },
+        {
+          "seq": 16,
+          "txHash": "0x896286715b2b674c5e9f6d671c8e949a8124f3f4ee71b1e010410dfbbdb66040",
+          "at": 1793956085745,
+          "kind": "statusChanged",
+          "status": "Submitted"
+        },
+        {
+          "seq": 17,
+          "txHash": "0x896286715b2b674c5e9f6d671c8e949a8124f3f4ee71b1e010410dfbbdb66040",
+          "at": 1793956095747,
+          "kind": "dropped",
+          "status": "Cancelled",
+          "reason": "relayed 4 times without being included in a block"
+        }
+      ]
+    }
+  }
+}

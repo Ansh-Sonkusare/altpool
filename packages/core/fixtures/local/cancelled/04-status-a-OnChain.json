@@ -1,0 +1,90 @@
+{
+  "endpoint": "sidecar",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "skandha_frameTransactionStatus",
+    "params": [
+      "0x9978d9991e61097f273ed0a8394078c79aed490d553a2d8c74ee2057d99dcffb"
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "tx": {
+        "chainId": "0x539",
+        "nonceKeys": [
+          "0x0"
+        ],
+        "nonceSeq": "0x0",
+        "sender": "0x0775671Ef212055F1E25AD3709A73B9a2b89fB8D",
+        "frames": [
+          {
+            "mode": "0x1",
+            "flags": "0x2",
+            "target": null,
+            "limits": {
+              "execution": "0x7530",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          },
+          {
+            "mode": "0x1",
+            "flags": "0x1",
+            "target": "0x8438Ad1C834623CfF278AB6829a248E37C2D7E3f",
+            "limits": {
+              "execution": "0xea60",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          },
+          {
+            "mode": "0x2",
+            "flags": "0x0",
+            "target": "0x5544596212F91984C986A919C8026DF0576816f9",
+            "limits": {
+              "execution": "0xc350",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          },
+          {
+            "mode": "0x0",
+            "flags": "0x0",
+            "target": "0x8438Ad1C834623CfF278AB6829a248E37C2D7E3f",
+            "limits": {
+              "execution": "0x186a0",
+              "state": "0x3d090"
+            },
+            "value": "0x0",
+            "data": "0x67b95108"
+          }
+        ],
+        "signatures": [
+          {
+            "scheme": "0x1",
+            "signer": "0x",
+            "msg": "0x",
+            "signature": "0x014f7a4525b1aecac386a4b63c2ecab70f53d70ea148727bc75223c8811c65a43d619bbb9bd3bd8cacd5d12d5071d5faa4b94b7848f9291bb6382ea66deb5f3561"
+          }
+        ],
+        "fees": {
+          "maxPriorityFeePerGas": "0x77359400",
+          "maxFeePerGas": "0x77359400",
+          "maxFeePerBlobGas": "0x0"
+        },
+        "blobVersionedHashes": [],
+        "recentRootReferences": []
+      },
+      "sender": "0x0775671Ef212055F1E25AD3709A73B9a2b89fB8D",
+      "payer": "0x8438Ad1C834623CfF278AB6829a248E37C2D7E3f",
+      "status": "OnChain",
+      "transaction": "0x9978d9991e61097f273ed0a8394078c79aed490d553a2d8c74ee2057d99dcffb"
+    }
+  }
+}

@@ -1,0 +1,1 @@
+{"ok":true,"step":"step_1_check","summary":"chain 1337: ethrex and the sidecar reachable\nparticipant: 0x0d6c100024A365f9DF046e10bF075615758E683c\nbalance: 1 ETH (just funded)\nexplorer: available","chainId":1337,"participant":"0x0d6c100024A365f9DF046e10bF075615758E683c","balanceWei":"1000000000000000000","funded":true,"explorer":"available","minStakeWei":"10000000000000000"}

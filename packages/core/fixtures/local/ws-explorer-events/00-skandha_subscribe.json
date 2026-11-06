@@ -1,0 +1,17 @@
+{
+  "endpoint": "sidecar-ws",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "skandha_subscribe",
+    "params": [
+      "explorerEvents",
+      0
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": "0xf2a11403e3f4aa67fdce4ec89989ecaa"
+  }
+}

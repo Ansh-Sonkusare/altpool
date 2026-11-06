@@ -1,0 +1,69 @@
+{
+  "endpoint": "sidecar",
+  "step": "step_10_tx_violating_alt_banned",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "eth_sendFrameTransaction",
+    "params": [
+      {
+        "chainId": "0x539",
+        "nonceKeys": [
+          "0x0"
+        ],
+        "nonceSeq": "0xa",
+        "sender": "0x529766ed998390c74d6943f1b6e9819c694145d8",
+        "frames": [
+          {
+            "mode": 1,
+            "flags": 3,
+            "target": null,
+            "limits": {
+              "execution": "0x11170",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x01"
+          },
+          {
+            "mode": 2,
+            "flags": 0,
+            "target": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
+            "limits": {
+              "execution": "0xc350",
+              "state": "0x30d40"
+            },
+            "value": "0x3b9aca00",
+            "data": "0x"
+          }
+        ],
+        "signatures": [
+          {
+            "scheme": 1,
+            "signer": "0x0d6c100024A365f9DF046e10bF075615758E683c",
+            "msg": "0x",
+            "signature": "0x00059811293b0df0366c02104474b50ec0ea0e279774e06814ac04a1e7719a1982600c93cc24fef3ed2dafa5babae62b557a1c2a40dac0584482127d8d9723e7f2"
+          }
+        ],
+        "fees": {
+          "maxPriorityFeePerGas": "0x77359400",
+          "maxFeePerGas": "0x77359400",
+          "maxFeePerBlobGas": "0x0"
+        },
+        "blobVersionedHashes": [],
+        "recentRootReferences": []
+      }
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "error": {
+      "message": "unstaked payer accessed 0x61b5b398411befda8a6f9ac631b578b81882cd61 slot 0x0000000000000000000000000000000000000000000000000000000000000000",
+      "data": {
+        "payer": "0x529766ed998390c74D6943F1B6E9819c694145d8"
+      },
+      "code": -32502
+    }
+  }
+}

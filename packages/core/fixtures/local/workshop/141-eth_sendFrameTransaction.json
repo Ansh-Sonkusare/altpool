@@ -1,0 +1,72 @@
+{
+  "endpoint": "sidecar",
+  "step": "step_13_tx_recent_roots",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "eth_sendFrameTransaction",
+    "params": [
+      {
+        "chainId": "0x539",
+        "nonceKeys": [
+          "0x0"
+        ],
+        "nonceSeq": "0xa",
+        "sender": "0x3d0c50550c138c18aded6d35394f3329c58ea9f3",
+        "frames": [
+          {
+            "mode": 1,
+            "flags": 3,
+            "target": null,
+            "limits": {
+              "execution": "0x11170",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          },
+          {
+            "mode": 2,
+            "flags": 0,
+            "target": "0x8943545177806ED17B9F23F0a21ee5948eCaa776",
+            "limits": {
+              "execution": "0xc350",
+              "state": "0x30d40"
+            },
+            "value": "0x3b9aca00",
+            "data": "0x"
+          }
+        ],
+        "signatures": [
+          {
+            "scheme": 1,
+            "signer": "0x0d6c100024A365f9DF046e10bF075615758E683c",
+            "msg": "0x",
+            "signature": "0x01b8d2216bdb64db75ce04f8258e6fbec6b6edd3511146dd1cd4f8509b13ca0d712c91e510fe9e8a4f2ce3ef2698b0cc70858ca07fce629627cbce1a04d24e1f5f"
+          }
+        ],
+        "fees": {
+          "maxPriorityFeePerGas": "0x77359400",
+          "maxFeePerGas": "0x77359400",
+          "maxFeePerBlobGas": "0x0"
+        },
+        "blobVersionedHashes": [],
+        "recentRootReferences": [
+          {
+            "sourceId": "0x324101c4f1cf461d379b7e04508cc8e4d020f78ea3f54bbba74e44c297763e61",
+            "slot": "0x6c",
+            "root": "0xd852dc4b29587bd5434b24d0bc383cae1783e1c2bcb8f4964e215cff2414e940"
+          }
+        ]
+      }
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "error": {
+      "message": "EIP-8272 recent-root reference is not committed in the RECENT_ROOT_ADDRESS predeploy at head state",
+      "code": -32500
+    }
+  }
+}

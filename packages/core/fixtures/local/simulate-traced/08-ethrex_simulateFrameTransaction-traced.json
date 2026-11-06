@@ -1,0 +1,80 @@
+{
+  "endpoint": "ethrex",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "ethrex_simulateFrameTransaction",
+    "params": [
+      "0x06f89e820539c180809415d34aaf54267db7d7c367839aaf71a00a2c6a65eaca010380c4827530808080de0280945544596212f91984c986a919c8026df0576816f9c482c350800180f848f846018080b841008018564e10780d7aac54c07ddbc10440bf5f302a29813b25a7368d5be021efd30a4c5a56947a0a0df63ecbdd0c687b49eb09eeaf6abaa11b1a2a431df298226acb8477359400847735940080c0c0",
+      "latest",
+      {
+        "trace": true
+      }
+    ]
+  },
+  "response": {
+    "id": 1,
+    "jsonrpc": "2.0",
+    "result": {
+      "canonicalMempoolValid": true,
+      "canonicalMempoolViolation": null,
+      "erc7562Trace": [
+        {
+          "frameIndex": 0,
+          "root": {
+            "accessedSlots": {
+              "reads": {},
+              "transientReads": {},
+              "transientWrites": {},
+              "writes": {}
+            },
+            "contractSize": {},
+            "extCodeAccessInfo": [],
+            "from": "0x00000000000000000000000000000000000000aa",
+            "outOfGas": false,
+            "to": "0x15d34aaf54267db7d7c367839aaf71a00a2c6a65",
+            "type": "CALL",
+            "usedOpcodes": {},
+            "value": "0x0"
+          }
+        },
+        {
+          "frameIndex": 1,
+          "root": {
+            "accessedSlots": {
+              "reads": {},
+              "transientReads": {},
+              "transientWrites": {},
+              "writes": {}
+            },
+            "contractSize": {},
+            "extCodeAccessInfo": [],
+            "from": "0x15d34aaf54267db7d7c367839aaf71a00a2c6a65",
+            "outOfGas": false,
+            "to": "0x5544596212f91984c986a919c8026df0576816f9",
+            "type": "CALL",
+            "usedOpcodes": {},
+            "value": "0x0"
+          }
+        }
+      ],
+      "erc7562TraceError": null,
+      "executionError": null,
+      "executionStatus": "success",
+      "frames": [
+        {
+          "gasUsed": "0x64",
+          "succeeded": true
+        },
+        {
+          "gasUsed": "0x64",
+          "succeeded": true
+        }
+      ],
+      "gasUsed": "0x65f6",
+      "maxCost": "0xbb0a16684800",
+      "payer": "0x15d34aaf54267db7d7c367839aaf71a00a2c6a65",
+      "prefixShape": "SelfVerify"
+    }
+  }
+}

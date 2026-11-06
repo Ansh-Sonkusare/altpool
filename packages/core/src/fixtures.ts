@@ -25,8 +25,13 @@ export const scenario = (dir: string): Captured[] =>
     .map((f) => fixture(`${dir}/${f}`))
     .filter((c) => typeof c.request?.method === "string");
 
-/** Folders of {request, response} calls. Notes-only folders: local/r5-stake (stake lifecycle), local/r11-burst (throttle timeline). */
-export const scenarios = ["public", "public-r9", "r9-demo", "local/smoke", "local/r6-nonces"] as const;
+/** Folders of {request, response} calls. Notes-only folders: local/r5-stake (stake lifecycle), local/r11-burst (throttle timeline).
+ *  local/workshop: workshop steps 1-13 on altpool-localnet (step summaries in local/workshop/results); local/rpc: one rejection per rule;
+ *  local/ws-explorer-events: skandha_subscribe stream (events.jsonl). */
+export const scenarios = [
+  "public", "public-r9", "r9-demo", "local/smoke", "local/r6-nonces",
+  "local/workshop", "local/rpc", "local/simulate-traced", "local/cancelled", "local/ws-explorer-events",
+] as const;
 
 /** Stand-in until gate G1. Values are not a valid proof. */
 export const mockWithdrawProof = (): WithdrawProof => {

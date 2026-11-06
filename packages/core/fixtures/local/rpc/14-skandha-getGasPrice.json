@@ -1,0 +1,17 @@
+{
+  "endpoint": "sidecar",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "skandha_getGasPrice",
+    "params": []
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "maxPriorityFeePerGas": "0x117ebc",
+      "maxFeePerGas": "0x131812"
+    }
+  }
+}
