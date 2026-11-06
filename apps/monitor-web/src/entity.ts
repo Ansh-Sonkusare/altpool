@@ -119,8 +119,52 @@ export const renderEntity = (r: EntityReport, tab: Tab, watched: NodeRef[], even
     </div>
     <div class="min-h-40" role="tabpanel">${tabBody(r, tab, watched, events)}</div>
     <div class="flex flex-wrap justify-between gap-x-4 gap-y-2 border-t border-line bg-panel-2 px-4 py-3 sm:px-5">
-      <span class="label !text-accent">${typeof WebSocket !== "undefined" ? "Streaming explorer events" : "Polling"}<span class="ml-1.5 inline-block h-[13px] w-2 animate-blink bg-accent align-[-2px]"></span></span>
+      <span class="label !text-accent">${typeof WebSocket !== "undefined" ? "Streaming explorer events" : "Polling every 10 s"}<span class="ml-1.5 inline-block h-[13px] w-2 animate-blink bg-accent align-[-2px]"></span></span>
       <span class="label">Chain ${DEVNET.chainId} · ${esc(r.nodes.map((n) => n.name).join(" + "))} · updated ${clock(r.updatedAt)}</span>
     </div>
   </section>`;
+};
+
+/** Side by side: one compact card per entity (?entity=a,b). Each card opens the full view. */
+export const renderCompare = (addrs: string[], reports: Record<string, EntityReport | undefined>, errors: Record<string, string | undefined>) => {
+  const spark = (r: EntityReport) => {
+    const pts = r.inclusions.filter((i) => i.verifyGas !== undefined).sort((a, b) => a.block - b.block);
+    if (pts.length < 2) return `<div class="h-10 font-mono text-[12px] leading-10 text-faint">${pts.length ? `VERIFY ${num(pts[0]!.verifyGas!)}` : "no inclusions yet"}</div>`;
+    const max = Math.max(Number(DEVNET.verifyGasMax) * 1.12, ...pts.map((p) => Number(p.verifyGas) * 1.1));
+    const y = (v: number) => 40 - (v / max) * 36;
+    const d = pts.map((p, i) => `${i ? "L" : "M"}${(4 + (i * 292) / (pts.length - 1)).toFixed(1)},${y(Number(p.verifyGas)).toFixed(1)}`).join(" ");
+    const cap = y(Number(DEVNET.publicVerifyGasCap));
+    return `<svg viewBox="0 0 300 40" preserveAspectRatio="none" class="block h-10 w-full" role="img" aria-label="VERIFY gas over the last ${pts.length} inclusions">
+      <line x1="0" x2="300" y1="${cap}" y2="${cap}" stroke="var(--warn)" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"/>
+      <path d="${d}" fill="none" stroke="var(--accent)" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>`;
+  };
+  const row = (k: string, v: string) => `<div class="flex justify-between gap-3 border-b border-line py-1.5 last:border-b-0"><span class="label">${esc(k)}</span><span class="text-right font-mono text-[13px]">${v}</span></div>`;
+  const card = (a: string) => {
+    const r = reports[a];
+    const name = KNOWN[lc(a)]?.label ?? "Entity";
+    const head = `<a href="?entity=${esc(a)}" class="flex flex-wrap items-baseline justify-between gap-2 border-b border-line px-4 py-3 text-ink no-underline hover:bg-panel-2 sm:px-5">
+      <span class="text-[18px] font-semibold">${esc(name)}</span><span class="font-mono text-[12px] text-muted">${esc(short(a))} →</span></a>`;
+    if (!r) return `<section class="border border-line bg-panel">${head}<div class="px-5 py-10 text-center text-muted">${errors[a] ? `<span class="text-bad">${esc(errors[a])}</span>` : "reading…"}</div></section>`;
+    const rep = r.reputation, f = r.funds;
+    const repTone: Tone = rep.status === "ok" ? "ok" : rep.status === "throttled" ? "warn" : "bad";
+    const up = r.nodes.filter((n) => n.ok).length;
+    const latest = r.inclusions[0];
+    return `<section class="border border-line bg-panel">${head}
+      <div class="px-4 pt-3 sm:px-5">${spark(r)}</div>
+      <div class="px-4 pb-2 pt-1 sm:px-5">
+        ${row("Stake", `${sq(r.stake.isStaked ? "ok" : "bad")}<span class="${r.stake.isStaked ? "text-accent" : "text-bad"}">${r.stake.isStaked ? "staked" : "unstaked"}</span> ${eth(r.stake.amount, 3)}`)}
+        ${row("Reputation", `${sq(repTone)}<span class="${TEXT[repTone]}">${esc(rep.status)}</span> ${num(rep.opsSeen)}/${num(rep.opsIncluded)}`)}
+        ${row("Headroom", `${num(r.headroom.untilThrottled)} sends`)}
+        ${row("Funds", `${eth(f.balance)}${f.txsLeft !== undefined ? ` · ${num(f.txsLeft)} txs` : ""}`)}
+        ${row("Latest VERIFY", latest?.verifyGas !== undefined ? `${num(latest.verifyGas)} <span class="text-faint">block ${num(latest.block)}</span>` : "—")}
+        ${row("Activity", `${num(r.inclusions.length)} in · <span class="${r.rejections.length ? "text-bad" : ""}">${num(r.rejections.length)} rejected</span> · <span class="${r.pending.some((p) => p.stuck) ? "text-bad" : ""}">${num(r.pending.length)} pending</span>`)}
+        ${row("Nodes", `<span class="${up === r.nodes.length ? "text-accent" : "text-bad"}">${up} of ${r.nodes.length} up</span>`)}
+      </div></section>`;
+  };
+  return `
+  <div class="mb-4 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+    <h1 class="m-0 text-[28px] font-semibold leading-tight">Compare</h1>
+    <span class="font-mono text-[13px] text-muted">${addrs.length} entities · same nodes, same rules</span>
+  </div>
+  <div class="grid gap-5 md:grid-cols-2 ${addrs.length >= 3 ? "xl:grid-cols-3" : ""}">${addrs.map(card).join("")}</div>`;
 };

@@ -94,9 +94,9 @@ export interface ReportOptions {
   nodes?: NodeRef[];
   /** Chain reads (stake, balance, receipts) go straight to ethrex; sidecars are the fallback. */
   ethrexUrl?: string;
-  /** Per-request limit, so one slow node can't stall a poll (default 10 s). */
+  /** Per-request limit, so one slow node can't stall a poll forever (default 25 s; the devnet's explorer calls take 2-10 s). */
   timeoutMs?: number;
-  /** Recent explorer txs scanned per node (default 200). */
+  /** Recent explorer txs scanned per node (default and explorer maximum: 200). */
   txLimit?: number;
   /** Receipts fetched for at most this many latest inclusions (default 10). */
   maxInclusions?: number;
@@ -153,16 +153,27 @@ interface NodeData {
   rejected: AdmissionRecord[];
 }
 
+/** The explorer serves at most 200 items per page (Nov 7), so page through the reputation table until the entity shows up. */
+const findReputationItem = async (gw: ReturnType<typeof gatewayClient>, entity: string, ms: number, name: string, maxPages = 5) => {
+  let cursor: string | undefined;
+  for (let page = 0; page < maxPages; page++) {
+    const r = await within(gw.call("skandha_explorer_listReputation", [{ limit: 200, ...(cursor ? { cursor } : {}) }]), ms, `${name} listReputation`);
+    const hit = (r?.items ?? []).find((i: any) => lc(String(i.address)) === entity);
+    if (hit || !r?.nextCursor) return hit;
+    cursor = String(r.nextCursor);
+  }
+  return undefined;
+};
+
 const readNode = async (ref: NodeRef, entity: string, txLimit: number, ms: number): Promise<NodeData> => {
   const gw = gatewayClient(ref.url);
   const t0 = Date.now();
   try {
-    const [rep, txs, adm] = await Promise.all([
-      within(gw.listReputation(1000), ms, `${ref.name} listReputation`),
-      within(gw.call("skandha_explorer_listTransactions", [{ limit: txLimit }]), ms, `${ref.name} listTransactions`),
-      within(gw.call("skandha_explorer_listAdmissions", [{ outcome: "rejected", limit: txLimit }]), ms, `${ref.name} listAdmissions`).catch(() => ({ items: [] })),
+    const [item, txs, adm] = await Promise.all([
+      findReputationItem(gw, entity, ms, ref.name),
+      within(gw.call("skandha_explorer_listTransactions", [{ limit: Math.min(txLimit, 200) }]), ms, `${ref.name} listTransactions`),
+      within(gw.call("skandha_explorer_listAdmissions", [{ outcome: "rejected", limit: Math.min(txLimit, 200) }]), ms, `${ref.name} listAdmissions`).catch(() => ({ items: [] })),
     ]);
-    const item = (rep?.items ?? []).find((i: any) => lc(String(i.address)) === entity);
     const reputation: Reputation | undefined = item && {
       opsSeen: Number(item.opsSeen ?? 0), opsIncluded: Number(item.opsIncluded ?? 0),
       status: (item.status ?? "ok") as ReputationStatus, isWhitelisted: Boolean(item.isWhitelisted), isBlacklisted: Boolean(item.isBlacklisted),
@@ -190,7 +201,7 @@ export const entityReport = async (entity: Address, o: ReportOptions = {}): Prom
   const cache = o.cache ?? new Map<string, Omit<Inclusion, "nodes">>();
   const now = Date.now();
 
-  const ms = o.timeoutMs ?? 10_000;
+  const ms = o.timeoutMs ?? 25_000;
   const data = await Promise.all(refs.map((r) => readNode(r, me, o.txLimit ?? 200, ms)));
   const up = data.filter((d) => d.view.ok);
   if (!up.length) throw new Error(`no node reachable: ${data.map((d) => `${d.ref.name}: ${d.view.error}`).join("; ")}`);
@@ -322,8 +333,10 @@ export interface WatchOptions extends Omit<ReportOptions, "cache" | "previous"> 
   onThrottleWarning?: (s: EntityReport) => void;
   /** txsLeft fell to `lowBalanceAt` or below. Fires on the transition. */
   onLowBalance?: (s: EntityReport) => void;
+  /** Staked / unstaked flipped, or an unlock started (withdrawTime set): the entity is leaving the alt mempool's trust. */
+  onStakeChange?: (prev: Stake, next: Stake, s: EntityReport) => void;
   onError?: (e: unknown) => void;
-  /** Poll period (default 3000 ms; with live events, polls also follow each event). */
+  /** Fallback poll period (default 10 s: the explorer calls are heavy on a shared devnet, and live events trigger polls anyway). */
   intervalMs?: number;
   throttleWarnAt?: number;
   lowBalanceAt?: number;
@@ -371,6 +384,7 @@ export const watchEntity = (entity: Address, opts: WatchOptions): (() => void) =
       for (const r of s.rejections) if (!rej.has(lc(r.hash))) opts.onRejection?.(r, s);
       for (const e of s.evictions) if (!ev.has(lc(e.hash))) opts.onEviction?.(e, s);
     }
+    if (prev && (prev.stake.isStaked !== s.stake.isStaked || prev.stake.withdrawTime !== s.stake.withdrawTime)) opts.onStakeChange?.(prev.stake, s.stake, s);
     for (const p of s.pending) if (p.stuck && !stuckSeen.has(lc(p.hash))) { stuckSeen.add(lc(p.hash)); opts.onStuck?.(p, s); }
     const throttled = s.reputation.status !== "ok" || s.headroom.untilThrottled <= (opts.throttleWarnAt ?? 20);
     if (throttled && !warnedThrottle) opts.onThrottleWarning?.(s);
@@ -400,7 +414,7 @@ export const watchEntity = (entity: Address, opts: WatchOptions): (() => void) =
       running = false;
       if (!stopped) {
         if (again) { again = false; void poll(); }
-        else timer = setTimeout(poll, opts.intervalMs ?? 3000);
+        else timer = setTimeout(poll, opts.intervalMs ?? 10_000);
       }
     }
   };
@@ -485,7 +499,7 @@ export interface TxReport {
 /** One tx across nodes: each sidecar's admission record and lifecycle events, plus the receipt from ethrex. */
 export const txReport = async (hash: Hex, o: Pick<ReportOptions, "nodes" | "ethrexUrl" | "timeoutMs"> = {}): Promise<TxReport> => {
   const refs = o.nodes ?? DEFAULT_NODES;
-  const ms = o.timeoutMs ?? 10_000;
+  const ms = o.timeoutMs ?? 25_000;
   const records = await Promise.all(refs.map(async (ref) => {
     const gw = gatewayClient(ref.url);
     try { return { ref, gw, rec: await within(gw.admission(hash), ms, `${ref.name} getTransaction`) as any, error: undefined as string | undefined }; }
@@ -547,3 +561,4 @@ export const txReport = async (hash: Hex, o: Pick<ReportOptions, "nodes" | "ethr
     updatedAt: Date.now(),
   };
 };
+export * from "./alerts";

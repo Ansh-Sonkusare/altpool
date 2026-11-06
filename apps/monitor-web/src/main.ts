@@ -6,7 +6,7 @@ import "./style.css";
 import { parseEther } from "viem";
 import type { Address, Hex } from "@altpool/core";
 import { watchEntity, type EntityReport, type TxReport } from "@altpool/monitor";
-import { renderEntity, type SessionEvent, type Tab } from "./entity";
+import { renderCompare, renderEntity, type SessionEvent, type Tab } from "./entity";
 import { renderTx, watchTx } from "./tx";
 import { KNOWN, ago, clock, esc, eth, isAddress, isHash, lc, nodesFor, num, short, type NodeChoice, type Tone } from "./ui";
 
@@ -16,13 +16,15 @@ const store = {
   set: (k: string, v: string) => { try { localStorage.setItem(`altpool.${k}`, v); } catch { /* private mode */ } },
 };
 
-type Target = { kind: "entity"; addr: Address } | { kind: "tx"; hash: Hex } | { kind: "none" };
+type Target = { kind: "entity"; addr: Address } | { kind: "compare"; addrs: Address[] } | { kind: "tx"; hash: Hex } | { kind: "none" };
 const state = {
   target: { kind: "none" } as Target,
   node: ((params.get("node") as NodeChoice) || "both") as NodeChoice,
   fee: params.get("fee") ? parseEther(params.get("fee")!) : undefined,
   tab: ((store.get("tab") as Tab) || "activity") as Tab,
   entity: undefined as EntityReport | undefined,
+  compare: {} as Record<string, EntityReport | undefined>,
+  compareErrors: {} as Record<string, string | undefined>,
   tx: undefined as TxReport | undefined,
   error: undefined as string | undefined,
   events: [] as SessionEvent[],
@@ -40,7 +42,7 @@ app.innerHTML = `
     </a>
     <form id="f" class="flex min-w-0 flex-[1_1_360px]">
       <label for="q" class="sr-only">Entity address or transaction hash</label>
-      <input id="q" spellcheck="false" autocomplete="off" placeholder="entity address or tx hash, 0x…"
+      <input id="q" spellcheck="false" autocomplete="off" placeholder="address, addresses (a,b) or tx hash, 0x…"
         class="min-w-0 flex-1 border border-r-0 border-line bg-panel px-3 py-2 font-mono text-[13px] text-ink outline-none placeholder:text-faint focus:border-accent" />
       <button class="cursor-pointer border border-accent bg-accent px-3.5 py-2 font-mono text-[13px] font-semibold text-accent-ink">Go</button>
     </form>
@@ -70,12 +72,14 @@ const setLive = (tone: "on" | "err" | "idle", text: string) => {
 const startScreen = () => {
   const picks = Object.entries(KNOWN).map(([addr, k]) =>
     `<a href="?entity=${esc(addr)}" class="border border-line px-4 py-3 text-ink no-underline hover:border-accent">
-      <div class="font-semibold">${esc(k.label)}</div><div class="font-mono text-[12px] text-muted">${esc(short(addr))}</div></a>`).join("");
+      <div class="font-semibold">${esc(k.label)}</div><div class="font-mono text-[12px] text-muted">${esc(short(addr))}</div></a>`).join("") +
+    (Object.keys(KNOWN).length > 1 ? `<a href="?entity=${esc(Object.keys(KNOWN).join(","))}" class="border border-dashed border-line px-4 py-3 text-ink no-underline hover:border-accent">
+      <div class="font-semibold">Compare</div><div class="font-mono text-[12px] text-muted">${esc(Object.values(KNOWN).map((k) => k.label).join(" vs "))}</div></a>` : "");
   return `
   <section class="mt-8 max-w-[760px] border border-line bg-panel p-8">
     <div class="label">Altpool · monitor</div>
     <h1 class="mb-3 mt-2 text-[34px] font-semibold leading-tight">See the alt mempool, live</h1>
-    <p class="mb-5 text-muted">Paste an <b class="text-ink">address</b> to watch an entity: stake, reputation and sends left before throttling, the ETH it pays with, every inclusion’s VERIFY gas, and why anything was rejected. Paste a <b class="text-ink">tx hash</b> to follow one transaction across the gateway and the miner’s sidecar.</p>
+    <p class="mb-5 text-muted">Paste an <b class="text-ink">address</b> to watch an entity: stake, reputation and sends left before throttling, the ETH it pays with, every inclusion’s VERIFY gas, and why anything was rejected. Paste a <b class="text-ink">tx hash</b> to follow one transaction across the gateway and the miner’s sidecar, or several addresses (a,b) to compare them.</p>
     <div class="flex flex-wrap gap-2.5">${picks}</div>
     ${state.error ? `<div class="mt-4 border border-bad px-3.5 py-2.5 font-mono text-[13px] text-bad">${esc(state.error)}</div>` : ""}
   </section>`;
@@ -86,6 +90,7 @@ const render = () => {
   if (t.kind === "none") { view.innerHTML = startScreen(); return; }
   const loading = (what: string) =>
     `<div class="mt-16 text-center text-muted">${state.error ? `<span class="text-bad">${esc(state.error)}</span>` : `Reading ${esc(what)} from ${nodesFor(state.node).map((n) => n.name).join(" and ")}…`}</div>`;
+  if (t.kind === "compare") { view.innerHTML = renderCompare(t.addrs, state.compare, state.compareErrors); return; }
   if (t.kind === "entity") view.innerHTML = state.entity ? renderEntity(state.entity, state.tab, nodesFor(state.node), state.events) : loading(short(t.addr));
   else view.innerHTML = state.tx ? renderTx(state.tx, nodesFor(state.node)) : loading(short(t.hash));
 };
@@ -102,17 +107,20 @@ const go = (target: Target, push = true) => {
   state.stop = undefined;
   state.target = target;
   state.entity = undefined;
+  state.compare = {};
+  state.compareErrors = {};
   state.tx = undefined;
   state.error = undefined;
   state.events = [];
   const q = new URLSearchParams();
   if (target.kind === "entity") q.set("entity", target.addr);
+  if (target.kind === "compare") q.set("entity", target.addrs.join(","));
   if (target.kind === "tx") q.set("tx", target.hash);
   if (state.node !== "both") q.set("node", state.node);
   if (params.get("fee")) q.set("fee", params.get("fee")!);
   const url = q.size ? `?${q}` : location.pathname;
   if (push) history.pushState(null, "", url); else history.replaceState(null, "", url);
-  input.value = target.kind === "entity" ? target.addr : target.kind === "tx" ? target.hash : "";
+  input.value = target.kind === "entity" ? target.addr : target.kind === "compare" ? target.addrs.join(",") : target.kind === "tx" ? target.hash : "";
   setLive("idle", target.kind === "none" ? "idle" : "connecting");
   render();
   const nodes = nodesFor(state.node);
@@ -141,6 +149,23 @@ const go = (target: Target, push = true) => {
         if (!state.entity) render();
       },
     });
+  } else if (target.kind === "compare") {
+    const stops = target.addrs.map((a) => watchEntity(a, {
+      nodes,
+      feePerTx: state.fee ?? KNOWN[lc(a)]?.fee,
+      onStatus: (s) => {
+        state.compare[lc(a)] = s;
+        state.compareErrors[lc(a)] = undefined;
+        const ready = target.addrs.filter((x) => state.compare[lc(x)]).length;
+        setLive("on", `live · ${ready}/${target.addrs.length} · ${clock(s.updatedAt)}`);
+        render();
+      },
+      onError: (e) => {
+        state.compareErrors[lc(a)] = `Poll failed: ${(e as Error)?.message ?? String(e)}. Retrying.`;
+        if (!state.compare[lc(a)]) render();
+      },
+    }));
+    state.stop = () => stops.forEach((s) => s());
   } else if (target.kind === "tx") {
     state.stop = watchTx(target.hash, nodes, (r) => {
       state.tx = r;
@@ -157,9 +182,11 @@ const go = (target: Target, push = true) => {
 };
 
 const targetFrom = (p: URLSearchParams): Target => {
-  const tx = p.get("tx") ?? "", entity = p.get("entity") ?? "";
+  const tx = p.get("tx") ?? "";
+  const addrs = [...new Set((p.get("entity") ?? "").split(",").map((s) => s.trim()).filter(isAddress))] as Address[];
   if (isHash(tx)) return { kind: "tx", hash: tx };
-  if (isAddress(entity)) return { kind: "entity", addr: entity };
+  if (addrs.length > 1) return { kind: "compare", addrs: addrs.slice(0, 6) };
+  if (addrs.length === 1) return { kind: "entity", addr: addrs[0]! };
   return { kind: "none" };
 };
 
@@ -168,7 +195,9 @@ const targetFrom = (p: URLSearchParams): Target => {
 document.querySelector<HTMLFormElement>("#f")!.addEventListener("submit", (ev) => {
   ev.preventDefault();
   const v = input.value.trim();
+  const many = v.split(/[\s,]+/).filter(isAddress) as Address[];
   if (isHash(v)) go({ kind: "tx", hash: v });
+  else if (many.length > 1) go({ kind: "compare", addrs: [...new Set(many)].slice(0, 6) });
   else if (isAddress(v)) go({ kind: "entity", addr: v });
   else { state.error = "Paste a 20-byte address (0x + 40 hex) or a 32-byte tx hash (0x + 64 hex)."; setLive("err", "not an address or hash"); if (state.target.kind === "none") render(); }
 });
