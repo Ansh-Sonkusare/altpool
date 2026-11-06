@@ -36,6 +36,8 @@ const poolAbi = parseAbi([
 ]);
 const pub = createPublicClient({ chain: altDevnet, transport: http(DEVNET.ethrexUrl) });
 const gw = gateway();
+// SEND_URL: submit to another sidecar (e.g. the miner's own, https://altmempool.forshtat.com/rpc) when gateway gossip stalls.
+const send = gateway(process.env.SEND_URL ?? DEVNET.gatewayUrl);
 const profile = getProfile(DEVNET.profile);
 const randomAddress = () => privateKeyToAccount(generatePrivateKey()).address;
 
@@ -57,7 +59,7 @@ async function exitFor(p: WithdrawProof & { rootIdx: number }): Promise<FrameTx>
     (e) => `error ${reason(e)}`,
   );
   console.log(`public simulate (ethrex_simulateFrameTransaction): ${sim}`);
-  const est = await gw.estimateFrameTransactionGas(toWire(tx)).then((r) => JSON.stringify(r), (e) => `error ${reason(e)}`);
+  const est = await send.estimateFrameTransactionGas(toWire(tx)).then((r) => JSON.stringify(r), (e) => `error ${reason(e)}`);
   console.log(`alt estimate (eth_estimateFrameTransactionGas): ${est}`);
   return tx;
 }
@@ -80,7 +82,7 @@ if (process.argv.includes("--junk")) {
     rootIdx,
   });
   try {
-    const hash = await gw.sendFrameTransaction(toWire(tx));
+    const hash = await send.sendFrameTransaction(toWire(tx));
     console.log(`junk exit ADMITTED ${hash}: ExitRelay approved a zeroed proof`);
     process.exit(1);
   } catch (e) {
@@ -116,27 +118,33 @@ const proof = await prove(note, { recipient, relayer: exitRelay, fee: EXIT_FEE }
 console.log(`proved for recipient ${recipient}, rootIdx ${proof.rootIdx}`);
 const tx = await exitFor(proof);
 
-const exitHash = await gw.sendFrameTransaction(toWire(tx));
+const exitHash = await send.sendFrameTransaction(toWire(tx));
 console.log(`exit sent ${exitHash}`);
 let receipt: unknown = null;
 for (let i = 0; i < 90 && !receipt; i++) {
   await sleep(2000);
-  receipt = await gw.receipt(exitHash).catch(() => null);
+  receipt = await send.receipt(exitHash).catch(() => null);
 }
 if (!receipt) throw new Error(`no receipt for ${exitHash} after 180 s`);
-console.log(`receipt ${JSON.stringify(receipt, null, 2)}`);
+// ethrex frame receipt (RPC data): only frameReceipts is structural, so check it before reading.
+const r = receipt as { status: string; gasUsed: string; blockNumber: string; frameReceipts: { status: string; gasUsed: string; stateGasUsed?: string }[] };
+if (!Array.isArray(r.frameReceipts)) throw new Error(`receipt has no frameReceipts: ${JSON.stringify(receipt)}`);
+console.log(`included in block ${Number(r.blockNumber)}, status ${r.status}, gasUsed ${Number(r.gasUsed)}`);
+r.frameReceipts.forEach((f, i) => console.log(`  frame ${i}: status ${f.status} gasUsed ${Number(f.gasUsed)} stateGasUsed ${Number(f.stateGasUsed ?? 0)}`));
 
 const got = await pub.getBalance({ address: recipient });
 const want = DEVNET.denomination - EXIT_FEE;
 console.log(`recipient balance ${formatEther(got)} ETH (want ${formatEther(want)})`);
 if (got !== want) throw new Error(`recipient balance ${got} != ${want}`);
 
-try {
-  const replay = await gw.sendFrameTransaction(toWire(tx));
-  throw new Error(`replay ADMITTED ${replay}`);
-} catch (e) {
-  if (e instanceof Error && e.message.startsWith("replay ADMITTED")) throw e;
-  console.log(`replay rejected: ${reason(e)}`);
+for (const sidecar of new Set([send.url, gw.url])) {
+  try {
+    const replay = await gateway(sidecar).sendFrameTransaction(toWire(tx));
+    throw new Error(`replay ADMITTED ${replay} by ${sidecar}`);
+  } catch (e) {
+    if (e instanceof Error && e.message.startsWith("replay ADMITTED")) throw e;
+    console.log(`replay rejected by ${sidecar}: ${reason(e)}`);
+  }
 }
 
 console.log(`deposit ${explorerTx(depositTx)}`);
