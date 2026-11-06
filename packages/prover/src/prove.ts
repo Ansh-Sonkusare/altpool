@@ -63,11 +63,12 @@ export const proveWithPath = (note: Note, path: Pick<MerklePath, "root" | "pathE
   };
 };
 
-export const prove = async (note: Note, to: WithdrawTo): Promise<WithdrawProof & { rootIdx: number }> => {
-  const path = await rootFor(note);
+/** `pool` defaults to the devnet 0.1 ETH pool. */
+export const prove = async (note: Note, to: WithdrawTo, pool?: Address): Promise<WithdrawProof & { rootIdx: number }> => {
+  const path = await rootFor(note, pool);
   return { ...proveWithPath(note, path, to), rootIdx: path.rootIdx };
 };
 
 /** A proof against a given root (ExitRelayRR: the root published to EIP-8272), without any pool storage reads. */
-export const proveForRoot = async (note: Note, root: Hex, to: WithdrawTo): Promise<WithdrawProof> =>
-  proveWithPath(note, await pathForRoot(note, root), to);
+export const proveForRoot = async (note: Note, root: Hex, to: WithdrawTo, pool?: Address): Promise<WithdrawProof> =>
+  proveWithPath(note, await pathForRoot(note, root, pool), to);
