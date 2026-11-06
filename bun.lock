@@ -57,7 +57,9 @@
       "version": "0.0.0",
       "dependencies": {
         "@altpool/core": "workspace:*",
+        "@altpool/prover": "workspace:*",
         "@forshtat/hegota-support": "0.0.1",
+        "altpool": "workspace:*",
         "viem": "^2.57.10",
       },
       "devDependencies": {

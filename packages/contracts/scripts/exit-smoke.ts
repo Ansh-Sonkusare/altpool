@@ -24,10 +24,10 @@ import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { encodeTx, type FrameTx } from "@forshtat/hegota-support/tx";
 import { getProfile } from "@forshtat/hegota-support/profiles";
 import { DEVNET, altDevnet, ethrex, explorerTx, gateway, toWire, type WithdrawProof } from "@altpool/core";
-import { createNote, noteToString, prove, proveForRoot } from "../../prover/src/index";
+import { createNote, noteToString, prove, proveForRoot } from "@altpool/prover";
 import { EXIT_FEE, exitTx, exitTxRR } from "../src/exit";
 import { MINER_SIDECAR, depositNote, explorerExit } from "../src/flow";
-import { altpoolActions, createAltMempoolClient } from "../../sdk/src/index";
+import { altpoolActions, createAltMempoolClient } from "altpool";
 import deployments from "../deployments.json";
 
 const rr = process.argv.includes("--rr");
