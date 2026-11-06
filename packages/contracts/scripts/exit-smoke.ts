@@ -147,5 +147,13 @@ for (const sidecar of new Set([send.url, gw.url])) {
   }
 }
 
+// Replay gate. The sidecars' rejection text is the public-mempool violation, not the cause, so re-simulate the
+// same tx after inclusion and require the consumed nonce key or ExitRelay's NullifierSpent.
+const after: unknown = await ethrex().call("ethrex_simulateFrameTransaction", [encodeTx(profile, tx), "latest"]);
+const sim = after && typeof after === "object" ? (after as { executionError?: string; revertData?: string }) : {};
+const cause = reason(new Error(`${sim.executionError ?? ""} ${sim.revertData ?? ""}`.trim()));
+console.log(`replay re-simulated: ${cause || JSON.stringify(after)}`);
+if (!/NullifierSpent|nonce/i.test(cause)) throw new Error(`replay not rejected for nonce key / NullifierSpent: ${JSON.stringify(after)}`);
+
 console.log(`deposit ${explorerTx(depositTx)}`);
 console.log(`exit    ${explorerTx(exitHash)}`);

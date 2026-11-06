@@ -69,7 +69,7 @@ SEND_URL=https://altmempool.forshtat.com/rpc bun run --filter @altpool/contracts
 - [Deposit](https://explorer.altmempool.wtf/tx/0x6ce9723c5994825e8151940e7f90a37df3311b7ff82eba59974cf70972c12da2)
 - [Exit](https://explorer.altmempool.wtf/tx/0x5ceab9fd792a5e39a4f74d0a480ca1d8e5f75281510e10f506ac79552b4a9a9c): block 0x1883, all 3 frames status 1, recipient 0 → 0.09 ETH
 - Second run ([deposit](https://explorer.altmempool.wtf/tx/0x22e982fb9a267997eaff73094e1ec1a0a3295e7d63284bd74f867c7d1cbb4bc7), [exit](https://explorer.altmempool.wtf/tx/0x3d1c2cebf96ad2502941aaaeb07437cb15ba0be28383f1831b3c3e998d56dfd8)): block 6298, identical per-frame gas (3,051 / 374,217 / 300,069 + 281,520 state).
-- Replay of the included exit: rejected by both sidecars at admission (`-32500`, `simulation` rule). The sidecar's detail text is the public-mempool violation (`prefix gas budget exceeded`), not the cause; the cause is presumably the consumed nonce key / spent nullifier (not confirmed: ethrex exposes no raw-tx lookup to re-simulate it).
+- Replay of the included exit: rejected by both sidecars at admission (`-32500`, `simulation` rule; the detail text they print is the public-mempool violation, not the cause). Re-simulating the same tx after inclusion gives the cause: `Nonce mismatch: expected 1, got 0`, the nullifier's nonce key is consumed. `exit-smoke` fails unless the replay fails for that reason (third run: [exit](https://explorer.altmempool.wtf/tx/0xbaf4b795d20d8792aeea42876b8deb8c7785d5e19a72e4b6460496f832ca8415), block 6340).
 
 ## Trust and limits
 
