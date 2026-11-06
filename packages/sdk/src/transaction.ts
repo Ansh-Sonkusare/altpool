@@ -15,9 +15,14 @@ export { toWire, explainRejection } from "@forshtat/hegota-support/rpc";
  * Something that can sign a 32-byte digest with secp256k1.
  * - `{ privateKey }`: delegates to hegota-support `signTx`.
  * - a viem LocalAccount (anything with `sign({ hash })`): raw-digest signing, re-packed as `v || r || s`.
+ * - `{ signFrame }`: fills signature entry `index` itself (e.g. `typedDataSigner` for a BridgeAccount, whose entry
+ *   holds an EIP-712 signature checked by the account's own VERIFY code).
  * Note: `signMessage` (EIP-191) is NOT a raw-digest signature and will not verify.
  */
-export type FrameSigner = { privateKey: Hex } | { sign: (args: { hash: Hex }) => Promise<Hex> };
+export type FrameSigner =
+  | { privateKey: Hex }
+  | { sign: (args: { hash: Hex }) => Promise<Hex> }
+  | { signFrame: (args: { profile: Profile; tx: FrameTx; index: number }) => Promise<FrameTx> };
 
 /** Number of leading frames that form the validation prefix: everything up to and including the last VERIFY frame. */
 export function validationPrefixLength(profile: Profile, tx: Pick<FrameTx, "frames">): number {
@@ -29,6 +34,7 @@ export function validationPrefixLength(profile: Profile, tx: Pick<FrameTx, "fram
 
 export async function signFrameTransaction(profile: Profile, tx: FrameTx, signer: FrameSigner, index = 0): Promise<FrameTx> {
   if ("privateKey" in signer) return signTx(profile, tx, signer.privateKey, index);
+  if ("signFrame" in signer) return signer.signFrame({ profile, tx, index });
   if (!tx.signatures[index]) throw new Error(`The transaction has no signature entry ${index}`);
   const sig = await signer.sign({ hash: sigHash(profile, tx) });
   // viem serializes r || s || v with v = 27/28 (or 0/1); the codec stores v || r || s with v = 0/1.
