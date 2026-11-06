@@ -22,6 +22,7 @@ import { getProfile } from "@forshtat/hegota-support/profiles";
 import { DEVNET, altDevnet, ethrex, explorerTx, gateway, toWire, type WithdrawProof } from "@altpool/core";
 import { createNote, noteToString, prove } from "../../prover/src/index";
 import { EXIT_FEE, exitTx } from "../src/exit";
+import { MINER_SIDECAR, depositNote, sendExit } from "../src/flow";
 import deployments from "../deployments.json";
 
 const exitRelay = deployments.exitRelay as Address | null;
@@ -30,14 +31,13 @@ const errorAbi = (JSON.parse(readFileSync(new URL("../out/ExitRelay.sol/ExitRela
   (x) => x.type === "error",
 );
 const poolAbi = parseAbi([
-  "function deposit(bytes32 _commitment) payable",
   "function getLastRoot() view returns (bytes32)",
   "function roots(uint256) view returns (bytes32)",
 ]);
 const pub = createPublicClient({ chain: altDevnet, transport: http(DEVNET.ethrexUrl) });
 const gw = gateway();
 // SEND_URL: submit to another sidecar (e.g. the miner's own, https://altmempool.forshtat.com/rpc) when gateway gossip stalls.
-const send = gateway(process.env.SEND_URL ?? DEVNET.gatewayUrl);
+const send = gateway(process.env.SEND_URL ?? MINER_SIDECAR);
 const profile = getProfile(DEVNET.profile);
 const randomAddress = () => privateKeyToAccount(generatePrivateKey()).address;
 
@@ -100,17 +100,7 @@ const minBalance = DEVNET.denomination + parseEther("0.01");
 for (let i = 0; i < 60 && (await pub.getBalance({ address: depositor.address })) < minBalance; i++) await sleep(2000);
 
 const note = createNote();
-const depositTx = await wallet.writeContract({
-  address: DEVNET.pool,
-  abi: poolAbi,
-  functionName: "deposit",
-  args: [note.commitment],
-  value: DEVNET.denomination,
-  gas: 2_000_000n,
-  type: "legacy",
-});
-const depositReceipt = await pub.waitForTransactionReceipt({ hash: depositTx, timeout: 180_000 });
-if (depositReceipt.status !== "success") throw new Error(`deposit ${depositTx} reverted`);
+const depositTx = await depositNote(wallet, note);
 console.log(`deposited ${formatEther(DEVNET.denomination)} ETH (${depositTx}); note ${noteToString(note)}`);
 
 const recipient = randomAddress();
@@ -118,19 +108,11 @@ const proof = await prove(note, { recipient, relayer: exitRelay, fee: EXIT_FEE }
 console.log(`proved for recipient ${recipient}, rootIdx ${proof.rootIdx}`);
 const tx = await exitFor(proof);
 
-const exitHash = await send.sendFrameTransaction(toWire(tx));
+const r = await sendExit(tx, { sendUrl: send.url });
+const exitHash = r.hash;
 console.log(`exit sent ${exitHash}`);
-let receipt: unknown = null;
-for (let i = 0; i < 90 && !receipt; i++) {
-  await sleep(2000);
-  receipt = await send.receipt(exitHash).catch(() => null);
-}
-if (!receipt) throw new Error(`no receipt for ${exitHash} after 180 s`);
-// ethrex frame receipt (RPC data): only frameReceipts is structural, so check it before reading.
-const r = receipt as { status: string; gasUsed: string; blockNumber: string; frameReceipts: { status: string; gasUsed: string; stateGasUsed?: string }[] };
-if (!Array.isArray(r.frameReceipts)) throw new Error(`receipt has no frameReceipts: ${JSON.stringify(receipt)}`);
-console.log(`included in block ${Number(r.blockNumber)}, status ${r.status}, gasUsed ${Number(r.gasUsed)}`);
-r.frameReceipts.forEach((f, i) => console.log(`  frame ${i}: status ${f.status} gasUsed ${Number(f.gasUsed)} stateGasUsed ${Number(f.stateGasUsed ?? 0)}`));
+console.log(`included in block ${r.blockNumber}, status ${r.status}, gasUsed ${r.gasUsed}`);
+r.frames.forEach((f, i) => console.log(`  frame ${i}: status ${f.status} gasUsed ${f.gasUsed} stateGasUsed ${f.stateGasUsed}`));
 
 const got = await pub.getBalance({ address: recipient });
 const want = DEVNET.denomination - EXIT_FEE;
