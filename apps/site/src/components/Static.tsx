@@ -130,7 +130,7 @@ export const Footer = ({ entity }: { entity: Live<EntityReport> }) => {
   const e = valueOf(entity);
   const runs = recentRuns(e).slice(0, 4);
   return (
-    <footer className="border-t border-ln">
+    <footer className="border-t border-ln px-[clamp(32px,calc(8vw-24px),104px)] max-[960px]:px-0">
       <div className="grid grid-cols-[1.3fr_1.4fr_1fr] max-[720px]:grid-cols-1">
         <div className={FCOL}>
           <h5 className={H5}>Credits</h5>

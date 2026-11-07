@@ -45,7 +45,7 @@ export const Monitor = () => {
     <div className="relative mx-auto min-h-screen max-w-[1360px] overflow-x-clip">
       <div className="pointer-events-none absolute -top-[180px] -right-[160px] h-[420px] w-[700px] max-w-full bg-[radial-gradient(closest-side,rgba(241,201,140,.09),rgba(241,201,140,.02)_55%,transparent)]" aria-hidden="true"></div>
       <Nav head={head} />
-      <header className="relative flex flex-col gap-4 px-14 pb-0 pt-10 max-[960px]:px-6 max-[560px]:px-4">
+      <header className="relative flex flex-col gap-4 px-[clamp(56px,8vw,128px)] pb-0 pt-10 max-[960px]:px-6 max-[560px]:px-4">
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
           <h1 className="m-0 text-[22px] font-normal tracking-[-.01em]">Monitor</h1>
           <QuickSwitch target={target} node={node} feeParam={feeParam} />
@@ -64,14 +64,14 @@ export const Monitor = () => {
           ))}
         </nav>
       </header>
-      <main className="relative px-14 py-10 max-[960px]:px-6 max-[560px]:px-4">
+      <main className="relative px-[clamp(56px,8vw,128px)] py-10 max-[960px]:px-6 max-[560px]:px-4">
         {target.kind === "entity" && <Entity key={target.addr + node} addr={target.addr} choice={node} fee={fee} alerts={alerts} />}
         {target.kind === "alerts" && <AlertsView key={target.addr + node} addr={target.addr} choice={node} fee={fee} cfg={alerts} setCfg={setAlerts} />}
         {target.kind === "compare" && <Compare addrs={target.addrs} choice={node} fee={fee} />}
         {target.kind === "tx" && <Tx hash={target.hash} choice={node} />}
         {target.kind === "network" && <Network choice={node} />}
       </main>
-      <footer className="flex flex-wrap justify-between gap-3 border-t border-ln px-14 py-8 font-mono text-[12px] text-fg2 max-[960px]:px-6 max-[560px]:px-4">
+      <footer className="flex flex-wrap justify-between gap-3 border-t border-ln px-[clamp(56px,8vw,128px)] py-8 font-mono text-[12px] text-fg2 max-[960px]:px-6 max-[560px]:px-4">
         <span>Devnet only, chain 1337. Read from the sidecars' explorer API and ethrex.</span>
         <a href="/#toolkit" className="text-amber">Back to the toolkit</a>
       </footer>

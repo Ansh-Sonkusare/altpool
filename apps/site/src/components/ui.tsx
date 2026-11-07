@@ -40,7 +40,7 @@ export const dotFor = (s: Live<unknown>): DotState => (s.status === "live" ? "li
 /** A page section: top hairline, crosshair marks, standard padding. band = the slightly lighter background. */
 export const Section = ({ id, band, className, children }: { id?: string; band?: boolean; className?: string; children: ReactNode }) => (
   <section id={id} className={cx(
-    "crosshair relative flex flex-col gap-8 border-t border-ln px-14 py-20 max-[960px]:px-6 max-[960px]:py-16",
+    "crosshair relative flex flex-col gap-8 border-t border-ln px-[clamp(56px,8vw,128px)] py-20 max-[960px]:px-6 max-[960px]:py-16",
     band && "bg-band",
     className,
   )}>{children}</section>
