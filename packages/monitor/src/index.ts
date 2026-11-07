@@ -271,6 +271,9 @@ export const entityReport = async (entity: Address, o: ReportOptions = {}): Prom
 
   // Reputation: each sidecar counts its own. Report the worst status and the least headroom.
   const reps = up.map((d) => d.view.reputation).filter((r): r is Reputation => Boolean(r));
+  // A stale value survives a failed refresh, but with no value at all a failed read must not pass as "ok, 0 seen".
+  const repError = up.find((d) => d.view.reputationError)?.view.reputationError;
+  if (!reps.length && repError) throw new Error(`reputation unavailable: ${repError}`);
   const reputation: Reputation = reps.length
     ? reps.reduce((w, r) => {
         const hw = headroom(w.opsSeen, w.opsIncluded).untilThrottled, hr = headroom(r.opsSeen, r.opsIncluded).untilThrottled;

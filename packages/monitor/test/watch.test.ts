@@ -41,11 +41,20 @@ it("a failed listReputation is an error, not reputation ok with 0 seen", async (
   await expect(entityStatus(ENTITY, gateway(URL_), { ethrexUrl: URL_ })).rejects.toThrow(/listReputation failed/);
 });
 
+it("keeps the last reputation through a failed refresh, marked stale", async () => {
+  await entityStatus(ENTITY, gateway(URL_), { ethrexUrl: URL_ });
+  fail.add("skandha_explorer_listReputation");
+  const r = await entityStatus(ENTITY, gateway(URL_), { ethrexUrl: URL_, reputationTtlMs: 0 });
+  expect(r.reputation.opsSeen).toBe(3);
+  expect(r.nodes[0]!.reputationError).toMatch(/listReputation failed/);
+});
+
 it("re-delivers onStatus after a failed poll even when the data is unchanged", async () => {
   const seen: string[] = [];
   const stop = watchEntity(ENTITY, { ...opts, onStatus: () => seen.push("status"), onError: () => seen.push("error") });
   await until(() => seen.length === 1);
-  fail.add("skandha_explorer_listReputation");
+  // The tx list decides whether a node is up, so failing it fails the poll (a reputation failure only goes stale).
+  fail.add("skandha_explorer_listTransactions");
   await until(() => seen.includes("error"));
   fail.clear();
   await until(() => seen.at(-1) === "status" && seen.length >= 3);
