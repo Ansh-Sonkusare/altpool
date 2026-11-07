@@ -13,7 +13,10 @@ import {
   type AdmissionChecker, type AdmissionReport, type FrameTx, type Hex, type MempoolVerdict, type RuleCheck, type RuleId,
 } from "@altpool/core";
 import { decodeRevert, diagnoseAdmission, diagnoseError, diagnoseSimulation, type Diagnosis } from "./rules";
-import { entitiesOf, runModel, verifyGasOf, type Entity, type Reputation, type StakeInfo, type TraceFrame } from "./model";
+import {
+  describeLocation, describeVerifyGas, entitiesOf, locateBannedOpcode, locateForeignStorage, runModel, verifyGasOf,
+  type Entity, type Reputation, type StakeInfo, type TraceFrame,
+} from "./model";
 
 export const profile = getProfile(DEVNET.profile);
 
@@ -96,10 +99,16 @@ export const createSimulator = (opts: SimulatorOptions = {}) => {
   const stakeOf = async (address: Hex): Promise<StakeInfo> => {
     if (opts.assumeUnstaked) return { staked: false, stake: 0n, unstakeDelaySec: 0, withdrawTime: 0n };
     const data = encodeFunctionData({ abi: depositInfoAbi, functionName: "getDepositInfo", args: [address] });
-    const out: Hex = await node.call("eth_call", [{ to: DEVNET.stakingRegistry, data }, "latest"]);
+    const [out, code]: [Hex, Hex] = await Promise.all([
+      node.call("eth_call", [{ to: DEVNET.stakingRegistry, data }, "latest"]),
+      node.call("eth_getCode", [address, "latest"]).catch(() => undefined),
+    ]);
     const [stake, delay, withdrawTime] = decodeAbiParameters([{ type: "uint256" }, { type: "uint256" }, { type: "uint256" }], out);
     const unstakeDelaySec = Number(delay);
-    return { stake, unstakeDelaySec, withdrawTime, staked: stake > DEVNET.minStakeWei && unstakeDelaySec >= DEVNET.unstakeDelaySec && withdrawTime === 0n };
+    return {
+      stake, unstakeDelaySec, withdrawTime, hasCode: code === undefined ? undefined : code !== "0x",
+      staked: stake > DEVNET.minStakeWei && unstakeDelaySec >= DEVNET.unstakeDelaySec && withdrawTime === 0n,
+    };
   };
 
   const reputations = async (): Promise<Map<string, Reputation>> => {
@@ -191,10 +200,34 @@ export const createSimulator = (opts: SimulatorOptions = {}) => {
         d = { ...d, rule: f.rule, frameIndex: f.frameIndex, entity: { role: f.entity.role, address: f.entity.address } };
         if (f.rule === "gas-limit") d.fix = `Lower the VERIFY limits to at most ${opts.verifyGasMax ?? DEVNET.verifyGasMax}, or justify raising the pin (docs/01).`;
       }
-      alt = verdictOf("alt", "model", d, { checks: m.checks });
+      alt = verdictOf("alt", "model", d, { checks: m.checks, where: m.failed ? `frame ${m.failed.frameIndex ?? "?"}: ${m.failed.detail}` : undefined });
     }
 
-    return { txHash, verdicts: { public: warnOn(pub, warning), alt: warnOn(alt, warning) }, verifyGas: verifyGasOf(tx) };
+    // Where the public mempool's rule broke, from the same trace.
+    if (pubDiag && trace) {
+      const at = pubDiag.rule === "public-storage" ? locateForeignStorage(tx, trace)
+        : pubDiag.rule === "OP-011" ? locateBannedOpcode(tx, trace) : undefined;
+      if (at) pub.where = describeLocation(at);
+    }
+    if (pubDiag?.rule === "public-gas-cap") pub.where = describeVerifyGas(tx, DEVNET.publicVerifyGasCap);
+    if (pubDiag?.frameIndex !== undefined && !pub.where) {
+      const f = tx.frames[pubDiag.frameIndex];
+      pub.where = `frame ${pubDiag.frameIndex}${f?.target ? `: ${f.target}` : " (sender)"}`;
+    }
+    if (alt.where === undefined && alt.verdict === "rejected" && alt.failed?.frameIndex !== undefined) alt.where = pub.where;
+
+    // FOCIL (EIP-8369): inclusion lists are built from the public mempool, so only a tx it admits can be forced in.
+    const foreign = trace ? locateForeignStorage(tx, trace) : undefined;
+    const focil = pub.verdict === "admitted"
+      ? { eligible: true, reason: "valid in the public mempool, so inclusion lists can force it into a block" }
+      : {
+          eligible: false,
+          reason: `inclusion lists draw only on the public mempool, which rejects it (${pub.failed?.rule ?? "rejected"})` +
+            (pubDiag?.rule === "public-gas-cap" && trace && !foreign
+              ? "; VERIFY reads no foreign storage, so only the 100k gas cap stands in the way"
+              : "; an alt-mempool tx gets no inclusion guarantee"),
+        };
+    return { txHash, verdicts: { public: warnOn(pub, warning), alt: warnOn(alt, warning) }, verifyGas: verifyGasOf(tx), focil };
   };
 
   const checker: AdmissionChecker & { check: typeof check } = { check };

@@ -5,12 +5,15 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./rules": "./src/rules.ts"
+    "./rules": "./src/rules.ts",
+    "./conformance": "./src/conformance.ts",
+    "./vitest": "./src/vitest.ts"
   },
   "scripts": {
     "typecheck": "tsc -p .",
     "test": "vitest run --passWithNoTests",
-    "doctor": "tsx src/frame-doctor.ts"
+    "doctor": "tsx src/frame-doctor.ts",
+    "conformance": "tsx src/conformance-cli.ts"
   },
   "dependencies": {
     "@altpool/core": "workspace:*",
@@ -19,5 +22,8 @@
   },
   "bin": {
     "frame-doctor": "./src/frame-doctor.ts"
+  },
+  "devDependencies": {
+    "vitest": "^5.1.0"
   }
 }

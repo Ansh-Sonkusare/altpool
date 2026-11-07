@@ -11,8 +11,10 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { setTimeout as sleep } from "node:timers/promises";
 import { createPublicClient, createWalletClient, formatEther, http, parseEther, type Address, type Hex } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
-import { DEVNET, altDevnet, explorerTx, gateway, toWire, type AdmissionReport } from "@altpool/core";
-import { checkAdmission, createSimulator, diagnoseError, renderReport, renderVerdict, replaySimulator, summarize } from "@altpool/simulator";
+import { encodeTx } from "@forshtat/hegota-support/tx";
+import { getProfile } from "@forshtat/hegota-support/profiles";
+import { DEVNET, altDevnet, ethrex, explorerTx, gateway, toWire, type AdmissionReport } from "@altpool/core";
+import { checkAdmission, createSimulator, diagnoseError, renderReport, renderRoute, renderVerdict, replaySimulator, routeFromReport, summarize } from "@altpool/simulator";
 import { entityStatus } from "@altpool/monitor";
 
 const bold = (s: string) => (process.stdout.isTTY ? `\x1b[1m${s}\x1b[0m` : s);
@@ -153,14 +155,31 @@ const liveDemo = async (mode: Mode) => {
   expect(before.verdicts.public.verdict === "rejected", "the public mempool would admit the exit");
   if (before.verdicts.alt.failed?.rule === "unknown") info(dim("alt: no trace from ethrex to model the rules; the send below is the real test"));
   else expect(before.verdicts.alt.verdict === "admitted", "the alt mempool would reject the exit");
+  // Altpool picks the mempool (the brief's mempool: 'auto'): public if it admits, else alt on the sidecar that carries it.
+  const route = routeFromReport(before);
+  console.log(indent(renderRoute(route)));
+  expect(route.target === "alt", `the router picked ${route.target}, expected alt`);
+
+  step("Prove it: send the same exit to the public mempool (ethrex) for real");
+  try {
+    const h: Hex = await ethrex().sendRawTransaction(encodeTx(getProfile(DEVNET.profile), tx));
+    expect(false, `the public mempool admitted the exit (${h})`);
+  } catch (e) {
+    const err = e as { code?: number | string; message: string };
+    const d = diagnoseError({ code: err.code ?? 0, message: err.message }, "public");
+    console.log(indent(renderVerdict({
+      mempool: "public", source: "send", verdict: "rejected", fix: d.fix, failed: { rule: d.rule, ercRule: d.ercRule },
+      error: { code: 0, message: err.message },
+    }).join("\n")));
+    info(dim("rejected on send, as predicted: nothing was admitted or charged"));
+  }
 
   step("Why the stake matters: the same exit if ExitRelay were unstaked");
   const whatIf = await createSimulator({ assumeUnstaked: true }).check(tx);
   show(whatIf, "frame-doctor (what-if, local model)");
 
-  step("Send: no relayer, no ETH in the recipient, repaid from the withdrawal fee");
-  // IP3: swap for the SDK, sendFrameTransaction(tx, { mempool: "auto", precheck: simulator }).
-  const r = await sendExit(tx);
+  step(`Send to the alt mempool via the ${route.node}, as routed: no relayer, no ETH in the recipient, repaid from the fee`);
+  const r = await sendExit(tx, { sendUrl: route.url });
   save({ exitHash: r.hash });
   const got = await pub.getBalance({ address: recipient });
   info(`block ${r.blockNumber}, frames ${r.frames.map((f) => f.gasUsed.toLocaleString("en-US")).join(" / ")} gas; recipient 0 → ${formatEther(got)} ETH`);
@@ -172,6 +191,7 @@ const liveDemo = async (mode: Mode) => {
   const replay = { ...tx, fees: { ...tx.fees, maxPriorityFeePerGas: tx.fees.maxPriorityFeePerGas + 1n } };
   const verdict = await checkAdmission(replay);
   show(verdict, "frame-doctor");
+  console.log(indent(renderRoute(routeFromReport(verdict))));
   try {
     const h: Hex = await miner.sendFrameTransaction(toWire(replay));
     expect(false, `replay admitted ${h}`);

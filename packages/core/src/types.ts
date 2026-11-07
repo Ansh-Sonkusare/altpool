@@ -30,9 +30,17 @@ export interface MempoolVerdict {
   error?: { code: number; message: string; revertReason?: string };
   checks?: RuleCheck[];
   fix?: string;
+  /** Where it failed, from the trace: frame, the contract whose code ran, and what it touched (e.g. "frame 1: 0xab… reads 0xcd… slot 0x0"). */
+  where?: string;
 }
 
-export interface AdmissionReport { txHash?: Hex; verdicts: Record<Mempool, MempoolVerdict>; verifyGas?: bigint }
+export interface AdmissionReport {
+  txHash?: Hex;
+  verdicts: Record<Mempool, MempoolVerdict>;
+  verifyGas?: bigint;
+  /** Can inclusion lists (FOCIL, EIP-8369) force it into a block? They draw only on the public mempool. */
+  focil?: { eligible: boolean; reason: string };
+}
 
 /** The simulator implements this; the SDK accepts any implementation as `precheck`, so sdk never imports simulator. */
 export interface AdmissionChecker { check(tx: FrameTx): Promise<AdmissionReport> }

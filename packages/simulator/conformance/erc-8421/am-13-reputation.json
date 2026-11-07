@@ -1,0 +1,2758 @@
+{
+ "clause": "AM-13",
+ "also": [
+  "AM-12"
+ ],
+ "document": "14-erc-8421.md",
+ "version": 1,
+ "operation": "pool",
+ "distinguishes": "seen and included decide each entity's state; a banned entity is refused, a throttled one held to four pending transactions, an unstaked payer to opsAllowed, a throttled unstaked sender to four; admissions add to seen, inclusions to included, a changed payer moves one seen, and every refresh multiplies both by 23/24.",
+ "cases": [
+  {
+   "name": "a new unstaked payer: ten pending",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    },
+    "s0": {
+     "balance": 1000000000000000000
+    },
+    "s1": {
+     "balance": 1000000000000000000
+    },
+    "s2": {
+     "balance": 1000000000000000000
+    },
+    "s3": {
+     "balance": 1000000000000000000
+    },
+    "s4": {
+     "balance": 1000000000000000000
+    },
+    "s5": {
+     "balance": 1000000000000000000
+    },
+    "s6": {
+     "balance": 1000000000000000000
+    },
+    "s7": {
+     "balance": 1000000000000000000
+    },
+    "s8": {
+     "balance": 1000000000000000000
+    },
+    "s9": {
+     "balance": 1000000000000000000
+    },
+    "s10": {
+     "balance": 1000000000000000000
+    },
+    "s11": {
+     "balance": 1000000000000000000
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "t0",
+       "type": 6,
+       "sender": "s0",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "t1",
+       "type": 6,
+       "sender": "s1",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "t2",
+       "type": 6,
+       "sender": "s2",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "t3",
+       "type": 6,
+       "sender": "s3",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "t4",
+       "type": 6,
+       "sender": "s4",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "t5",
+       "type": 6,
+       "sender": "s5",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "t6",
+       "type": 6,
+       "sender": "s6",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "t7",
+       "type": 6,
+       "sender": "s7",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "t8",
+       "type": 6,
+       "sender": "s8",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "t9",
+       "type": 6,
+       "sender": "s9",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "t10",
+       "type": 6,
+       "sender": "s10",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      }
+     ],
+     "expect": [
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ErrPayerOpsAllowed"
+     ],
+     "expect_rules": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      "REPUTATION-220"
+     ]
+    }
+   ],
+   "derivation": "opsAllowed = 10 when seen is 0."
+  },
+  {
+   "name": "an unstaked payer with inclusions: eleven",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    },
+    "s0": {
+     "balance": 1000000000000000000
+    },
+    "s1": {
+     "balance": 1000000000000000000
+    },
+    "s2": {
+     "balance": 1000000000000000000
+    },
+    "s3": {
+     "balance": 1000000000000000000
+    },
+    "s4": {
+     "balance": 1000000000000000000
+    },
+    "s5": {
+     "balance": 1000000000000000000
+    },
+    "s6": {
+     "balance": 1000000000000000000
+    },
+    "s7": {
+     "balance": 1000000000000000000
+    },
+    "s8": {
+     "balance": 1000000000000000000
+    },
+    "s9": {
+     "balance": 1000000000000000000
+    },
+    "s10": {
+     "balance": 1000000000000000000
+    },
+    "s11": {
+     "balance": 1000000000000000000
+    }
+   },
+   "reputation": {
+    "pm": {
+     "seen": 49,
+     "included": 10
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "t0",
+       "type": 6,
+       "sender": "s0",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "t1",
+       "type": 6,
+       "sender": "s1",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "t2",
+       "type": 6,
+       "sender": "s2",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "t3",
+       "type": 6,
+       "sender": "s3",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "t4",
+       "type": 6,
+       "sender": "s4",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "t5",
+       "type": 6,
+       "sender": "s5",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "t6",
+       "type": 6,
+       "sender": "s6",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "t7",
+       "type": 6,
+       "sender": "s7",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "t8",
+       "type": 6,
+       "sender": "s8",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "t9",
+       "type": 6,
+       "sender": "s9",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "t10",
+       "type": 6,
+       "sender": "s10",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "t11",
+       "type": 6,
+       "sender": "s11",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      }
+     ],
+     "expect": [
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ErrPayerOpsAllowed"
+     ],
+     "expect_rules": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      "REPUTATION-220"
+     ]
+    }
+   ],
+   "derivation": "From seen 49 and included 10, each admission adds to seen. When the k-th arrives (k from 1), opsAllowed = 10 + floor(10 * 10 / (48 + k)), which is at least 11 up to k = 11 and 11 at k = 12, when pm already pays for 11: refused. m = 6, ACTIVE throughout."
+  },
+  {
+   "name": "a banned payer",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    }
+   },
+   "reputation": {
+    "pm": {
+     "seen": 600,
+     "included": 0
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "a",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      }
+     ],
+     "expect": [
+      "ErrEntityBanned"
+     ],
+     "expect_rules": [
+      "REPUTATION-010"
+     ]
+    }
+   ],
+   "derivation": "seen 600: m = 60 > 0 + 50."
+  },
+  {
+   "name": "a throttled payer: four",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    },
+    "s0": {
+     "balance": 1000000000000000000
+    },
+    "s1": {
+     "balance": 1000000000000000000
+    },
+    "s2": {
+     "balance": 1000000000000000000
+    },
+    "s3": {
+     "balance": 1000000000000000000
+    },
+    "s4": {
+     "balance": 1000000000000000000
+    },
+    "s5": {
+     "balance": 1000000000000000000
+    },
+    "s6": {
+     "balance": 1000000000000000000
+    },
+    "s7": {
+     "balance": 1000000000000000000
+    },
+    "s8": {
+     "balance": 1000000000000000000
+    },
+    "s9": {
+     "balance": 1000000000000000000
+    },
+    "s10": {
+     "balance": 1000000000000000000
+    },
+    "s11": {
+     "balance": 1000000000000000000
+    }
+   },
+   "reputation": {
+    "pm": {
+     "seen": 250,
+     "included": 0
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "t0",
+       "type": 6,
+       "sender": "s0",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "t1",
+       "type": 6,
+       "sender": "s1",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "t2",
+       "type": 6,
+       "sender": "s2",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "t3",
+       "type": 6,
+       "sender": "s3",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "t4",
+       "type": 6,
+       "sender": "s4",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      }
+     ],
+     "expect": [
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ErrEntityThrottled"
+     ],
+     "expect_rules": [
+      null,
+      null,
+      null,
+      null,
+      "REPUTATION-020"
+     ]
+    }
+   ],
+   "derivation": "seen 250: m = 25, above 0 + 10 and not above 0 + 50."
+  },
+  {
+   "name": "a throttled staked payer: four",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    },
+    "s0": {
+     "balance": 1000000000000000000
+    },
+    "s1": {
+     "balance": 1000000000000000000
+    },
+    "s2": {
+     "balance": 1000000000000000000
+    },
+    "s3": {
+     "balance": 1000000000000000000
+    },
+    "s4": {
+     "balance": 1000000000000000000
+    },
+    "s5": {
+     "balance": 1000000000000000000
+    },
+    "s6": {
+     "balance": 1000000000000000000
+    },
+    "s7": {
+     "balance": 1000000000000000000
+    },
+    "s8": {
+     "balance": 1000000000000000000
+    },
+    "s9": {
+     "balance": 1000000000000000000
+    },
+    "s10": {
+     "balance": 1000000000000000000
+    },
+    "s11": {
+     "balance": 1000000000000000000
+    }
+   },
+   "reputation": {
+    "spm": {
+     "seen": 250,
+     "included": 0
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "t0",
+       "type": 6,
+       "sender": "s0",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "spm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "t1",
+       "type": 6,
+       "sender": "s1",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "spm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "t2",
+       "type": 6,
+       "sender": "s2",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "spm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "t3",
+       "type": 6,
+       "sender": "s3",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "spm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "t4",
+       "type": 6,
+       "sender": "s4",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "spm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      }
+     ],
+     "expect": [
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ErrEntityThrottled"
+     ],
+     "expect_rules": [
+      null,
+      null,
+      null,
+      null,
+      "REPUTATION-020"
+     ]
+    }
+   ],
+   "derivation": "As above for spm, which is staked."
+  },
+  {
+   "name": "a throttled unstaked sender: four",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    }
+   },
+   "reputation": {
+    "alice": {
+     "seen": 250,
+     "included": 0
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "k1",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        1
+       ]
+      },
+      {
+       "label": "k2",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        2
+       ]
+      },
+      {
+       "label": "k3",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        3
+       ]
+      },
+      {
+       "label": "k4",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        4
+       ]
+      },
+      {
+       "label": "k5",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        5
+       ]
+      }
+     ],
+     "expect": [
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ErrSenderThrottled"
+     ],
+     "expect_rules": [
+      null,
+      null,
+      null,
+      null,
+      "REPUTATION-210"
+     ]
+    }
+   ],
+   "derivation": "alice at seen 250, on five keys."
+  },
+  {
+   "name": "seen, a changed payer, and included",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "a",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      }
+     ],
+     "expect": [
+      "ok"
+     ],
+     "expect_rules": [
+      null
+     ]
+    },
+    {
+     "reputation": "pm",
+     "expect": {
+      "seen": 1,
+      "included": 0,
+      "status": "ACTIVE"
+     }
+    },
+    {
+     "reputation": "alice",
+     "expect": {
+      "seen": 1,
+      "included": 0,
+      "status": "ACTIVE"
+     }
+    },
+    {
+     "add": [
+      {
+       "label": "a2",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "spm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "tip": 11,
+       "max_fee": 110
+      }
+     ],
+     "expect": [
+      "ok"
+     ],
+     "expect_rules": [
+      null
+     ]
+    },
+    {
+     "reputation": "pm",
+     "expect": {
+      "seen": 0,
+      "included": 0,
+      "status": "ACTIVE"
+     }
+    },
+    {
+     "reputation": "spm",
+     "expect": {
+      "seen": 1,
+      "included": 0,
+      "status": "ACTIVE"
+     }
+    },
+    {
+     "reputation": "alice",
+     "expect": {
+      "seen": 1,
+      "included": 0,
+      "status": "ACTIVE"
+     }
+    },
+    {
+     "reset": {
+      "state": {
+       "alice": {
+        "nonce": 1
+       }
+      }
+     }
+    },
+    {
+     "reputation": "spm",
+     "expect": {
+      "seen": 1,
+      "included": 1,
+      "status": "ACTIVE"
+     }
+    },
+    {
+     "reputation": "alice",
+     "expect": {
+      "seen": 1,
+      "included": 1,
+      "status": "ACTIVE"
+     }
+    }
+   ],
+   "derivation": "a2 replaces a: the payer moves from pm to spm (REPUTATION-040), alice's seen stays; the reset shows a2 included."
+  },
+  {
+   "name": "a throttled payer at its limit can have a transaction replaced",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    },
+    "s0": {
+     "balance": 1000000000000000000
+    },
+    "s1": {
+     "balance": 1000000000000000000
+    },
+    "s2": {
+     "balance": 1000000000000000000
+    },
+    "s3": {
+     "balance": 1000000000000000000
+    },
+    "s4": {
+     "balance": 1000000000000000000
+    },
+    "s5": {
+     "balance": 1000000000000000000
+    },
+    "s6": {
+     "balance": 1000000000000000000
+    },
+    "s7": {
+     "balance": 1000000000000000000
+    },
+    "s8": {
+     "balance": 1000000000000000000
+    },
+    "s9": {
+     "balance": 1000000000000000000
+    },
+    "s10": {
+     "balance": 1000000000000000000
+    },
+    "s11": {
+     "balance": 1000000000000000000
+    }
+   },
+   "reputation": {
+    "pm": {
+     "seen": 250,
+     "included": 0
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "t0",
+       "type": 6,
+       "sender": "s0",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "t1",
+       "type": 6,
+       "sender": "s1",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "t2",
+       "type": 6,
+       "sender": "s2",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "t3",
+       "type": 6,
+       "sender": "s3",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      }
+     ],
+     "expect": [
+      "ok",
+      "ok",
+      "ok",
+      "ok"
+     ],
+     "expect_rules": [
+      null,
+      null,
+      null,
+      null
+     ]
+    },
+    {
+     "add": [
+      {
+       "label": "t0-up",
+       "type": 6,
+       "sender": "s0",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "tip": 11,
+       "max_fee": 110
+      }
+     ],
+     "expect": [
+      "ok"
+     ],
+     "expect_rules": [
+      null
+     ]
+    },
+    {
+     "add": [
+      {
+       "label": "t4",
+       "type": 6,
+       "sender": "s4",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      }
+     ],
+     "expect": [
+      "ErrEntityThrottled"
+     ],
+     "expect_rules": [
+      "REPUTATION-020"
+     ]
+    }
+   ],
+   "derivation": "pm is throttled (seen 250, m = 25) and pays for four. t0-up replaces t0, so the pool would still hold four: AM-13 leaves out the transactions it replaces. t4 would make five."
+  },
+  {
+   "name": "a transaction whose payer becomes banned is removed at reset",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    }
+   },
+   "reputation": {
+    "pm": {
+     "seen": 509,
+     "included": 0
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "a",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      }
+     ],
+     "expect": [
+      "ok"
+     ],
+     "expect_rules": [
+      null
+     ]
+    },
+    {
+     "reputation": "pm",
+     "expect": {
+      "seen": 510,
+      "included": 0,
+      "status": "BANNED"
+     }
+    },
+    {
+     "reset": {}
+    },
+    {
+     "expect_pool": {
+      "pending": {}
+     }
+    }
+   ],
+   "derivation": "pm at seen 509 has m = 50: throttled, not banned, so a is admitted (pm pays for none). Admitting a makes seen 510, m = 51 > 0 + 50: banned, and the next reset removes a."
+  },
+  {
+   "name": "a refresh brings a throttled entity back",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    }
+   },
+   "reputation": {
+    "pm": {
+     "seen": 110,
+     "included": 0
+    }
+   },
+   "steps": [
+    {
+     "reputation": "pm",
+     "expect": {
+      "seen": 110,
+      "included": 0,
+      "status": "THROTTLED"
+     }
+    },
+    {
+     "tick": 3600
+    },
+    {
+     "reputation": "pm",
+     "expect": {
+      "seen": 105,
+      "included": 0,
+      "status": "ACTIVE"
+     }
+    }
+   ],
+   "derivation": "m = 11 > 10; after one refresh seen = floor(110 * 23 / 24) = 105, m = 10."
+  }
+ ]
+}

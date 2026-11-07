@@ -18,6 +18,8 @@ const WHAT: Record<Condition, string> = {
   stuck: "A pending tx is older than the stuck limit.",
   "node-down": "A watched sidecar does not answer.",
   rejections: "A recent admission was rejected.",
+  uncovered: "The balance does not cover the worst-case cost of every pending tx it pays for.",
+  "key-clash": "Two or more pending txs share a sender and nonce key, so only one can land.",
 };
 const KINDS: AlertKind[] = ["throttle", "unlocking", "unstaked", "low-balance", "stuck", "evicted", "rejected"];
 const field = "min-h-11 min-w-0 rounded-lg border border-ln2 bg-bg px-3 font-mono text-[12.5px] text-fg placeholder:text-dim";

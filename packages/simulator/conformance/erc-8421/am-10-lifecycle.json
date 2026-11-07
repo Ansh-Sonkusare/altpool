@@ -1,0 +1,5156 @@
+{
+ "clause": "AM-10",
+ "also": [
+  "AM-2"
+ ],
+ "document": "14-erc-8421.md",
+ "version": 1,
+ "operation": "pool",
+ "distinguishes": "A nonce may be the chain's or one above a pending transaction's on every key it selects; a transaction sharing a key and a sequence with pending ones replaces them all, with a 10 percent bump over each, and evicts what then has a gap; four pending transactions a key and 64 an unstaked sender.",
+ "cases": [
+  {
+   "name": "a chain of three, then a gap and a stale nonce",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000,
+     "nonce": 3
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "a0",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "a1",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 1,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "a2",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 2,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "a5",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 5,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      }
+     ],
+     "expect": [
+      "ok",
+      "ok",
+      "ok",
+      "ErrNonceGap"
+     ],
+     "expect_rules": [
+      null,
+      null,
+      null,
+      "LIFECYCLE-010"
+     ]
+    },
+    {
+     "add": [
+      {
+       "label": "b0",
+       "type": 6,
+       "sender": "bob",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      }
+     ],
+     "expect": [
+      "ErrNonceTooLow"
+     ],
+     "expect_rules": [
+      "LIFECYCLE-010"
+     ]
+    }
+   ],
+   "derivation": "bob's sequence is 3 at the head; 0 is below it."
+  },
+  {
+   "name": "a second key, and a transaction on both",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "k0",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        0
+       ]
+      },
+      {
+       "label": "k5",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        5
+       ]
+      },
+      {
+       "label": "both",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 1,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        0,
+        5
+       ]
+      }
+     ],
+     "expect": [
+      "ok",
+      "ok",
+      "ok"
+     ],
+     "expect_rules": [
+      null,
+      null,
+      null
+     ]
+    }
+   ],
+   "derivation": "both: key 0 has k0 pending at 0, key 5 has k5 pending at 0; 1 is one above each."
+  },
+  {
+   "name": "a replacement needs ten percent on both fees",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "a",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "tip": 10,
+       "max_fee": 100
+      }
+     ],
+     "expect": [
+      "ok"
+     ],
+     "expect_rules": [
+      null
+     ]
+    },
+    {
+     "add": [
+      {
+       "label": "a-low",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "tip": 10,
+       "max_fee": 110
+      }
+     ],
+     "expect": [
+      "ErrReplaceUnderpriced"
+     ],
+     "expect_rules": [
+      "LIFECYCLE-020"
+     ]
+    },
+    {
+     "add": [
+      {
+       "label": "a-high",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "tip": 11,
+       "max_fee": 110
+      }
+     ],
+     "expect": [
+      "ok"
+     ],
+     "expect_rules": [
+      null
+     ]
+    },
+    {
+     "expect_pool": {
+      "pending": {
+       "alice": [
+        "a-high"
+       ]
+      }
+     }
+    }
+   ],
+   "derivation": "a-low raises max_fee by 10 percent but not the tip; a-high raises both."
+  },
+  {
+   "name": "one replacement for two transactions that share its keys",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "k1",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        1
+       ]
+      },
+      {
+       "label": "k2",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        2
+       ]
+      }
+     ],
+     "expect": [
+      "ok",
+      "ok"
+     ],
+     "expect_rules": [
+      null,
+      null
+     ]
+    },
+    {
+     "add": [
+      {
+       "label": "k12",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        1,
+        2
+       ],
+       "tip": 11,
+       "max_fee": 110
+      }
+     ],
+     "expect": [
+      "ok"
+     ],
+     "expect_rules": [
+      null
+     ]
+    },
+    {
+     "expect_pool": {
+      "pending": {
+       "alice": [
+        "k12"
+       ]
+      }
+     }
+    }
+   ],
+   "derivation": "k12 has sequence 0 and shares key 1 with k1 and key 2 with k2: it replaces both."
+  },
+  {
+   "name": "a replacement that drops a key evicts what then has a gap",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "k13",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        1,
+        3
+       ]
+      },
+      {
+       "label": "k3",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 1,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        3
+       ]
+      }
+     ],
+     "expect": [
+      "ok",
+      "ok"
+     ],
+     "expect_rules": [
+      null,
+      null
+     ]
+    },
+    {
+     "add": [
+      {
+       "label": "k1",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        1
+       ],
+       "tip": 11,
+       "max_fee": 110
+      }
+     ],
+     "expect": [
+      "ok"
+     ],
+     "expect_rules": [
+      null
+     ]
+    },
+    {
+     "expect_pool": {
+      "pending": {
+       "alice": [
+        "k1"
+       ]
+      }
+     }
+    }
+   ],
+   "derivation": "k1 replaces k13; key 3 then has no pending transaction at 0 and its chain sequence is 0, so k3 at 1 has a gap and is evicted."
+  },
+  {
+   "name": "an eviction for space takes what it leaves with a gap",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    }
+   },
+   "config": {
+    "frame": {
+     "max_pending": 2
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "a0",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "tip": 5
+      },
+      {
+       "label": "a1",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 1,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      }
+     ],
+     "expect": [
+      "ok",
+      "ok"
+     ],
+     "expect_rules": [
+      null,
+      null
+     ]
+    },
+    {
+     "add": [
+      {
+       "label": "b0",
+       "type": 6,
+       "sender": "bob",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "tip": 20
+      }
+     ],
+     "expect": [
+      "ok"
+     ],
+     "expect_rules": [
+      null
+     ]
+    },
+    {
+     "expect_pool": {
+      "pending": {
+       "bob": [
+        "b0"
+       ]
+      }
+     }
+    }
+   ],
+   "derivation": "With max_pending 2 the pool is full. FP-14's victim is the smallest (deadline, tip, -seq): a0, whose tip is 5. a1 at 1 then has no pending transaction at 0 on key 0, so it goes too (AM-10)."
+  },
+  {
+   "name": "four a key and no fifth",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "s0",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "s1",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 1,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "s2",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 2,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "s3",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 3,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "s4",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 4,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      }
+     ],
+     "expect": [
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ErrNonceKeyLimit"
+     ],
+     "expect_rules": [
+      null,
+      null,
+      null,
+      null,
+      "LIFECYCLE-030"
+     ]
+    }
+   ],
+   "derivation": "SAME_NONCE_KEY_MEMPOOL_COUNT is 4."
+  },
+  {
+   "name": "64 for an unstaked sender and no 65th",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "k1",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        1
+       ]
+      },
+      {
+       "label": "k2",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        2
+       ]
+      },
+      {
+       "label": "k3",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        3
+       ]
+      },
+      {
+       "label": "k4",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        4
+       ]
+      },
+      {
+       "label": "k5",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        5
+       ]
+      },
+      {
+       "label": "k6",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        6
+       ]
+      },
+      {
+       "label": "k7",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        7
+       ]
+      },
+      {
+       "label": "k8",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        8
+       ]
+      },
+      {
+       "label": "k9",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        9
+       ]
+      },
+      {
+       "label": "k10",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        10
+       ]
+      },
+      {
+       "label": "k11",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        11
+       ]
+      },
+      {
+       "label": "k12",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        12
+       ]
+      },
+      {
+       "label": "k13",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        13
+       ]
+      },
+      {
+       "label": "k14",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        14
+       ]
+      },
+      {
+       "label": "k15",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        15
+       ]
+      },
+      {
+       "label": "k16",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        16
+       ]
+      },
+      {
+       "label": "k17",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        17
+       ]
+      },
+      {
+       "label": "k18",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        18
+       ]
+      },
+      {
+       "label": "k19",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        19
+       ]
+      },
+      {
+       "label": "k20",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        20
+       ]
+      },
+      {
+       "label": "k21",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        21
+       ]
+      },
+      {
+       "label": "k22",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        22
+       ]
+      },
+      {
+       "label": "k23",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        23
+       ]
+      },
+      {
+       "label": "k24",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        24
+       ]
+      },
+      {
+       "label": "k25",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        25
+       ]
+      },
+      {
+       "label": "k26",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        26
+       ]
+      },
+      {
+       "label": "k27",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        27
+       ]
+      },
+      {
+       "label": "k28",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        28
+       ]
+      },
+      {
+       "label": "k29",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        29
+       ]
+      },
+      {
+       "label": "k30",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        30
+       ]
+      },
+      {
+       "label": "k31",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        31
+       ]
+      },
+      {
+       "label": "k32",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        32
+       ]
+      },
+      {
+       "label": "k33",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        33
+       ]
+      },
+      {
+       "label": "k34",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        34
+       ]
+      },
+      {
+       "label": "k35",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        35
+       ]
+      },
+      {
+       "label": "k36",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        36
+       ]
+      },
+      {
+       "label": "k37",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        37
+       ]
+      },
+      {
+       "label": "k38",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        38
+       ]
+      },
+      {
+       "label": "k39",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        39
+       ]
+      },
+      {
+       "label": "k40",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        40
+       ]
+      },
+      {
+       "label": "k41",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        41
+       ]
+      },
+      {
+       "label": "k42",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        42
+       ]
+      },
+      {
+       "label": "k43",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        43
+       ]
+      },
+      {
+       "label": "k44",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        44
+       ]
+      },
+      {
+       "label": "k45",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        45
+       ]
+      },
+      {
+       "label": "k46",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        46
+       ]
+      },
+      {
+       "label": "k47",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        47
+       ]
+      },
+      {
+       "label": "k48",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        48
+       ]
+      },
+      {
+       "label": "k49",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        49
+       ]
+      },
+      {
+       "label": "k50",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        50
+       ]
+      },
+      {
+       "label": "k51",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        51
+       ]
+      },
+      {
+       "label": "k52",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        52
+       ]
+      },
+      {
+       "label": "k53",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        53
+       ]
+      },
+      {
+       "label": "k54",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        54
+       ]
+      },
+      {
+       "label": "k55",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        55
+       ]
+      },
+      {
+       "label": "k56",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        56
+       ]
+      },
+      {
+       "label": "k57",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        57
+       ]
+      },
+      {
+       "label": "k58",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        58
+       ]
+      },
+      {
+       "label": "k59",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        59
+       ]
+      },
+      {
+       "label": "k60",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        60
+       ]
+      },
+      {
+       "label": "k61",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        61
+       ]
+      },
+      {
+       "label": "k62",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        62
+       ]
+      },
+      {
+       "label": "k63",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        63
+       ]
+      },
+      {
+       "label": "k64",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        64
+       ]
+      },
+      {
+       "label": "k65",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        65
+       ]
+      }
+     ],
+     "expect": [
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ErrSenderLimit"
+     ],
+     "expect_rules": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      "LIFECYCLE-030"
+     ]
+    }
+   ],
+   "derivation": "65 transactions on keys 1 to 65, each its own key; SAME_SENDER_MEMPOOL_COUNT is 64."
+  },
+  {
+   "name": "no sender-wide limit for an active staked sender",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "k1",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        1
+       ]
+      },
+      {
+       "label": "k2",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        2
+       ]
+      },
+      {
+       "label": "k3",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        3
+       ]
+      },
+      {
+       "label": "k4",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        4
+       ]
+      },
+      {
+       "label": "k5",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        5
+       ]
+      },
+      {
+       "label": "k6",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        6
+       ]
+      },
+      {
+       "label": "k7",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        7
+       ]
+      },
+      {
+       "label": "k8",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        8
+       ]
+      },
+      {
+       "label": "k9",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        9
+       ]
+      },
+      {
+       "label": "k10",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        10
+       ]
+      },
+      {
+       "label": "k11",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        11
+       ]
+      },
+      {
+       "label": "k12",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        12
+       ]
+      },
+      {
+       "label": "k13",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        13
+       ]
+      },
+      {
+       "label": "k14",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        14
+       ]
+      },
+      {
+       "label": "k15",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        15
+       ]
+      },
+      {
+       "label": "k16",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        16
+       ]
+      },
+      {
+       "label": "k17",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        17
+       ]
+      },
+      {
+       "label": "k18",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        18
+       ]
+      },
+      {
+       "label": "k19",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        19
+       ]
+      },
+      {
+       "label": "k20",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        20
+       ]
+      },
+      {
+       "label": "k21",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        21
+       ]
+      },
+      {
+       "label": "k22",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        22
+       ]
+      },
+      {
+       "label": "k23",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        23
+       ]
+      },
+      {
+       "label": "k24",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        24
+       ]
+      },
+      {
+       "label": "k25",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        25
+       ]
+      },
+      {
+       "label": "k26",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        26
+       ]
+      },
+      {
+       "label": "k27",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        27
+       ]
+      },
+      {
+       "label": "k28",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        28
+       ]
+      },
+      {
+       "label": "k29",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        29
+       ]
+      },
+      {
+       "label": "k30",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        30
+       ]
+      },
+      {
+       "label": "k31",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        31
+       ]
+      },
+      {
+       "label": "k32",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        32
+       ]
+      },
+      {
+       "label": "k33",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        33
+       ]
+      },
+      {
+       "label": "k34",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        34
+       ]
+      },
+      {
+       "label": "k35",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        35
+       ]
+      },
+      {
+       "label": "k36",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        36
+       ]
+      },
+      {
+       "label": "k37",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        37
+       ]
+      },
+      {
+       "label": "k38",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        38
+       ]
+      },
+      {
+       "label": "k39",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        39
+       ]
+      },
+      {
+       "label": "k40",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        40
+       ]
+      },
+      {
+       "label": "k41",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        41
+       ]
+      },
+      {
+       "label": "k42",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        42
+       ]
+      },
+      {
+       "label": "k43",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        43
+       ]
+      },
+      {
+       "label": "k44",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        44
+       ]
+      },
+      {
+       "label": "k45",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        45
+       ]
+      },
+      {
+       "label": "k46",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        46
+       ]
+      },
+      {
+       "label": "k47",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        47
+       ]
+      },
+      {
+       "label": "k48",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        48
+       ]
+      },
+      {
+       "label": "k49",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        49
+       ]
+      },
+      {
+       "label": "k50",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        50
+       ]
+      },
+      {
+       "label": "k51",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        51
+       ]
+      },
+      {
+       "label": "k52",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        52
+       ]
+      },
+      {
+       "label": "k53",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        53
+       ]
+      },
+      {
+       "label": "k54",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        54
+       ]
+      },
+      {
+       "label": "k55",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        55
+       ]
+      },
+      {
+       "label": "k56",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        56
+       ]
+      },
+      {
+       "label": "k57",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        57
+       ]
+      },
+      {
+       "label": "k58",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        58
+       ]
+      },
+      {
+       "label": "k59",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        59
+       ]
+      },
+      {
+       "label": "k60",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        60
+       ]
+      },
+      {
+       "label": "k61",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        61
+       ]
+      },
+      {
+       "label": "k62",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        62
+       ]
+      },
+      {
+       "label": "k63",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        63
+       ]
+      },
+      {
+       "label": "k64",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        64
+       ]
+      },
+      {
+       "label": "k65",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ],
+       "nonce_keys": [
+        65
+       ]
+      }
+     ],
+     "expect": [
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok",
+      "ok"
+     ],
+     "expect_rules": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+     ]
+    }
+   ],
+   "derivation": "swallet is staked and has no reputation against it."
+  }
+ ]
+}

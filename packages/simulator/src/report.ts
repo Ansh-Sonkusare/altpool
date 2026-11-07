@@ -22,6 +22,7 @@ export const renderVerdict = (v: MempoolVerdict): string[] => {
         .filter(Boolean).join(" ")
     : "";
   const out = [`  ${v.mempool.padEnd(6)} ${mark}  ${what}  ${c.dim(`[${SOURCE[v.source]}]`)}`];
+  if (v.where) out.push(`         ${c.dim("at:")} ${v.where}`);
   if (v.error?.revertReason) out.push(`         ${c.dim("revert:")} "${v.error.revertReason}"`);
   else if (!ok && v.error?.message) out.push(`         ${c.dim("node:")} ${v.error.message}`);
   if (v.fix) out.push(`         ${c.yellow("fix:")} ${v.fix}`);
@@ -44,6 +45,7 @@ export const renderReport = (r: AdmissionReport, o: RenderOptions = {}): string 
     const overCap = r.verifyGas > DEVNET.publicVerifyGasCap;
     lines.push(`  ${c.dim("VERIFY gas")} ${overCap ? c.yellow(gas(r.verifyGas)) : gas(r.verifyGas)} ${c.dim(`(public cap ${gas(DEVNET.publicVerifyGasCap)}, our pin ${gas(DEVNET.verifyGasMax)})`)}`);
   }
+  if (r.focil) lines.push(`  ${c.dim("FOCIL")} ${r.focil.eligible ? c.green("✓ eligible") : c.yellow("✗ not eligible")}  ${c.dim(r.focil.reason)}`);
   if (o.verbose && r.verdicts.alt.checks?.length) lines.push(renderChecks(r.verdicts.alt.checks));
   if (r.txHash && r.verdicts.alt.source === "explorer") lines.push(`  ${c.dim("explorer")} ${c.cyan(explorerTx(r.txHash))}`);
   return lines.join("\n");
@@ -55,3 +57,11 @@ export const summarize = (r: AdmissionReport): string =>
     const v = r.verdicts[m];
     return `${m} ${v.verdict === "admitted" ? "✓" : `✗ ${v.failed?.rule ?? ""}`}`.trim();
   }).join(", ");
+
+/** One line for a routing decision, e.g. "route  alt via miner: public rejects …; alt admits; miner: VERIFY …". */
+export const renderRoute = (d: { target: string; node?: string; reason: string; verified: boolean; fixes: string[] }): string => {
+  const where = d.target === "public" ? c.green("public") : d.target === "alt" ? c.green(`alt via ${d.node}`) : c.red("nowhere");
+  const lines = [`  ${c.bold("route")}  ${where}${d.verified ? "" : c.dim(" (unverified)")}  ${c.dim(d.reason)}`];
+  for (const f of d.fixes) lines.push(`         ${c.yellow("fix:")} ${f}`);
+  return lines.join("\n");
+};

@@ -67,8 +67,8 @@ export const webhookAlerts = (entity: Address, urls: string[], o: WebhookOptions
 
 // ---------------------------------------------------------------- CI
 
-export type Condition = "throttled" | "banned" | "unstaked" | "unlocking" | "low-balance" | "stuck" | "node-down" | "rejections";
-export const CONDITIONS: Condition[] = ["throttled", "banned", "unstaked", "unlocking", "low-balance", "stuck", "node-down", "rejections"];
+export type Condition = "throttled" | "banned" | "unstaked" | "unlocking" | "low-balance" | "stuck" | "node-down" | "rejections" | "uncovered" | "key-clash";
+export const CONDITIONS: Condition[] = ["throttled", "banned", "unstaked", "unlocking", "low-balance", "stuck", "node-down", "rejections", "uncovered", "key-clash"];
 
 /** The conditions that hold for this report, each with the reason. Empty = healthy. */
 export const failing = (s: EntityReport, conds: Condition[], o: { lowBalanceAt?: number; throttleWarnAt?: number } = {}): { condition: Condition; reason: string }[] => {
@@ -83,6 +83,8 @@ export const failing = (s: EntityReport, conds: Condition[], o: { lowBalanceAt?:
     out.push({ condition: "low-balance", reason: `${eth(s.funds.balance)} pays for about ${s.funds.txsLeft} more txs` });
   if (has("stuck")) for (const p of s.pending.filter((x) => x.stuck)) out.push({ condition: "stuck", reason: `${p.hash} ${p.status} for ${Math.round((p.ageMs ?? 0) / 1000)} s` });
   if (has("node-down")) for (const n of s.nodes.filter((x) => !x.ok)) out.push({ condition: "node-down", reason: `${n.name}: ${n.error ?? "down"}` });
+  if (has("uncovered") && s.exposure.uncovered) out.push({ condition: "uncovered", reason: `balance ${eth(s.funds.balance)} does not cover ${s.exposure.uncovered} of ${s.exposure.txs.length} pending txs (worst case ${eth(s.exposure.total)})` });
+  if (has("key-clash")) for (const k of s.exposure.keyClashes) out.push({ condition: "key-clash", reason: `${k.hashes.length} pending txs of ${k.sender} on nonce key ${k.key}: only one can land` });
   if (has("rejections") && s.rejections.length) out.push({ condition: "rejections", reason: `${s.rejections.length} rejected admissions, latest ${s.rejections[0]!.hash}` });
   return out;
 };

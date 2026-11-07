@@ -79,6 +79,18 @@ export interface ThrottleEta {
   minutes?: number;
 }
 
+/** Blast radius: what this entity's pending txs put at risk, and what one inclusion can take down. */
+export interface Exposure {
+  /** Pending txs the entity pays for, oldest first. maxCost ≈ maxFeePerGas × (all frame limits + 21,000). */
+  txs: { hash: Hex; sender: Address; maxCost: bigint; cumulative: bigint; covered: boolean; nonceKeys: string[] }[];
+  /** Worst-case total of those txs. */
+  total: bigint;
+  /** How many the balance does not cover: the sidecar cancels the newest ones first (solvency). */
+  uncovered: number;
+  /** Pending txs of one sender on the same nonce key: only one can land, the others are replaced or dropped. */
+  keyClashes: { sender: Address; key: string; hashes: Hex[] }[];
+}
+
 /** EntityStatus plus the multi-node view. Every EntityStatus field keeps its meaning. */
 export interface EntityReport extends EntityStatus {
   nodes: NodeView[];
@@ -86,6 +98,7 @@ export interface EntityReport extends EntityStatus {
   inclusions: Inclusion[];
   rejections: Rejection[];
   funds: Funds;
+  exposure: Exposure;
   throttleEta?: ThrottleEta;
   updatedAt: number;
 }
@@ -105,6 +118,8 @@ export interface ReportOptions {
   feePerTx?: bigint;
   /** Receipt cache across polls. */
   cache?: Map<string, Omit<Inclusion, "nodes">>;
+  /** Pending tx bodies (fees, limits, nonce keys) across polls: a pending tx never changes. */
+  txCache?: Map<string, PendingBody>;
   previous?: EntityReport;
 }
 
@@ -143,6 +158,7 @@ const depositInfoAbi = [{
 }] as const;
 
 interface ExplorerTx { txHash: Hex; sender: Address; payer?: Address; status: TxStatus; submittedTime?: number; lastUpdatedTime?: number }
+interface PendingBody { sender: Address; payer?: Address; maxCost: bigint; nonceKeys: string[] }
 interface AdmissionRecord { txHash: Hex; sender: Address; at: number; outcome: string; errorCode?: number; checks?: RuleCheck[]; frames?: { target?: string | null }[] }
 
 interface NodeData {
@@ -245,6 +261,8 @@ export const entityReport = async (entity: Address, o: ReportOptions = {}): Prom
     }
   }
   const all = [...byHash.values()];
+  const payerOf = new Map<string, Address | undefined>();
+  for (const d of up) for (const t of d.txs) if (t.payer) payerOf.set(lc(t.txHash), t.payer);
   const stuckAfter = o.stuckAfterMs ?? 90_000;
   const pending = all.filter((t) => PENDING.includes(t.status)).map((t) => {
     const ageMs = t.submittedAt ? now - t.submittedAt : undefined;
@@ -300,6 +318,37 @@ export const entityReport = async (entity: Address, o: ReportOptions = {}): Prom
 
   // Funds: what the entity can still pay for.
   const balance = big(balanceHex);
+
+  // Exposure: every pending tx this entity pays for, its worst-case cost, and whether the balance still covers it.
+  const txCache = o.txCache ?? new Map<string, PendingBody>();
+  const bodies = (await Promise.all(pending.map(async (p) => {
+    const k = lc(p.hash);
+    let b = txCache.get(k);
+    if (!b) {
+      const home = up.find((d) => p.nodes[d.ref.name]) ?? up[0]!;
+      const st = await within(home.gw.txStatus(p.hash), ms, "txStatus").catch(() => undefined);
+      const tx = st?.tx;
+      if (!tx) return undefined;
+      const limits = (tx.frames ?? []).reduce((s: bigint, f: any) => s + big(f.limits?.execution) + big(f.limits?.state), 0n);
+      b = { sender: tx.sender, payer: st.payer ?? payerOf.get(k), maxCost: big(tx.fees?.maxFeePerGas) * (limits + 21_000n), nonceKeys: (tx.nonceKeys ?? []).map((x: any) => String(x)) };
+      txCache.set(k, b);
+    }
+    return { p, b };
+  }))).filter(<X>(x: X | undefined): x is X => x !== undefined);
+  const paid = bodies.filter(({ b }) => lc(b.payer ?? b.sender) === me).sort((x, y) => (x.p.submittedAt ?? 0) - (y.p.submittedAt ?? 0));
+  let running = 0n;
+  const exposureTxs = paid.map(({ p, b }) => { running += b.maxCost; return { hash: p.hash, sender: b.sender, maxCost: b.maxCost, cumulative: running, covered: running <= balance, nonceKeys: b.nonceKeys }; });
+  const byKey = new Map<string, { sender: Address; key: string; hashes: Hex[] }>();
+  for (const { p, b } of bodies) for (const key of b.nonceKeys) {
+    const id = `${lc(b.sender)}:${key}`;
+    const g = byKey.get(id) ?? { sender: b.sender, key, hashes: [] };
+    g.hashes.push(p.hash);
+    byKey.set(id, g);
+  }
+  const exposure: Exposure = {
+    txs: exposureTxs, total: running, uncovered: exposureTxs.filter((t) => !t.covered).length,
+    keyClashes: [...byKey.values()].filter((g) => g.hashes.length > 1),
+  };
   const costs = inclusions.map((i) => i.cost).filter((c): c is bigint => c !== undefined);
   const avgCost = costs.length ? costs.reduce((s, c) => s + c, 0n) / BigInt(costs.length) : undefined;
   const funds: Funds = {
@@ -310,7 +359,7 @@ export const entityReport = async (entity: Address, o: ReportOptions = {}): Prom
 
   return {
     address: entity, stake, reputation, headroom: headroom(reputation.opsSeen, reputation.opsIncluded),
-    pending, inclusions, evictions, rejections, funds, nodes: data.map((d) => d.view), updatedAt: now,
+    pending, inclusions, evictions, rejections, funds, exposure, nodes: data.map((d) => d.view), updatedAt: now,
   };
 };
 
@@ -368,6 +417,7 @@ const wsUrlOf = (url: string) => url.replace(/^http/, "ws");
 export const watchEntity = (entity: Address, opts: WatchOptions): (() => void) => {
   const nodes = opts.nodes ?? (opts.gateway ? [{ name: "node", url: opts.gateway.url }] : DEFAULT_NODES);
   const cache = new Map<string, Omit<Inclusion, "nodes">>();
+  const txCache = new Map<string, PendingBody>();
   const samples: { t: number; h: number }[] = [];
   let last: EntityReport | undefined;
   let lastPrint = "";
@@ -403,7 +453,7 @@ export const watchEntity = (entity: Address, opts: WatchOptions): (() => void) =
     clearTimeout(timer);
     let ok = false;
     try {
-      const s = await entityReport(entity, { ...opts, nodes, cache, previous: last });
+      const s = await entityReport(entity, { ...opts, nodes, cache, txCache, previous: last });
       if (stopped) return;
       ok = true;
       samples.push({ t: s.updatedAt, h: s.headroom.untilThrottled });

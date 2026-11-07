@@ -3,13 +3,16 @@
 // frame-doctor <rawTx>        will each mempool admit this tx? (ethrex simulate + alt rule model)
 // frame-doctor <txHash>       what happened to a sent tx? (explorer admission record, status, receipt)
 // frame-doctor --fixture <f>  replay a captured call from @altpool/core/fixtures, offline (add --staked for stake lookups)
-// Flags: --json, -v/--verbose. Exit 0 when the alt mempool admits it, 1 when it rejects, 2 on usage or RPC errors.
+// Raw-tx mode ends with the route: public, alt via gateway or miner, or nowhere (with fixes).
+// Flags: --json, -v/--verbose. Exit 0 when some mempool admits it (raw tx) or the alt mempool did (hash), 1 when none
+// does, 2 on usage or RPC errors.
 import { fixture } from "@altpool/core/fixtures";
 import { DEVNET, explorerTx, gateway as gatewayClient, type AdmissionReport, type Hex, type MempoolVerdict, type RuleCheck } from "@altpool/core";
 import { createSimulator } from "./check";
 import { replaySimulator } from "./replay";
 import { diagnoseAdmission, diagnoseError } from "./rules";
-import { c, renderChecks, renderReport, renderVerdict } from "./report";
+import { c, renderChecks, renderReport, renderRoute, renderVerdict } from "./report";
+import { routeFromReport } from "./route";
 
 const USAGE = "usage: frame-doctor <rawTx | txHash> [--node <sidecar url>] [--json] [-v]\n       frame-doctor --fixture <path under core/fixtures> [--staked] [--json] [-v]";
 
@@ -75,7 +78,8 @@ const done = (out: AdmissionReport | SentReport | { fixture: string; verdict: Me
 
 const checkRaw = async (raw: Hex, sim = createSimulator()) => {
   const r = await sim.check(raw);
-  done(r, renderReport(r, { verbose }), r.verdicts.alt.verdict === "admitted");
+  const route = routeFromReport(r);
+  done({ ...r, route: { ...route, report: undefined } } as AdmissionReport, `${renderReport(r, { verbose })}\n${renderRoute(route)}`, route.target !== "none");
 };
 
 /** Explorer link on the node that holds the record (the explorer defaults to the gateway's view). */

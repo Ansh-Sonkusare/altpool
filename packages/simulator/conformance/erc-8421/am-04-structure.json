@@ -1,0 +1,1261 @@
+{
+ "clause": "AM-4",
+ "also": [],
+ "document": "14-erc-8421.md",
+ "version": 1,
+ "operation": "pool",
+ "distinguishes": "A DEFAULT frame just before an approving frame with its target is pre_verify, the first other one is deploy, and any other is stray; the four shapes are read without pre_verify frames; and each structural refusal names its PREFIX rule. A pool that keeps FP-5's classes, or tells deploy from pre_verify otherwise, fails here.",
+ "cases": [
+  {
+   "name": "a pre_verify frame before self_verify",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "p",
+       "type": 6,
+       "sender": "wallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 0,
+         "target": "wallet",
+         "exec_gas": 15000,
+         "writes": [
+          [
+           "wallet",
+           1,
+           5
+          ]
+         ]
+        },
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      }
+     ],
+     "expect": [
+      "ok"
+     ],
+     "expect_rules": [
+      null
+     ]
+    }
+   ],
+   "derivation": "The DEFAULT frame's target is wallet, the self_verify frame's resolved target: pre_verify; the shape without it is [self_verify]. Its write to wallet's own storage is STORAGE-010's."
+  },
+  {
+   "name": "a pre_verify frame before the pay frame",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "p",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 0,
+         "target": "spm",
+         "exec_gas": 10000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "spm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      }
+     ],
+     "expect": [
+      "ok"
+     ],
+     "expect_rules": [
+      null
+     ]
+    }
+   ],
+   "derivation": "Its target is the pay frame's: pre_verify, and [only_verify, pay] is a shape."
+  },
+  {
+   "name": "a DEFAULT frame first that is not pre_verify is deploy, and must install code",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "d",
+       "type": 6,
+       "sender": "wallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 0,
+         "target": "factory",
+         "exec_gas": 50000
+        },
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      }
+     ],
+     "expect": [
+      "ErrFrameDeployNoCode"
+     ],
+     "expect_rules": [
+      "PREFIX-020"
+     ]
+    }
+   ],
+   "derivation": "The first frame's target is factory, not the next approving frame's: deploy. wallet already has code, so nothing is installed (FP-8), which names PREFIX-020 here."
+  },
+  {
+   "name": "a DEFAULT frame later in the prefix that is not pre_verify is stray",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "s",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 0,
+         "target": "token",
+         "exec_gas": 10000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      }
+     ],
+     "expect": [
+      "ErrFrameStrayDefault"
+     ],
+     "expect_rules": [
+      "PREFIX-120"
+     ]
+    }
+   ],
+   "derivation": "The frame before the pay frame targets token, not pm: neither pre_verify nor first."
+  },
+  {
+   "name": "a pre_verify frame whose target has no code",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "n",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 0,
+         "target": "alice",
+         "exec_gas": 10000
+        },
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      }
+     ],
+     "expect": [
+      "ErrFramePreVerifyNoCode"
+     ],
+     "expect_rules": [
+      "PREFIX-110"
+     ]
+    }
+   ],
+   "derivation": "Its target is alice, the self_verify frame's resolved target, so it is pre_verify; alice has empty code."
+  },
+  {
+   "name": "an expiry frame second",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "e",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "target": "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf",
+         "exec_gas": 100,
+         "data_size": 8,
+         "deadline": 5000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      }
+     ],
+     "expect": [
+      "ErrFrameExpiryNotFirst"
+     ],
+     "expect_rules": [
+      "PREFIX-010"
+     ]
+    }
+   ],
+   "derivation": "An expiry_verify frame anywhere but first."
+  },
+  {
+   "name": "no frame approves payment",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "n",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      }
+     ],
+     "expect": [
+      "ErrFrameNoPayer"
+     ],
+     "expect_rules": [
+      "PREFIX-010"
+     ]
+    }
+   ],
+   "derivation": "No frame carries APPROVE_PAYMENT."
+  },
+  {
+   "name": "an atomic-batch frame in the prefix",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "b",
+       "type": 6,
+       "sender": "wallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 0,
+         "flags": 4,
+         "target": "factory",
+         "exec_gas": 10000
+        },
+        {
+         "mode": 0,
+         "target": "wallet",
+         "exec_gas": 15000,
+         "writes": [
+          [
+           "wallet",
+           1,
+           5
+          ]
+         ]
+        },
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      }
+     ],
+     "expect": [
+      "ErrFrameAtomicInPrefix"
+     ],
+     "expect_rules": [
+      "PREFIX-040"
+     ]
+    }
+   ],
+   "derivation": "The first frame carries ATOMIC_BATCH_FLAG, and the next is DEFAULT, so FP-3 allows the flag; the prefix may not carry it."
+  },
+  {
+   "name": "a lone pay frame is not a shape",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "l",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 20000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      }
+     ],
+     "expect": [
+      "ErrFrameUnrecognizedPrefix"
+     ],
+     "expect_rules": [
+      "PREFIX-010"
+     ]
+    }
+   ],
+   "derivation": "[pay] is none of the four shapes."
+  },
+  {
+   "name": "a VERIFY frame after the prefix",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "v",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        },
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 10000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      }
+     ],
+     "expect": [
+      "ErrFrameVerifyAfterPrefix"
+     ],
+     "expect_rules": [
+      "PREFIX-050"
+     ]
+    }
+   ],
+   "derivation": "The prefix is [self_verify]; a VERIFY frame follows it."
+  }
+ ]
+}

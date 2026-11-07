@@ -1,0 +1,996 @@
+{
+ "clause": "AM-14",
+ "also": [
+  "AM-13"
+ ],
+ "document": "14-erc-8421.md",
+ "version": 1,
+ "operation": "pool",
+ "distinguishes": "When a pending transaction fails revalidation, the entity of the first failing frame is blamed and every other entity's seen goes down by one, except a staked factory when the sender is blamed and a staked sender.",
+ "cases": [
+  {
+   "name": "the payer fails: the unstaked sender is spared",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "a",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "spm",
+         "exec_gas": 30000,
+         "reads": [
+          [
+           "spm",
+           1,
+           0
+          ]
+         ],
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      }
+     ],
+     "expect": [
+      "ok"
+     ],
+     "expect_rules": [
+      null
+     ]
+    },
+    {
+     "reset": {
+      "state": {
+       "spm": {
+        "storage": {
+         "1": 5
+        }
+       }
+      }
+     }
+    },
+    {
+     "expect_pool": {
+      "pending": {}
+     }
+    },
+    {
+     "reputation": "alice",
+     "expect": {
+      "seen": 0,
+      "included": 0,
+      "status": "ACTIVE"
+     }
+    },
+    {
+     "reputation": "spm",
+     "expect": {
+      "seen": 1,
+      "included": 0,
+      "status": "ACTIVE"
+     }
+    }
+   ],
+   "derivation": "spm's frame reads slot 1 expecting 0; the head now holds 5."
+  },
+  {
+   "name": "the sender fails: the payer is spared",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "w",
+       "type": 6,
+       "sender": "wallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000,
+         "reads": [
+          [
+           "wallet",
+           1,
+           0
+          ]
+         ],
+         "approves": 2
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      }
+     ],
+     "expect": [
+      "ok"
+     ],
+     "expect_rules": [
+      null
+     ]
+    },
+    {
+     "reset": {
+      "state": {
+       "wallet": {
+        "storage": {
+         "1": 5
+        }
+       }
+      }
+     }
+    },
+    {
+     "reputation": "pm",
+     "expect": {
+      "seen": 0,
+      "included": 0,
+      "status": "ACTIVE"
+     }
+    },
+    {
+     "reputation": "wallet",
+     "expect": {
+      "seen": 1,
+      "included": 0,
+      "status": "ACTIVE"
+     }
+    }
+   ],
+   "derivation": "wallet is blamed (REPUTATION-310)."
+  },
+  {
+   "name": "a staked sender absorbs the payer's failure",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "s",
+       "type": 6,
+       "sender": "swallet",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000,
+         "approves": 2
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "pm",
+         "exec_gas": 30000,
+         "reads": [
+          [
+           "token",
+           9,
+           0,
+           "swallet"
+          ]
+         ],
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      }
+     ],
+     "expect": [
+      "ok"
+     ],
+     "expect_rules": [
+      null
+     ]
+    },
+    {
+     "reset": {
+      "state": {
+       "token": {
+        "storage": {
+         "9": 5
+        }
+       }
+      }
+     }
+    },
+    {
+     "reputation": "swallet",
+     "expect": {
+      "seen": 1,
+      "included": 0,
+      "status": "ACTIVE"
+     }
+    },
+    {
+     "reputation": "pm",
+     "expect": {
+      "seen": 1,
+      "included": 0,
+      "status": "ACTIVE"
+     }
+    }
+   ],
+   "derivation": "pm is blamed; swallet is staked and keeps its seen (REPUTATION-330)."
+  },
+  {
+   "name": "a failure at reset evicts what it leaves with a gap",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "a0",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "spm",
+         "exec_gas": 30000,
+         "reads": [
+          [
+           "spm",
+           1,
+           0
+          ]
+         ],
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      },
+      {
+       "label": "a1",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 1,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      }
+     ],
+     "expect": [
+      "ok",
+      "ok"
+     ],
+     "expect_rules": [
+      null,
+      null
+     ]
+    },
+    {
+     "reset": {
+      "state": {
+       "spm": {
+        "storage": {
+         "1": 5
+        }
+       }
+      }
+     }
+    },
+    {
+     "expect_pool": {
+      "pending": {}
+     }
+    },
+    {
+     "reputation": "alice",
+     "expect": {
+      "seen": 1,
+      "included": 0,
+      "status": "ACTIVE"
+     }
+    },
+    {
+     "reputation": "spm",
+     "expect": {
+      "seen": 1,
+      "included": 0,
+      "status": "ACTIVE"
+     }
+    }
+   ],
+   "derivation": "a0 fails at spm's frame and is removed; a1 at 1 then has no pending transaction at 0 on key 0, whose chain sequence is 0, so it is evicted (LIFECYCLE-010). alice's seen was 2, loses 1 for a0's failure, which spm is blamed for, and nothing for a1's eviction."
+  },
+  {
+   "name": "a payer that begins to withdraw its stake is blamed for its budget",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "a",
+       "type": 6,
+       "sender": "alice",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 1,
+         "flags": 2,
+         "exec_gas": 20000
+        },
+        {
+         "mode": 1,
+         "flags": 1,
+         "target": "spm",
+         "exec_gas": 500000,
+         "approves": 1
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      }
+     ],
+     "expect": [
+      "ok"
+     ],
+     "expect_rules": [
+      null
+     ]
+    },
+    {
+     "reset": {
+      "state": {
+       "spm": {
+        "withdrawing": true
+       }
+      }
+     }
+    },
+    {
+     "expect_pool": {
+      "pending": {}
+     }
+    },
+    {
+     "reputation": "alice",
+     "expect": {
+      "seen": 0,
+      "included": 0,
+      "status": "ACTIVE"
+     }
+    },
+    {
+     "reputation": "spm",
+     "expect": {
+      "seen": 1,
+      "included": 0,
+      "status": "ACTIVE"
+     }
+    }
+   ],
+   "derivation": "spm's stake is a dependency (AM-14). Withdrawing, it is no longer staked, so its 500000 is over the 100000 of an unstaked entity: the re-run fails at spm's budget, and alice is spared."
+  },
+  {
+   "name": "a staked factory absorbs the sender's failure",
+   "descriptor": "erc-8421",
+   "state": {
+    "alice": {
+     "balance": 1000000000000000000
+    },
+    "bob": {
+     "balance": 1000000000000000000
+    },
+    "carol": {
+     "balance": 1000000000000000000
+    },
+    "dave": {
+     "balance": 1000000000000000000
+    },
+    "erin": {
+     "balance": 1000000000000000000
+    },
+    "frank": {
+     "balance": 1000000000000000000
+    },
+    "wallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet"
+    },
+    "swallet": {
+     "balance": 1000000000000000000,
+     "code": "wallet",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "pm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster"
+    },
+    "spm": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "lowstake": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 100000000000000000,
+     "unstake_delay": 86400
+    },
+    "shortdelay": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "stake": 1000000000000000000,
+     "unstake_delay": 3600
+    },
+    "leaving": {
+     "balance": 1000000000000000000,
+     "code": "paymaster",
+     "withdrawing": true,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "rich": {
+     "balance": 1000000000000000000,
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "factory": {
+     "code": "factory"
+    },
+    "sfactory": {
+     "code": "factory",
+     "stake": 1000000000000000000,
+     "unstake_delay": 86400
+    },
+    "token": {
+     "code": "token"
+    },
+    "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf": {
+     "code": "expiry-verifier"
+    },
+    "neww": {
+     "balance": 1000000000000000000
+    }
+   },
+   "steps": [
+    {
+     "add": [
+      {
+       "label": "d",
+       "type": 6,
+       "sender": "neww",
+       "nonce_seq": 0,
+       "frames": [
+        {
+         "mode": 0,
+         "target": "sfactory",
+         "exec_gas": 50000,
+         "installs_code": "wallet"
+        },
+        {
+         "mode": 1,
+         "flags": 3,
+         "exec_gas": 20000,
+         "approves": 3,
+         "reads": [
+          [
+           "neww",
+           1,
+           0
+          ]
+         ]
+        },
+        {
+         "mode": 2,
+         "exec_gas": 30000
+        }
+       ],
+       "signatures": [
+        {
+         "scheme": "secp256k1"
+        }
+       ]
+      }
+     ],
+     "expect": [
+      "ok"
+     ],
+     "expect_rules": [
+      null
+     ]
+    },
+    {
+     "reset": {
+      "state": {
+       "neww": {
+        "storage": {
+         "1": 5
+        }
+       }
+      }
+     }
+    },
+    {
+     "reputation": "sfactory",
+     "expect": {
+      "seen": 1,
+      "included": 0,
+      "status": "ACTIVE"
+     }
+    },
+    {
+     "reputation": "neww",
+     "expect": {
+      "seen": 1,
+      "included": 0,
+      "status": "ACTIVE"
+     }
+    }
+   ],
+   "derivation": "neww's frame is blamed; sfactory is staked and keeps its seen (REPUTATION-320)."
+  }
+ ]
+}

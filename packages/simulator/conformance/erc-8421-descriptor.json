@@ -1,0 +1,117 @@
+{
+  "format": 1,
+  "name": "ERC-8421 standard alternative mempool",
+  "source": "ERC-8421, ethereum/ERCs pull request 2028 at 493ba8ac, read 2026-10-20; 14-erc-8421.md version 1",
+  "parent": "bafkreic7kyifykopewlbznmhicjvfrmbxhmfwaaxglrdcgrttm2qw5blb4",
+  "remove": [
+    "FP-11",
+    "FP-12",
+    "FP-5",
+    "FP-6",
+    "FP-7",
+    "FP-9"
+  ],
+  "rules": {
+    "ASSOC-010": {},
+    "ASSOC-020": {
+      "max_offset": 128
+    },
+    "PREFIX-010": {
+      "expiry_verifier": "0x81413f0cF12e9b6a49B1D0439E081c577D57FfFf"
+    },
+    "PREFIX-020": {},
+    "PREFIX-040": {},
+    "PREFIX-050": {},
+    "PREFIX-060": {},
+    "PREFIX-080": {},
+    "PREFIX-100": {
+      "canonical_paymaster_code": "canonical-paymaster"
+    },
+    "PREFIX-110": {},
+    "PREFIX-120": {},
+    "BUDGET-010": {
+      "max_verify_gas_per_entity": 100000,
+      "max_verify_gas_staked_entity": 1000000
+    },
+    "SIGNATURE-010": {},
+    "OPCODES-010": {},
+    "OPCODES-020": {},
+    "OPCODES-030": {},
+    "OPCODES-040": {},
+    "CREATION-010": {},
+    "CALLING-010": {},
+    "CALLING-040": {
+      "precompiles": [
+        "0x0000000000000000000000000000000000000001",
+        "0x0000000000000000000000000000000000000002",
+        "0x0000000000000000000000000000000000000003",
+        "0x0000000000000000000000000000000000000004",
+        "0x0000000000000000000000000000000000000005",
+        "0x0000000000000000000000000000000000000006",
+        "0x0000000000000000000000000000000000000007",
+        "0x0000000000000000000000000000000000000008",
+        "0x0000000000000000000000000000000000000009",
+        "0x000000000000000000000000000000000000000a",
+        "0x000000000000000000000000000000000000000b",
+        "0x000000000000000000000000000000000000000c",
+        "0x000000000000000000000000000000000000000d",
+        "0x000000000000000000000000000000000000000e",
+        "0x000000000000000000000000000000000000000f",
+        "0x0000000000000000000000000000000000000010",
+        "0x0000000000000000000000000000000000000011",
+        "0x0000000000000000000000000000000000000100"
+      ]
+    },
+    "STORAGE-000": {},
+    "STORAGE-010": {},
+    "STORAGE-021": {},
+    "STORAGE-022": {},
+    "STORAGE-031": {},
+    "STORAGE-032": {},
+    "STORAGE-033": {},
+    "LOCAL-010": {},
+    "LOCAL-020": {},
+    "STAKING-010": {
+      "min_stake_value": "1000000000000000000",
+      "min_unstake_delay": 86400,
+      "staking_registry": "staking-registry"
+    },
+    "SOLVENCY-010": {},
+    "SOLVENCY-020": {},
+    "SOLVENCY-030": {},
+    "REPUTATION-010": {
+      "min_inclusion_rate_denominator": 10,
+      "throttling_slack": 10,
+      "ban_slack": 50,
+      "refresh_seconds": 3600
+    },
+    "REPUTATION-020": {
+      "throttled_entity_mempool_count": 4,
+      "throttled_entity_live_blocks": 10,
+      "throttled_entity_block_count": 4
+    },
+    "REPUTATION-040": {},
+    "REPUTATION-210": {},
+    "REPUTATION-220": {
+      "same_unstaked_entity_mempool_count": 10,
+      "max_txs_allowed_unstaked_entity": 10000
+    },
+    "REPUTATION-310": {},
+    "REPUTATION-320": {},
+    "REPUTATION-330": {},
+    "LIFECYCLE-010": {},
+    "LIFECYCLE-020": {
+      "price_bump": 10
+    },
+    "LIFECYCLE-030": {
+      "same_nonce_key_mempool_count": 4,
+      "same_sender_mempool_count": 64
+    },
+    "LIFECYCLE-040": {},
+    "PROPAGATION-010": {},
+    "PROPAGATION-020": {},
+    "PROPAGATION-030": {},
+    "PROPAGATION-040": {},
+    "PROPAGATION-050": {}
+  }
+}

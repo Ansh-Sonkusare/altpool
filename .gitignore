@@ -14,3 +14,4 @@ packages/falcon/cache/
 
 .env*.local
 .crowd*.local.json
+docs/
