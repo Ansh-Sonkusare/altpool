@@ -42,7 +42,7 @@ export const Monitor = () => {
   ];
 
   return (
-    <div className="relative mx-auto min-h-screen max-w-[1360px] overflow-x-clip">
+    <div className="relative mx-auto min-h-screen max-w-[1360px] overflow-x-clip border-x border-ln">
       <div className="pointer-events-none absolute -top-[180px] -right-[160px] h-[420px] w-[700px] max-w-full bg-[radial-gradient(closest-side,rgba(241,201,140,.09),rgba(241,201,140,.02)_55%,transparent)]" aria-hidden="true"></div>
       <Nav head={head} />
       <header className="relative flex flex-col gap-4 px-[clamp(56px,8vw,128px)] pb-0 pt-10 max-[960px]:px-6 max-[560px]:px-4">
