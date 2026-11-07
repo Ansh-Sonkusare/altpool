@@ -1,0 +1,80 @@
+{
+  "endpoint": "https://altmempool.forshtat.com",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "ethrex_simulateFrameTransaction",
+    "params": [
+      "0x06f8ba820539d998f1847e19b8019518fa125ce1a9c5edafc9822f97a09a26fa8094bfd22c58b44564f0bdafe6a768cdbd87e3831209eecb010380c5830249f0808080e1028094000000000000000000000000000000000000deadc782c35083030d400180f848f846018080b84101f7419840b5734a40dc8f84dcf931c2e7dcf6460edc06358cc0555ae430b2e8002915bd07334871b5d4040e4c1874b3bbd4b1e8bc230e7d237e0219f20e10df9dcb843b9aca00847735940080c0c0",
+      "latest",
+      {
+        "trace": true
+      }
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "canonicalMempoolValid": false,
+      "canonicalMempoolViolation": "prefix gas budget exceeded: 152800 > 100000 (MAX_VERIFY_GAS)",
+      "erc7562Trace": [
+        {
+          "frameIndex": 0,
+          "root": {
+            "accessedSlots": {
+              "reads": {},
+              "transientReads": {},
+              "transientWrites": {},
+              "writes": {}
+            },
+            "contractSize": {},
+            "extCodeAccessInfo": [],
+            "from": "0x00000000000000000000000000000000000000aa",
+            "outOfGas": false,
+            "to": "0xbfd22c58b44564f0bdafe6a768cdbd87e3831209",
+            "type": "CALL",
+            "usedOpcodes": {},
+            "value": "0x0"
+          }
+        },
+        {
+          "frameIndex": 1,
+          "root": {
+            "accessedSlots": {
+              "reads": {},
+              "transientReads": {},
+              "transientWrites": {},
+              "writes": {}
+            },
+            "contractSize": {},
+            "extCodeAccessInfo": [],
+            "from": "0xbfd22c58b44564f0bdafe6a768cdbd87e3831209",
+            "outOfGas": false,
+            "to": "0x000000000000000000000000000000000000dead",
+            "type": "CALL",
+            "usedOpcodes": {},
+            "value": "0x0"
+          }
+        }
+      ],
+      "erc7562TraceError": null,
+      "executionError": null,
+      "executionStatus": "success",
+      "frames": [
+        {
+          "gasUsed": "0x64",
+          "succeeded": true
+        },
+        {
+          "gasUsed": "0xbb8",
+          "succeeded": true
+        }
+      ],
+      "gasUsed": "0x6bf6",
+      "maxCost": "0x301d0836e4800",
+      "payer": "0xbfd22c58b44564f0bdafe6a768cdbd87e3831209",
+      "prefixShape": "SelfVerify"
+    }
+  }
+}

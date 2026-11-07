@@ -1,0 +1,32 @@
+{
+  "endpoint": "https://altmempool.forshtat.com",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "ethrex_simulateFrameTransaction",
+    "params": [
+      "0x06f8b9820539d998f042ed4b8f89bc1f8097542b4d3295c7dcdfe28b2818db9b8094bfd22c58b44564f0bdafe6a768cdbd87e3831209edca010380c482ea60808080e1028094000000000000000000000000000000000000deadc782c35083030d400180f848f846018080b84100e27e3ea9ef95149b27022863bd568aabe6e69c12962033351eb42a496f72f1974964fefe65a9e6ac6c33fa45fe67be3e3f98d1900813330e8546f5f5a39085f9cb843b9aca00847735940080c0c0",
+      "latest",
+      {
+        "trace": true
+      }
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "canonicalMempoolValid": false,
+      "canonicalMempoolViolation": "Invalid Transaction: Nonce mismatch: expected 1, got 0",
+      "erc7562Trace": null,
+      "erc7562TraceError": null,
+      "executionError": "Invalid Transaction: Nonce mismatch: expected 1, got 0",
+      "executionStatus": null,
+      "frames": null,
+      "gasUsed": null,
+      "maxCost": "0x25e1aff5f0800",
+      "payer": null,
+      "prefixShape": "SelfVerify"
+    }
+  }
+}

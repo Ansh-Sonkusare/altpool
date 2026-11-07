@@ -27,7 +27,7 @@ import { Crowd } from "./Crowd";
 import { FrameDetail } from "./frames/FrameDetail";
 import { FrameRail } from "./frames/FrameRail";
 import { FrameLegend } from "./frames/Legend";
-import { PledgeFrames } from "./frames/PledgeFrames";
+import { PledgeFrames, PledgeShowcase } from "./frames/PledgeFrames";
 import { Card, CardBar, cx, Dot, ExtLink, Fact, Facts, fmt, Pill, Section, short, valueOf } from "./ui";
 
 /** Fewer sends than this before PayRelayWETH is throttled and the button stays off: one run adds one send. */
@@ -123,9 +123,9 @@ const RecentRuns = ({ entity }: { entity: Live<EntityReport> }) => {
           {runs.map((r) => (
             <li key={r.hash} className="flex flex-wrap items-center gap-x-4 gap-y-2 font-mono text-[12.5px]">
               <Pill kind={r.outcome === "included" ? "v" : "u"}>{r.outcome === "included" ? `included${r.block ? `, block ${fmt(r.block)}` : ""}` : "reverted on chain"}</Pill>
-              <ExtLink href={exitUrl(r.hash)} className="text-amber tabular-nums underline decoration-amberln underline-offset-4">{short(r.hash)}</ExtLink>
+              <ExtLink href={exitUrl(r.hash)} className="text-acc tabular-nums underline decoration-accln underline-offset-4">{short(r.hash)}</ExtLink>
               <button type="button" aria-pressed={open === r.hash} onClick={() => setOpen(open === r.hash ? undefined : r.hash)}
-                className="ml-auto cursor-pointer rounded-md border border-ln2 px-3 py-1.5 text-[12px] text-fg1 hover:border-amberln hover:text-amber aria-pressed:border-amberln aria-pressed:text-amber">
+                className="ml-auto cursor-pointer rounded-md border border-ln2 px-3 py-1.5 text-[12px] text-fg1 hover:border-accln hover:text-acc aria-pressed:border-accln aria-pressed:text-acc">
                 {open === r.hash ? "Hide its frames" : "Read its frames"}
               </button>
             </li>
@@ -254,16 +254,9 @@ export const LivePledge = ({ entity }: { entity: Live<EntityReport> }) => {
   const frameTx = txs.find((t) => t.step === "submit");
 
   return (
-    <Section id="pledge" band>
-      <div className="flex max-w-[760px] flex-col gap-5">
-        <h2 className="m-0 text-[clamp(32px,4.5vw,48px)]/[1.1] font-light tracking-[-.03em] text-balance">Pay an invoice from shielded funds, in one transaction. Send it yourself.</h2>
-        <p className="m-0 text-fg2">
-          A donor holds a 0.1 WETH note in the privacy pool and owes an aid fund's invoice. One frame transaction withdraws the note, unwraps it, swaps on Uniswap v4, pays the invoice, sends the leftover ETH to the fund and checks that nothing is left. The staked PayRelayWETH contract sends it and pays the gas, so the donor needs no ETH and no relayer. Below, your browser sends that transaction on the devnet with your amount and addresses, and the page reads each value back from the chain.
-        </p>
-      </div>
-
-      <Notes />
-
+    <Section id="pledge" band n="03" label="Showcase transaction" title="Pledge Paid: nine frames, one transaction."
+      lede="Withdraw from a privacy pool, unwrap, swap on Uniswap v4, settle an invoice, sweep, and check, all in one frame transaction. The toolkit checked it before it was sent, and the chain included it.">
+      <PledgeShowcase />
       <div className="m-0 flex max-w-[760px] flex-col gap-2 rounded-xl border border-warnln bg-warnbg px-5 py-4 text-[14px] text-fg1">
         <p className="m-0"><span className="font-medium text-warn">Pledge Paid is designed to unlink a payment from its deposit. This demo shows the mechanism, not privacy.</span> The run deposits and pays from this tab one to three minutes apart, so timing links the two. The deposits around yours come mostly from a crowd of accounts we run on this devnet. Anyone who knows those addresses can set them aside, and your note is then nearly alone. The invoice amount is public. One host serves the RPC, the faucet and the sidecar, so its operator sees your IP on the deposit and on the payment.</p>
         <details className="text-fg2">
@@ -271,7 +264,10 @@ export const LivePledge = ({ entity }: { entity: Live<EntityReport> }) => {
           <p className="m-0 mt-2">A fresh key makes your deposit. The run then waits up to 90 s for two later deposits and proves against a root that holds them, so your note is not the newest leaf. If none come, the run says so and proves anyway. The depositor signs nothing after its deposit. The fund key {short(fund.address)} creates the invoice, and a fresh key signs any rescue. The change goes to the invoice payee, so no separate change address ties back to you.</p>
         </details>
       </div>
-
+      <details className="rounded-md border border-ln2 bg-s1">
+        <summary className="flex min-h-11 cursor-pointer items-center px-5 text-[16px] font-medium text-fg">Send one yourself</summary>
+        <div className="flex flex-col gap-6 border-t border-ln2 p-5 max-[560px]:p-4">
+      <Notes />
       <Crowd pool={WETH_POOL} mine={myLeaf} runHash={myLeaf !== undefined ? (result?.hash as Hex | undefined) : newestIncluded(r)} />
 
       <PresetBar intent={intent} paid={paid} disabled={running} onPick={pick} />
@@ -317,7 +313,7 @@ export const LivePledge = ({ entity }: { entity: Live<EntityReport> }) => {
           onClick={start}
           disabled={running || reason !== undefined}
           aria-describedby="live-pledge-reason"
-          className="min-h-11 rounded-full bg-fg px-7 text-[15px] font-medium text-[#0a0a0c] disabled:cursor-not-allowed disabled:opacity-40"
+          className="min-h-11 rounded-full bg-fg px-7 text-[15px] font-medium text-bg disabled:cursor-not-allowed disabled:opacity-40"
         >{running ? (gate ? "Waiting for your choice…" : "Working…") : expectsRevert(intent) ? "Build it and check it" : phase === "idle" ? "Send a Pledge Paid" : "Send another Pledge Paid"}</button>
         {(cur?.raw || cur?.hash) && <button type="button" onClick={openInDoctor} className="min-h-11 rounded-full border border-ln2 px-5 text-[14px] text-fg1">Open in frame-doctor</button>}
         <p id="live-pledge-reason" role="status" className="m-0 max-w-[620px] text-[13px] text-fg2">
@@ -361,7 +357,7 @@ export const LivePledge = ({ entity }: { entity: Live<EntityReport> }) => {
               <Fact k="Block">{fmt(result.block)}</Fact>
               <Fact k="Whole run">{secs(result.totalMs)}</Fact>
             </Facts>
-            <ExtLink href={exitUrl(result.hash)} className="font-mono text-[13px] text-amber underline decoration-amberln underline-offset-4">{short(result.hash)} on the explorer, miner's view</ExtLink>
+            <ExtLink href={exitUrl(result.hash)} className="font-mono text-[13px] text-acc underline decoration-accln underline-offset-4">{short(result.hash)} on the explorer, miner's view</ExtLink>
           </div>
           <div className="border-t border-ln"><RecoverPanel rescue={result.rescue} now={now} /></div>
         </Card>
@@ -377,7 +373,7 @@ export const LivePledge = ({ entity }: { entity: Live<EntityReport> }) => {
               <Fact k="Gas used">{result.gasUsed === undefined ? "not reported" : fmt(result.gasUsed)}</Fact>
               <Fact k="Whole run">{secs(result.totalMs)}</Fact>
             </Facts>
-            <ExtLink href={exitUrl(result.hash)} className="font-mono text-[13px] text-amber underline decoration-amberln underline-offset-4">{short(result.hash)} on the explorer, miner's view</ExtLink>
+            <ExtLink href={exitUrl(result.hash)} className="font-mono text-[13px] text-acc underline decoration-accln underline-offset-4">{short(result.hash)} on the explorer, miner's view</ExtLink>
           </div>
         </Card>
       )}
@@ -412,6 +408,8 @@ export const LivePledge = ({ entity }: { entity: Live<EntityReport> }) => {
           : entity.status === "error" ? `PayRelayWETH's headroom could not be read: ${entity.error}` : "Reading PayRelayWETH's headroom…"}
         {" · "}<ExtLink href={addrUrl(fund.address)} className="underline decoration-ln2 underline-offset-4">{fund.label.toLowerCase()} {short(fund.address)}, creates the invoices</ExtLink>
       </p>
+      </div>
+      </details>
     </Section>
   );
 };

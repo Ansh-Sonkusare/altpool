@@ -88,6 +88,16 @@ a node.
 - The bundler's revalidation drops txs whose prefix uses more than 100,000 gas (`MAX_VERIFY_GAS`), even though
   admission accepted them.
 
+## Build and pack
+
+Not yet on npm. To build and pack it locally:
+
+```sh
+bun install                        # once, picks up @typescript/typescript6 (needed by tsup's .d.ts step)
+bun run --filter altpool build     # writes dist/index.js and dist/index.d.ts (@altpool/core is bundled in)
+cd packages/sdk && npm pack        # prepack swaps in the dist entry points, postpack restores package.json
+```
+
 ## Live run
 
 ```sh

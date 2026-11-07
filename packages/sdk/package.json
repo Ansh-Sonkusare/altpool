@@ -1,19 +1,40 @@
 {
   "name": "altpool",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
+  "license": "MIT",
   "type": "module",
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": "./src/index.ts"
   },
+  "publishConfig": {
+    "main": "./dist/index.js",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      }
+    }
+  },
   "scripts": {
+    "build": "tsup",
+    "prepack": "node ../../scripts/pack-swap.mjs pre",
+    "postpack": "node ../../scripts/pack-swap.mjs post",
     "typecheck": "tsc -p .",
     "test": "vitest run --passWithNoTests",
     "live": "bun scripts/live.ts"
   },
   "dependencies": {
-    "@altpool/core": "workspace:*",
     "@forshtat/hegota-support": "0.0.1",
     "viem": "^2.57.10"
+  },
+  "devDependencies": {
+    "@altpool/core": "workspace:*",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.0"
   }
 }

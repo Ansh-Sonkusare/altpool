@@ -1,12 +1,15 @@
 import type { Hex } from "viem";
 import type { DoctorView } from "../../live";
-import { cx, short } from "../ui";
+import { short, Verdict } from "../ui";
 import { gapOf } from "./gapOf";
 
 const Cell = ({ who, verdict, tone, children }: { who: string; verdict: string; tone: "ok" | "bad"; children: React.ReactNode }) => (
   <section aria-label={who} className="flex min-w-0 flex-col gap-2 p-5">
     <h4 className="m-0 font-mono text-[12px] font-normal text-fg2">{who}</h4>
-    <p className={cx("m-0 font-serif text-[30px]/[1.1]", tone === "ok" ? "text-ok" : "text-bad")}><span aria-hidden="true">{tone === "ok" ? "✓ " : "✗ "}</span>{verdict}</p>
+    <div className="flex flex-wrap items-center gap-3">
+      <p className="m-0 font-serif text-[30px]/[1.1] text-fg">{verdict}</p>
+      <Verdict kind={tone === "ok" ? "admit" : "reject"}>{tone === "ok" ? "admit" : "reject"}</Verdict>
+    </div>
     <p className="m-0 text-sm/[21px] text-fg1 [overflow-wrap:anywhere]">{children}</p>
   </section>
 );
@@ -21,7 +24,7 @@ export const GapStory = ({ view, sent, preset }: { view?: DoctorView; sent?: Hex
   if (!gap || !view?.alt) return null;
   const pre = gap.phase === "presend";
   return (
-    <section aria-label="The admission gap" className="overflow-hidden rounded-xl border border-warnln bg-warnbg">
+    <section aria-label="The admission gap" className="overflow-hidden rounded-md border border-warnln bg-warnbg">
       <div className="flex flex-col gap-1 border-b border-warnln px-5 py-4">
         <h3 className="m-0 text-[17px] font-normal text-fg">
           {pre ? `Two checks say go. The node's simulation says frame ${gap.frame} reverts.` : `Admitted, then frame ${gap.frame} reverted on chain.`}
@@ -42,7 +45,7 @@ export const GapStory = ({ view, sent, preset }: { view?: DoctorView; sent?: Hex
         <Cell who={pre ? "frame-doctor, node simulation" : "The chain, frame receipt"} verdict={`Frame ${gap.frame} ${pre ? "reverts" : "reverted"}`} tone="bad">
           {gap.reason && <><span className="font-mono text-fg">{gap.reason}</span>. </>}
           {pre ? "The atomic batch would roll back. The withdraw in frame 2 stays final." : "The atomic batch rolled back. The withdraw in frame 2 stayed final."}
-          {gap.fix && <span className="mt-2 block border-l-2 border-ok/60 pl-3"><span className="font-mono text-[12px] text-ok">fix </span>{gap.fix}</span>}
+          {gap.fix && <span className="mt-2 block border-l border-okln pl-3"><span className="font-mono text-[12px] text-ok">fix: </span>{gap.fix}</span>}
         </Cell>
       </div>
     </section>

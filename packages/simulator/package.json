@@ -1,29 +1,76 @@
 {
   "name": "@altpool/simulator",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
+  "description": "Admission simulator, frame-doctor CLI and Vitest matchers for EIP-8141 frame transactions on the alt mempool.",
+  "license": "MIT",
   "type": "module",
+  "files": [
+    "dist",
+    "conformance"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": "./src/index.ts",
     "./rules": "./src/rules.ts",
     "./conformance": "./src/conformance.ts",
-    "./vitest": "./src/vitest.ts"
+    "./vitest": "./src/vitest.ts",
+    "./vitest-setup": "./src/vitest-setup.ts"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      },
+      "./rules": {
+        "types": "./dist/rules.d.ts",
+        "import": "./dist/rules.js"
+      },
+      "./conformance": {
+        "types": "./dist/conformance.d.ts",
+        "import": "./dist/conformance.js"
+      },
+      "./vitest": {
+        "types": "./dist/vitest.d.ts",
+        "import": "./dist/vitest.js"
+      },
+      "./vitest-setup": {
+        "types": "./dist/vitest-setup.d.ts",
+        "import": "./dist/vitest-setup.js"
+      }
+    }
+  },
+  "bin": {
+    "frame-doctor": "./dist/frame-doctor.js"
   },
   "scripts": {
+    "build": "tsup",
+    "prepack": "node ../../scripts/pack-swap.mjs pre",
+    "postpack": "node ../../scripts/pack-swap.mjs post",
     "typecheck": "tsc -p .",
     "test": "vitest run --passWithNoTests",
     "doctor": "tsx src/frame-doctor.ts",
-    "conformance": "tsx src/conformance-cli.ts"
+    "conformance": "tsx src/conformance-cli.ts",
+    "accuracy": "tsx src/accuracy-cli.ts",
+    "live-suite": "tsx src/live-suite.ts"
   },
   "dependencies": {
-    "@altpool/core": "workspace:*",
     "@forshtat/hegota-support": "0.0.1",
     "viem": "^2.57.10"
   },
-  "bin": {
-    "frame-doctor": "./src/frame-doctor.ts"
+  "peerDependencies": {
+    "vitest": ">=3"
+  },
+  "peerDependenciesMeta": {
+    "vitest": {
+      "optional": true
+    }
   },
   "devDependencies": {
+    "@altpool/core": "workspace:*",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.0",
     "vitest": "^5.1.0"
   }
 }

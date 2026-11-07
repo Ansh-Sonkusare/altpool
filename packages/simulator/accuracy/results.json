@@ -1,0 +1,732 @@
+{
+  "scanned": 178,
+  "cases": [
+    {
+      "id": "public/31-ethrex_simulateFrameTransaction.json",
+      "txHash": "0x53b44da563b180982098c6afa5c2672cd738f0288ab05c8517a2a27bebcf7afd",
+      "input": "public/31-ethrex_simulateFrameTransaction.json",
+      "comparisons": [
+        {
+          "mempool": "alt",
+          "predicted": {
+            "verdict": "rejected",
+            "rule": "simulation",
+            "source": "model"
+          },
+          "actual": {
+            "mempool": "alt",
+            "source": "sidecar-estimate",
+            "file": "public/28-eth_estimateFrameTransactionGas.json",
+            "admitted": false,
+            "rule": "simulation",
+            "detail": "Invalid Transaction: Nonce mismatch: expected 2, got 1"
+          },
+          "unverified": true,
+          "judgement": "match"
+        }
+      ]
+    },
+    {
+      "id": "accuracy/fixtures/01-case01-public-ethrex_simulateFrameTransaction.json",
+      "txHash": "0x174e06afd24bf517bf0d602866b71d5a28446f0cddce53f26883b8db5798e63d",
+      "input": "accuracy/fixtures/01-case01-public-ethrex_simulateFrameTransaction.json",
+      "comparisons": [
+        {
+          "mempool": "public",
+          "predicted": {
+            "verdict": "admitted",
+            "source": "simulate"
+          },
+          "actual": {
+            "mempool": "public",
+            "source": "ethrex-send",
+            "file": "accuracy/fixtures/04-case01-public-eth_sendRawTransaction.json",
+            "admitted": true
+          },
+          "unverified": false,
+          "judgement": "match"
+        }
+      ]
+    },
+    {
+      "id": "accuracy/fixtures/05-case01-alt-ethrex_simulateFrameTransaction.json",
+      "txHash": "0x80c24c777b0ed53f368e422d57ee994c461c6f43803aebba7d7df70fba416cf9",
+      "input": "accuracy/fixtures/05-case01-alt-ethrex_simulateFrameTransaction.json",
+      "comparisons": [
+        {
+          "mempool": "alt",
+          "predicted": {
+            "verdict": "admitted",
+            "source": "model"
+          },
+          "actual": {
+            "mempool": "alt",
+            "source": "sidecar-send",
+            "file": "accuracy/fixtures/08-case01-alt-eth_sendFrameTransaction.json",
+            "admitted": true
+          },
+          "unverified": true,
+          "judgement": "match"
+        }
+      ]
+    },
+    {
+      "id": "accuracy/fixtures/10-case02-public-ethrex_simulateFrameTransaction.json",
+      "txHash": "0xa7a6d46c58b2cce61f695dd1e00267117d473cb041cd3802bd4e9c00742e5644",
+      "input": "accuracy/fixtures/10-case02-public-ethrex_simulateFrameTransaction.json",
+      "comparisons": [
+        {
+          "mempool": "public",
+          "predicted": {
+            "verdict": "rejected",
+            "rule": "public-gas-cap",
+            "source": "simulate"
+          },
+          "actual": {
+            "mempool": "public",
+            "source": "ethrex-send",
+            "file": "accuracy/fixtures/13-case02-public-eth_sendRawTransaction.json",
+            "admitted": false,
+            "rule": "public-gas-cap",
+            "detail": "Invalid params: Frame transaction prefix gas budget (frames + sig cost) exceeds MAX_VERIFY_GAS"
+          },
+          "unverified": false,
+          "judgement": "match"
+        }
+      ]
+    },
+    {
+      "id": "accuracy/fixtures/14-case02-alt-ethrex_simulateFrameTransaction.json",
+      "txHash": "0x4a0022744be619099ee1e07a439ca76093bf6915905a7a0cde637c6821defbf9",
+      "input": "accuracy/fixtures/14-case02-alt-ethrex_simulateFrameTransaction.json",
+      "comparisons": [
+        {
+          "mempool": "alt",
+          "predicted": {
+            "verdict": "admitted",
+            "source": "model"
+          },
+          "actual": {
+            "mempool": "alt",
+            "source": "sidecar-send",
+            "file": "accuracy/fixtures/17-case02-alt-eth_sendFrameTransaction.json",
+            "admitted": true
+          },
+          "unverified": true,
+          "judgement": "match"
+        }
+      ]
+    },
+    {
+      "id": "accuracy/fixtures/19-case03-public-ethrex_simulateFrameTransaction.json",
+      "txHash": "0x281eb048d081fe5699e5489c18541cc3ec840ee87ac878daa8f2468eda773cfe",
+      "input": "accuracy/fixtures/19-case03-public-ethrex_simulateFrameTransaction.json",
+      "comparisons": [
+        {
+          "mempool": "public",
+          "predicted": {
+            "verdict": "rejected",
+            "rule": "public-storage",
+            "source": "simulate"
+          },
+          "actual": {
+            "mempool": "public",
+            "source": "ethrex-send",
+            "file": "accuracy/fixtures/22-case03-public-eth_sendRawTransaction.json",
+            "admitted": false,
+            "rule": "public-storage",
+            "detail": "Invalid params: Frame transaction validation-prefix simulation failed: StorageReadNonSender"
+          },
+          "unverified": false,
+          "judgement": "match"
+        }
+      ]
+    },
+    {
+      "id": "accuracy/fixtures/23-case03-alt-ethrex_simulateFrameTransaction.json",
+      "txHash": "0xfc916dbb1787bf102867773495ffb7e53cac88eb83d9932fd76278ded63ab4ac",
+      "input": "accuracy/fixtures/23-case03-alt-ethrex_simulateFrameTransaction.json",
+      "comparisons": [
+        {
+          "mempool": "alt",
+          "predicted": {
+            "verdict": "rejected",
+            "rule": "storage",
+            "source": "model"
+          },
+          "actual": {
+            "mempool": "alt",
+            "source": "sidecar-send",
+            "file": "accuracy/fixtures/26-case03-alt-eth_sendFrameTransaction.json",
+            "admitted": false,
+            "rule": "storage",
+            "detail": "unstaked payer accessed 0xaf1675799c967019034b1808919f27cc6cd29d30 slot 0x0000000000000000000000000000000000000000000000000000000000000000"
+          },
+          "unverified": true,
+          "judgement": "match"
+        }
+      ]
+    },
+    {
+      "id": "accuracy/fixtures/28-case04-public-ethrex_simulateFrameTransaction.json",
+      "txHash": "0xcb9ebe4dd8fec05353750e855d9c53bbc7a292cf813c9aa76ec6ad1c2c7636ec",
+      "input": "accuracy/fixtures/28-case04-public-ethrex_simulateFrameTransaction.json",
+      "comparisons": [
+        {
+          "mempool": "public",
+          "predicted": {
+            "verdict": "rejected",
+            "rule": "public-storage",
+            "source": "simulate"
+          },
+          "actual": {
+            "mempool": "public",
+            "source": "ethrex-send",
+            "file": "accuracy/fixtures/31-case04-public-eth_sendRawTransaction.json",
+            "admitted": false,
+            "rule": "public-storage",
+            "detail": "Invalid params: Frame transaction validation-prefix simulation failed: StorageReadNonSender"
+          },
+          "unverified": false,
+          "judgement": "match"
+        }
+      ]
+    },
+    {
+      "id": "accuracy/fixtures/32-case04-alt-ethrex_simulateFrameTransaction.json",
+      "txHash": "0x5b7a6f0d5cb36e21dd1a1254560438b89c5dab0bbf44f6040a207928599dfcd5",
+      "input": "accuracy/fixtures/32-case04-alt-ethrex_simulateFrameTransaction.json",
+      "comparisons": [
+        {
+          "mempool": "alt",
+          "predicted": {
+            "verdict": "admitted",
+            "source": "model"
+          },
+          "actual": {
+            "mempool": "alt",
+            "source": "sidecar-send",
+            "file": "accuracy/fixtures/35-case04-alt-eth_sendFrameTransaction.json",
+            "admitted": true
+          },
+          "unverified": true,
+          "judgement": "match"
+        }
+      ]
+    },
+    {
+      "id": "accuracy/fixtures/37-case05-public-ethrex_simulateFrameTransaction.json",
+      "txHash": "0xee198501217aeeba524243b527437ac388ef88799a1431af08a252c8737e536e",
+      "input": "accuracy/fixtures/37-case05-public-ethrex_simulateFrameTransaction.json",
+      "comparisons": [
+        {
+          "mempool": "public",
+          "predicted": {
+            "verdict": "rejected",
+            "rule": "signature",
+            "source": "simulate"
+          },
+          "actual": {
+            "mempool": "public",
+            "source": "ethrex-send",
+            "file": "accuracy/fixtures/38-case05-public-eth_sendRawTransaction.json",
+            "admitted": false,
+            "rule": "signature",
+            "detail": "Invalid params: Invalid frame transaction signature"
+          },
+          "unverified": false,
+          "judgement": "match"
+        }
+      ]
+    },
+    {
+      "id": "accuracy/fixtures/39-case05-alt-ethrex_simulateFrameTransaction.json",
+      "txHash": "0x146445298a3449950c803000c07171c07a92e059f258508dde16452bc6550431",
+      "input": "accuracy/fixtures/39-case05-alt-ethrex_simulateFrameTransaction.json",
+      "comparisons": [
+        {
+          "mempool": "alt",
+          "predicted": {
+            "verdict": "rejected",
+            "rule": "signature",
+            "source": "model"
+          },
+          "actual": {
+            "mempool": "alt",
+            "source": "sidecar-send",
+            "file": "accuracy/fixtures/40-case05-alt-eth_sendFrameTransaction.json",
+            "admitted": false,
+            "rule": "signature",
+            "detail": "Invalid frame transaction signature"
+          },
+          "unverified": true,
+          "judgement": "match"
+        }
+      ]
+    },
+    {
+      "id": "accuracy/fixtures/42-case06-public-ethrex_simulateFrameTransaction.json",
+      "txHash": "0x4f3fa488b28a56b4fca9dda466078c2fcec0e5e58c8f60c5e1911c9b71503942",
+      "input": "accuracy/fixtures/42-case06-public-ethrex_simulateFrameTransaction.json",
+      "comparisons": [
+        {
+          "mempool": "public",
+          "predicted": {
+            "verdict": "rejected",
+            "rule": "structure",
+            "source": "simulate"
+          },
+          "actual": {
+            "mempool": "public",
+            "source": "ethrex-send",
+            "file": "accuracy/fixtures/43-case06-public-eth_sendRawTransaction.json",
+            "admitted": false,
+            "rule": "structure",
+            "detail": "Invalid params: Invalid frame transaction: Frame 1: atomic batch flag on last frame"
+          },
+          "unverified": false,
+          "judgement": "match"
+        }
+      ]
+    },
+    {
+      "id": "accuracy/fixtures/44-case06-alt-ethrex_simulateFrameTransaction.json",
+      "txHash": "0x3cdee6b199ea81a4bef24b0ee35b173f3a82a35be7546c11531f87b30d4f621f",
+      "input": "accuracy/fixtures/44-case06-alt-ethrex_simulateFrameTransaction.json",
+      "comparisons": [
+        {
+          "mempool": "alt",
+          "predicted": {
+            "verdict": "rejected",
+            "rule": "structure",
+            "source": "model"
+          },
+          "actual": {
+            "mempool": "alt",
+            "source": "sidecar-send",
+            "file": "accuracy/fixtures/45-case06-alt-eth_sendFrameTransaction.json",
+            "admitted": false,
+            "rule": "structure",
+            "detail": "Frame 1: atomic batch flag on last frame"
+          },
+          "unverified": true,
+          "judgement": "match"
+        }
+      ]
+    },
+    {
+      "id": "accuracy/fixtures/49-case08-public-ethrex_simulateFrameTransaction.json",
+      "txHash": "0x868eb24ece4b0c17d7d9fd8c92f9b7c99b1343be68d4c0a7dfb6d66de51bc173",
+      "input": "accuracy/fixtures/49-case08-public-ethrex_simulateFrameTransaction.json",
+      "comparisons": [
+        {
+          "mempool": "public",
+          "predicted": {
+            "verdict": "rejected",
+            "rule": "simulation",
+            "source": "simulate"
+          },
+          "actual": {
+            "mempool": "public",
+            "source": "ethrex-send",
+            "file": "accuracy/fixtures/50-case08-public-eth_sendRawTransaction.json",
+            "admitted": false,
+            "rule": "simulation",
+            "detail": "Invalid params: Frame transaction expiry deadline has passed"
+          },
+          "unverified": false,
+          "judgement": "match"
+        }
+      ]
+    },
+    {
+      "id": "accuracy/fixtures/51-case08-alt-ethrex_simulateFrameTransaction.json",
+      "txHash": "0x1e5bccae8e08e2c39cc5e27ba891c15d7c2e8aaa31fa96d5f1b6e42b75726dd2",
+      "input": "accuracy/fixtures/51-case08-alt-ethrex_simulateFrameTransaction.json",
+      "comparisons": [
+        {
+          "mempool": "alt",
+          "predicted": {
+            "verdict": "rejected",
+            "rule": "simulation",
+            "source": "model"
+          },
+          "actual": {
+            "mempool": "alt",
+            "source": "sidecar-send",
+            "file": "accuracy/fixtures/52-case08-alt-eth_sendFrameTransaction.json",
+            "admitted": false,
+            "rule": "simulation",
+            "detail": "validation frame 0: reverted"
+          },
+          "unverified": true,
+          "judgement": "match"
+        }
+      ]
+    },
+    {
+      "id": "accuracy/fixtures/54-case09-public-ethrex_simulateFrameTransaction.json",
+      "txHash": "0x77092af5c049ccb645a2ae535475ee751107f019e472ca1d7441d12c3d57db25",
+      "input": "accuracy/fixtures/54-case09-public-ethrex_simulateFrameTransaction.json",
+      "comparisons": [
+        {
+          "mempool": "public",
+          "predicted": {
+            "verdict": "rejected",
+            "rule": "simulation",
+            "source": "simulate"
+          },
+          "actual": {
+            "mempool": "public",
+            "source": "ethrex-send",
+            "file": "accuracy/fixtures/55-case09-public-eth_sendRawTransaction.json",
+            "admitted": false,
+            "rule": "simulation",
+            "detail": "Invalid params: Frame transaction expiry deadline has passed"
+          },
+          "unverified": false,
+          "judgement": "match"
+        },
+        {
+          "mempool": "alt",
+          "predicted": {
+            "verdict": "rejected",
+            "rule": "simulation",
+            "source": "model"
+          },
+          "actual": {
+            "mempool": "alt",
+            "source": "sidecar-send",
+            "file": "accuracy/fixtures/56-case09-alt-eth_sendFrameTransaction.json",
+            "admitted": false,
+            "rule": "structure",
+            "detail": "prefix gas budget exceeded: 450000 > 100000 (MAX_VERIFY_GAS)"
+          },
+          "unverified": true,
+          "judgement": "mismatch",
+          "reason": "both reject, rule differs: predicted simulation, node structure"
+        }
+      ]
+    }
+  ],
+  "excluded": [
+    {
+      "files": [
+        "public/19-ethrex_simulateFrameTransaction.json"
+      ],
+      "reason": "simulate input is not a decodable frame tx"
+    },
+    {
+      "files": [
+        "public/15-eth_estimateFrameTransactionGas.json"
+      ],
+      "reason": "eth_estimateFrameTransactionGas: request is not a full frame tx"
+    },
+    {
+      "files": [
+        "public/23-eth_estimateFrameTransactionGas.json"
+      ],
+      "reason": "eth_estimateFrameTransactionGas: request is not a full frame tx"
+    },
+    {
+      "files": [
+        "public-r9/03-deploy-paymaster.json"
+      ],
+      "reason": "eth_sendRawTransaction: request is not a full frame tx"
+    },
+    {
+      "files": [
+        "public-r9/10-stake.json"
+      ],
+      "reason": "eth_sendRawTransaction: request is not a full frame tx"
+    },
+    {
+      "files": [
+        "r9-demo/03-deploy-paymaster.json"
+      ],
+      "reason": "eth_sendRawTransaction: request is not a full frame tx"
+    },
+    {
+      "files": [
+        "r9-demo/10-stake.json"
+      ],
+      "reason": "eth_sendRawTransaction: request is not a full frame tx"
+    },
+    {
+      "files": [
+        "local/simulate-traced/08-ethrex_simulateFrameTransaction-traced.json"
+      ],
+      "reason": "pre-send simulate captured, but no usable node outcome for this tx"
+    },
+    {
+      "files": [
+        "public/25-eth_estimateFrameTransactionGas.json"
+      ],
+      "reason": "outcome unusable: estimator answer says nothing about the sidecar's rules (Invalid frame transaction signature)"
+    },
+    {
+      "files": [
+        "public/26-eth_estimateFrameTransactionGas.json"
+      ],
+      "reason": "outcome unusable: estimator answer says nothing about the sidecar's rules (total gas limit 80120786 exceeds the per-transaction gas cap 79441937 (EIP-7825); not simulated)"
+    },
+    {
+      "files": [
+        "public/29-ethrex_simulateFrameTransaction.json"
+      ],
+      "reason": "pre-send simulate captured, but no usable node outcome for this tx"
+    },
+    {
+      "files": [
+        "public/27-eth_estimateFrameTransactionGas.json"
+      ],
+      "reason": "outcome unusable: estimate ran the unsigned variant; a VERIFY revert there is the missing signature"
+    },
+    {
+      "files": [
+        "public/30-ethrex_simulateFrameTransaction.json"
+      ],
+      "reason": "pre-send simulate captured, but no usable node outcome for this tx"
+    },
+    {
+      "files": [
+        "accuracy/fixtures/47-case07-public-ethrex_simulateFrameTransaction.json"
+      ],
+      "reason": "duplicate simulate capture of a tx already in the benchmark"
+    },
+    {
+      "files": [
+        "local/cancelled/02-send-a.json",
+        "local/cancelled/05-explorer-a.json"
+      ],
+      "reason": "node outcome captured, but no pre-send ethrex_simulateFrameTransaction capture for this tx (the model has nothing to replay)"
+    },
+    {
+      "files": [
+        "local/cancelled/03-send-b.json",
+        "local/cancelled/07-explorer-b.json"
+      ],
+      "reason": "node outcome captured, but no pre-send ethrex_simulateFrameTransaction capture for this tx (the model has nothing to replay)"
+    },
+    {
+      "files": [
+        "local/estimate-probe-placeholder-limits.json"
+      ],
+      "reason": "node outcome captured, but no pre-send ethrex_simulateFrameTransaction capture for this tx (the model has nothing to replay)"
+    },
+    {
+      "files": [
+        "local/r6-nonces/01-a-keyA-seq0-first-use.json"
+      ],
+      "reason": "node outcome captured, but no pre-send ethrex_simulateFrameTransaction capture for this tx (the model has nothing to replay)"
+    },
+    {
+      "files": [
+        "local/r6-nonces/02-a-keyB-seq0-first-use.json"
+      ],
+      "reason": "node outcome captured, but no pre-send ethrex_simulateFrameTransaction capture for this tx (the model has nothing to replay)"
+    },
+    {
+      "files": [
+        "local/r6-nonces/05-b-keyA-seq1-second-use.json"
+      ],
+      "reason": "node outcome captured, but no pre-send ethrex_simulateFrameTransaction capture for this tx (the model has nothing to replay)"
+    },
+    {
+      "files": [
+        "local/r6-nonces/06-b-keyC-first-use-verify-25k.json"
+      ],
+      "reason": "node outcome captured, but no pre-send ethrex_simulateFrameTransaction capture for this tx (the model has nothing to replay)"
+    },
+    {
+      "files": [
+        "local/r6-nonces/07-c-original.json",
+        "local/r6-nonces/08-c-replace-plus9pct.json",
+        "local/r6-nonces/09-c-replace-plus10pct.json"
+      ],
+      "reason": "node outcome captured, but no pre-send ethrex_simulateFrameTransaction capture for this tx (the model has nothing to replay)"
+    },
+    {
+      "files": [
+        "local/r6-nonces/13-d-uncommitted-recent-root.json"
+      ],
+      "reason": "node outcome captured, but no pre-send ethrex_simulateFrameTransaction capture for this tx (the model has nothing to replay)"
+    },
+    {
+      "files": [
+        "local/rpc/01-reject-banned-opcode.json"
+      ],
+      "reason": "node outcome captured, but no pre-send ethrex_simulateFrameTransaction capture for this tx (the model has nothing to replay)"
+    },
+    {
+      "files": [
+        "local/rpc/02-reject-max-verify-gas.json"
+      ],
+      "reason": "node outcome captured, but no pre-send ethrex_simulateFrameTransaction capture for this tx (the model has nothing to replay)"
+    },
+    {
+      "files": [
+        "local/rpc/05-estimate-paymaster-shape.json",
+        "local/rpc/06-send-admitted-paymaster-shape.json"
+      ],
+      "reason": "node outcome captured, but no pre-send ethrex_simulateFrameTransaction capture for this tx (the model has nothing to replay)"
+    },
+    {
+      "files": [
+        "local/smoke/01-estimate-frame-gas-unsigned.json",
+        "local/smoke/01-estimate-frame-gas.json",
+        "local/smoke/02-send-admitted.json"
+      ],
+      "reason": "node outcome captured, but no pre-send ethrex_simulateFrameTransaction capture for this tx (the model has nothing to replay)"
+    },
+    {
+      "files": [
+        "local/workshop/012-eth_sendFrameTransaction.json"
+      ],
+      "reason": "node outcome captured, but no pre-send ethrex_simulateFrameTransaction capture for this tx (the model has nothing to replay)"
+    },
+    {
+      "files": [
+        "local/workshop/028-eth_sendFrameTransaction.json"
+      ],
+      "reason": "node outcome captured, but no pre-send ethrex_simulateFrameTransaction capture for this tx (the model has nothing to replay)"
+    },
+    {
+      "files": [
+        "local/workshop/044-eth_sendFrameTransaction.json"
+      ],
+      "reason": "node outcome captured, but no pre-send ethrex_simulateFrameTransaction capture for this tx (the model has nothing to replay)"
+    },
+    {
+      "files": [
+        "local/workshop/064-eth_sendRawTransaction.json",
+        "local/workshop/066-eth_sendFrameTransaction.json"
+      ],
+      "reason": "node outcome captured, but no pre-send ethrex_simulateFrameTransaction capture for this tx (the model has nothing to replay)"
+    },
+    {
+      "files": [
+        "local/workshop/069-eth_sendFrameTransaction.json"
+      ],
+      "reason": "node outcome captured, but no pre-send ethrex_simulateFrameTransaction capture for this tx (the model has nothing to replay)"
+    },
+    {
+      "files": [
+        "local/workshop/083-eth_sendFrameTransaction.json",
+        "local/workshop/095-skandha_explorer_getTransaction.json",
+        "local/workshop/097-skandha_explorer_getTransaction.json"
+      ],
+      "reason": "node outcome captured, but no pre-send ethrex_simulateFrameTransaction capture for this tx (the model has nothing to replay)"
+    },
+    {
+      "files": [
+        "local/workshop/094-eth_sendFrameTransaction.json"
+      ],
+      "reason": "node outcome captured, but no pre-send ethrex_simulateFrameTransaction capture for this tx (the model has nothing to replay)"
+    },
+    {
+      "files": [
+        "local/workshop/102-eth_sendFrameTransaction.json"
+      ],
+      "reason": "node outcome captured, but no pre-send ethrex_simulateFrameTransaction capture for this tx (the model has nothing to replay)"
+    },
+    {
+      "files": [
+        "local/workshop/103-eth_sendFrameTransaction.json"
+      ],
+      "reason": "node outcome captured, but no pre-send ethrex_simulateFrameTransaction capture for this tx (the model has nothing to replay)"
+    },
+    {
+      "files": [
+        "local/workshop/129-eth_sendFrameTransaction.json"
+      ],
+      "reason": "node outcome captured, but no pre-send ethrex_simulateFrameTransaction capture for this tx (the model has nothing to replay)"
+    },
+    {
+      "files": [
+        "local/workshop/141-eth_sendFrameTransaction.json"
+      ],
+      "reason": "node outcome captured, but no pre-send ethrex_simulateFrameTransaction capture for this tx (the model has nothing to replay)"
+    },
+    {
+      "files": [
+        "local/ws-explorer-events/01-send.json"
+      ],
+      "reason": "node outcome captured, but no pre-send ethrex_simulateFrameTransaction capture for this tx (the model has nothing to replay)"
+    },
+    {
+      "files": [
+        "public-r9/05-t1-estimate-unstaked-signed.json",
+        "public-r9/06-t1-estimate-unstaked-unsigned.json",
+        "public-r9/07-t1-unstaked-canonical.json",
+        "public-r9/08-t1-unstaked-alt.json",
+        "public-r9/12-t1-alt-staked.json"
+      ],
+      "reason": "node outcome captured, but no pre-send ethrex_simulateFrameTransaction capture for this tx (the model has nothing to replay)"
+    },
+    {
+      "files": [
+        "public-r9/14-t2-alt-staked.json"
+      ],
+      "reason": "node outcome captured, but no pre-send ethrex_simulateFrameTransaction capture for this tx (the model has nothing to replay)"
+    },
+    {
+      "files": [
+        "public-r9/16-t3-exhausted-canonical.json",
+        "public-r9/17-t3-exhausted-alt.json",
+        "public-r9/18-t3-estimate-exhausted-unsigned.json",
+        "public-r9/19-t3-admission-record.json"
+      ],
+      "reason": "node outcome captured, but no pre-send ethrex_simulateFrameTransaction capture for this tx (the model has nothing to replay)"
+    },
+    {
+      "files": [
+        "r9-demo/05-t1-estimate-unstaked-signed.json",
+        "r9-demo/06-t1-estimate-unstaked-unsigned.json",
+        "r9-demo/07-t1-unstaked-canonical.json",
+        "r9-demo/08-t1-unstaked-alt.json",
+        "r9-demo/12-t1-alt-staked.json"
+      ],
+      "reason": "node outcome captured, but no pre-send ethrex_simulateFrameTransaction capture for this tx (the model has nothing to replay)"
+    },
+    {
+      "files": [
+        "r9-demo/14-t2-alt-staked.json"
+      ],
+      "reason": "node outcome captured, but no pre-send ethrex_simulateFrameTransaction capture for this tx (the model has nothing to replay)"
+    },
+    {
+      "files": [
+        "r9-demo/16-t3-exhausted-canonical.json",
+        "r9-demo/17-t3-exhausted-alt.json",
+        "r9-demo/18-t3-estimate-exhausted-unsigned.json",
+        "r9-demo/19-t3-admission-record.json"
+      ],
+      "reason": "node outcome captured, but no pre-send ethrex_simulateFrameTransaction capture for this tx (the model has nothing to replay)"
+    },
+    {
+      "files": [
+        "public/32-skandha_explorer_getTransaction.json"
+      ],
+      "reason": "node outcome captured, but no pre-send ethrex_simulateFrameTransaction capture for this tx (the model has nothing to replay)"
+    }
+  ],
+  "totals": {
+    "cases": 16,
+    "comparisons": 17,
+    "matched": 16,
+    "mismatched": 1,
+    "unverified": 9,
+    "unverifiedMatched": 8
+  },
+  "byMempool": {
+    "public": {
+      "compared": 8,
+      "matched": 8
+    },
+    "alt": {
+      "compared": 9,
+      "matched": 8
+    }
+  }
+}

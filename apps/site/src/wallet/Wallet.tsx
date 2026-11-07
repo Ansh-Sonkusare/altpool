@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import type { Address, Hex, WalletClient } from "viem";
 import { DEVNET } from "@altpool/core";
 import { Nav } from "../components/Nav";
-import { Card, CardBar, cx, Eyebrow, ExtLink, short } from "../components/ui";
+import { Card, CardBar, cx, Eyebrow, ExtLink, Pill, short } from "../components/ui";
 import { useHeadBlock } from "../hooks";
 import * as wb from "./bridge";
 
@@ -26,7 +26,7 @@ const Ok = ({ children }: { children: ReactNode }) => <span className="text-ok">
 const Bad = ({ children }: { children: ReactNode }) => <span className="text-bad">{children}</span>;
 const Code = ({ children }: { children: ReactNode }) => <code className="font-mono text-[12.5px] text-fg [overflow-wrap:anywhere]">{children}</code>;
 const Pre = ({ children }: { children: string }) => (
-  <pre className="m-0 mt-2 max-h-[420px] overflow-auto rounded-lg border border-ln bg-bg p-3 font-mono text-[12px]/[18px] text-fg1">{children}</pre>
+  <pre className="ink m-0 mt-2 max-h-[420px] overflow-auto rounded-md bg-ink p-3 font-mono text-[12px]/[18px] text-inkfg">{children}</pre>
 );
 const Details = ({ open, summary, text }: { open?: boolean; summary: ReactNode; text: string }) => (
   <details open={open} className="[&>summary]:cursor-pointer">
@@ -35,7 +35,7 @@ const Details = ({ open, summary, text }: { open?: boolean; summary: ReactNode; 
   </details>
 );
 const TxLink = ({ hash, sidecar = true }: { hash: Hex; sidecar?: boolean }) => (
-  <ExtLink href={sidecar ? wb.explorer(hash) : wb.explorerTx(hash)} className="font-mono text-amber">{short(hash)}</ExtLink>
+  <ExtLink href={sidecar ? wb.explorer(hash) : wb.explorerTx(hash)} className="font-mono text-acc underline underline-offset-2 hover:text-fg">{short(hash)}</ExtLink>
 );
 
 const Out = ({ log }: { log: Log }) =>
@@ -47,16 +47,16 @@ const Out = ({ log }: { log: Log }) =>
 
 // ---------------------------------------------------------------------------------------------- the steps ------
 
-const btn = "min-h-11 rounded-full border px-4 py-2 font-mono text-[13.5px] disabled:cursor-not-allowed disabled:opacity-40";
+const btn = "min-h-11 rounded-md border px-4 py-2 text-[14px] font-medium disabled:cursor-not-allowed disabled:opacity-40";
 const Btn = ({ primary, ...p }: { primary?: boolean; onClick: () => void; disabled?: boolean; children: ReactNode }) => (
-  <button type="button" {...p} className={cx(btn, primary ? "border-amberln bg-amberbg text-fg hover:text-fg" : "border-ln2 text-fg2 enabled:hover:text-fg")} />
+  <button type="button" {...p} className={cx(btn, primary ? "border-fg bg-fg text-bg enabled:hover:border-acc enabled:hover:bg-acc" : "border-ln2 text-fg enabled:hover:border-fg")} />
 );
 
 const Step = ({ n, title, lead, children, log }: { n: number; title: string; lead?: ReactNode; children: ReactNode; log: Log }) => (
   <Card className="overflow-hidden">
-    <CardBar><span><span className="mr-2 text-amber">{n}</span>{title}</span></CardBar>
-    <div className="flex flex-col gap-4 p-4">
-      {lead && <p className="m-0 max-w-[720px] text-[14.5px]/[23px] text-fg2">{lead}</p>}
+    <CardBar><span><span className="num mr-2 text-acc">{String(n).padStart(2, "0")}</span>{title}</span></CardBar>
+    <div className="flex flex-col gap-3 p-4">
+      {lead && <p className="m-0 max-w-[68ch] text-[14px]/[22px] text-fg1">{lead}</p>}
       <div className="flex flex-wrap items-center gap-2">{children}</div>
     </div>
     <Out log={log} />
@@ -167,34 +167,42 @@ export const Wallet = () => {
     return () => { eth.removeListener?.("chainChanged", onChain); eth.removeListener?.("accountsChanged", onAccounts); };
   }, [wallet]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const pad = "px-[clamp(56px,8vw,128px)] max-[960px]:px-6 max-[560px]:px-4";
+  const pad = "px-[clamp(20px,5vw,72px)]";
   return (
-    <div className="relative mx-auto min-h-screen max-w-[1360px] overflow-x-clip border-x border-ln">
-      <div className="pointer-events-none absolute -top-[180px] -right-[160px] h-[420px] w-[700px] max-w-full bg-[radial-gradient(closest-side,rgba(241,201,140,.09),rgba(241,201,140,.02)_55%,transparent)]" aria-hidden="true"></div>
+    <div className="min-h-screen">
       <Nav head={head} />
-      <header className={cx("relative flex flex-col gap-4 pt-14 pb-8", pad)}>
-        <Eyebrow tone="amber">packages/wallet-bridge</Eyebrow>
-        <h1 className="m-0 text-balance text-[clamp(36px,5vw,56px)]/[1.07] font-light tracking-[-.03em]">
-          Your browser wallet, <span className="font-serif font-normal italic">sending frame transactions.</span>
+      <header className={cx("mx-auto flex max-w-[1200px] flex-col gap-3 pt-12 pb-6", pad)}>
+        <Eyebrow tone="acc">packages/wallet-bridge</Eyebrow>
+        <h1 className="m-0 max-w-[24ch] text-balance text-[clamp(32px,4.5vw,48px)]/[1.08] font-medium tracking-[-.03em]">
+          Your browser wallet, sending frame transactions.
         </h1>
-        <p className="m-0 max-w-[720px] text-[16px]/[26px] text-fg1">
+        <p className="m-0 max-w-[68ch] text-[16px]/[26px] text-fg1">
           No wallet can sign a type-0x06 frame transaction, but every wallet signs EIP-712 typed data. A BridgeAccount's VERIFY frame
           recovers that signature with <Code>ecrecover</Code> and approves: the account's own code decides what is valid. The SDK runs in
           this tab, checks each transaction with frame-doctor, and sends it to the alt mempool.
         </p>
+        <div className="flex flex-wrap gap-2" role="status" aria-live="polite">
+          <Pill kind={owner ? "v" : "u"}>{owner ? "Wallet connected" : "Wallet not connected"}</Pill>
+          <Pill kind={bridge ? "v" : "u"}>{bridge ? "Account chosen" : "No account chosen"}</Pill>
+          <Pill kind={session ? "v" : "u"}>{session ? "Session active" : "No session"}</Pill>
+        </div>
       </header>
-      <main className={cx("relative flex flex-col gap-4 pb-14", pad)}>
-        <Step n={1} title="Wallet" log={logs.wallet} lead={<>
-          MetaMask's built-in “Localhost 8545” network also uses chain id 1337. If it is selected, MetaMask talks to your local node
-          instead of the devnet. Remove it, or make sure the devnet network (<Code>{DEVNET.ethrexUrl}</Code>) is active.
-        </>}>
+      <main className={cx("mx-auto flex max-w-[1200px] flex-col gap-3 pb-[72px]", pad)}>
+        <Step n={1} title="Wallet" log={logs.wallet}>
+          <details className="basis-full text-[14px]/[22px] text-fg2 [&>summary]:min-h-11 [&>summary]:cursor-pointer [&>summary]:py-2.5">
+            <summary>Using MetaMask? Check for the “Localhost 8545” network.</summary>
+            <p className="m-0 max-w-[68ch] pb-2">
+              MetaMask's built-in “Localhost 8545” network also uses chain id 1337. If it is selected, MetaMask talks to your local node
+              instead of the devnet. Remove it, or make sure the devnet network (<Code>{DEVNET.ethrexUrl}</Code>) is active.
+            </p>
+          </details>
           <Btn primary onClick={guarded(logs.wallet, connect)} disabled={busy}>{owner ? "Reconnect" : "Connect wallet"}</Btn>
           <Btn onClick={guarded(logs.wallet, () => showNetwork(wallet!, true))} disabled={!wallet || busy}>Add / switch to chain 1337</Btn>
         </Step>
 
         <Step n={2} title="Account" log={logs.account} lead="Use a BridgeAccount you own, or deploy one. The page funds your wallet from the devnet faucet first if it needs gas.">
           <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="BridgeAccount address (0x…)" spellCheck={false} aria-label="BridgeAccount address"
-            className="min-h-11 min-w-0 flex-[1_1_320px] rounded-lg border border-ln2 bg-bg px-3 font-mono text-[13px] text-fg placeholder:text-dim" />
+            className="min-h-11 min-w-0 flex-[1_1_320px] rounded-md border border-ln2 bg-s1 px-3 font-mono text-[13px] text-fg placeholder:text-fg2" />
           <Btn onClick={guarded(logs.account, () => openAccount(input, owner!))} disabled={!owner || busy}>Use</Btn>
           <Btn onClick={guarded(logs.account, deploy)} disabled={!owner || busy}>Deploy one for me</Btn>
         </Step>
@@ -214,9 +222,9 @@ export const Wallet = () => {
           <Btn onClick={guarded(logs.session, exportIt)} disabled={!session || busy}>Export for an agent</Btn>
         </Step>
       </main>
-      <footer className={cx("flex flex-wrap justify-between gap-3 border-t border-ln py-8 font-mono text-[12px] text-fg2", pad)}>
+      <footer className={cx("mx-auto flex max-w-[1200px] flex-wrap justify-between gap-3 border-t border-ln2 py-8 font-mono text-[12px] text-fg2", pad)}>
         <span>Chain {DEVNET.chainId} · ethrex {DEVNET.ethrexUrl.replace(/^https?:\/\//, "")} · sidecar {wb.SIDECAR.replace(/^https?:\/\//, "")}</span>
-        <a href="/#install" className="text-amber">Use the SDK yourself</a>
+        <a href="/#install" className="text-acc">Use the SDK yourself</a>
       </footer>
     </div>
   );

@@ -1,0 +1,428 @@
+{
+  "startedAt": "2026-11-07T17:15:02.438Z",
+  "finishedAt": "2026-11-07T17:19:36.889Z",
+  "seconds": 274,
+  "complete": true,
+  "devnet": {
+    "chainId": 1337,
+    "ethrex": "https://altmempool.forshtat.com",
+    "gateway": "https://altmempoolgateway.forshtat.com/rpc",
+    "minerSidecar": "https://altmempool.forshtat.com/rpc"
+  },
+  "simulator": {
+    "options": {
+      "explorer": false,
+      "estimate": false
+    },
+    "note": "predicted before sending; public = ethrex_simulateFrameTransaction (verified source), alt = local rule model (unverified)"
+  },
+  "totals": {
+    "attempts": 17,
+    "matched": 16,
+    "mismatched": 1,
+    "skipped": 1,
+    "predictedByEthrex": 9,
+    "matchedOfEthrex": 9,
+    "predictedByModel": 8,
+    "matchedOfModel": 7
+  },
+  "entities": {
+    "wallet": "0x242b11e48466a63171d1027cc33ad834db4eb5ba",
+    "foreign": "0xaf1675799c967019034b1808919f27cc6cd29d30",
+    "stakeHash": "0xb6e816bc643b723c25edf950c945f878ea5ee54bd59e09a18666de710810b952",
+    "stakedAmount": "12000000000000000",
+    "stakeDelaySec": 0,
+    "stakeState": "staked",
+    "nodeStaked": true
+  },
+  "rows": [
+    {
+      "case": 1,
+      "name": "plain self-paid frame tx (VERIFY 60k)",
+      "mempool": "public",
+      "expectation": "admitted",
+      "hash": "0x174e06afd24bf517bf0d602866b71d5a28446f0cddce53f26883b8db5798e63d",
+      "explorer": "https://explorer.altmempool.wtf/tx/0x174e06afd24bf517bf0d602866b71d5a28446f0cddce53f26883b8db5798e63d?node=https%3A%2F%2Faltmempool.forshtat.com%2Frpc",
+      "prediction": {
+        "verdict": "admitted",
+        "source": "simulate",
+        "verified": true
+      },
+      "outcome": {
+        "verdict": "admitted",
+        "included": true,
+        "block": 20781,
+        "frameStatuses": [
+          "success",
+          "success"
+        ]
+      },
+      "match": true
+    },
+    {
+      "case": 1,
+      "name": "plain self-paid frame tx (VERIFY 60k)",
+      "mempool": "alt",
+      "expectation": "admitted",
+      "hash": "0x80c24c777b0ed53f368e422d57ee994c461c6f43803aebba7d7df70fba416cf9",
+      "explorer": "https://explorer.altmempool.wtf/tx/0x80c24c777b0ed53f368e422d57ee994c461c6f43803aebba7d7df70fba416cf9?node=https%3A%2F%2Faltmempool.forshtat.com%2Frpc",
+      "prediction": {
+        "verdict": "admitted",
+        "source": "model",
+        "verified": false
+      },
+      "outcome": {
+        "verdict": "admitted",
+        "included": false,
+        "status": "New"
+      },
+      "match": true
+    },
+    {
+      "case": 2,
+      "name": "VERIFY gas 150k, over the 100k public cap",
+      "mempool": "public",
+      "expectation": "rejected (cap)",
+      "hash": "0xa7a6d46c58b2cce61f695dd1e00267117d473cb041cd3802bd4e9c00742e5644",
+      "explorer": "https://explorer.altmempool.wtf/tx/0xa7a6d46c58b2cce61f695dd1e00267117d473cb041cd3802bd4e9c00742e5644?node=https%3A%2F%2Faltmempool.forshtat.com%2Frpc",
+      "prediction": {
+        "verdict": "rejected",
+        "source": "simulate",
+        "verified": true,
+        "rule": "public-gas-cap",
+        "message": "prefix gas budget exceeded: 152800 > 100000 (MAX_VERIFY_GAS)"
+      },
+      "outcome": {
+        "verdict": "rejected",
+        "rule": "public-gas-cap",
+        "code": -32000,
+        "message": "Invalid params: Frame transaction prefix gas budget (frames + sig cost) exceeds MAX_VERIFY_GAS"
+      },
+      "match": true,
+      "ruleMatch": true
+    },
+    {
+      "case": 2,
+      "name": "VERIFY gas 150k, over the 100k public cap",
+      "mempool": "alt",
+      "expectation": "admitted",
+      "hash": "0x4a0022744be619099ee1e07a439ca76093bf6915905a7a0cde637c6821defbf9",
+      "explorer": "https://explorer.altmempool.wtf/tx/0x4a0022744be619099ee1e07a439ca76093bf6915905a7a0cde637c6821defbf9?node=https%3A%2F%2Faltmempool.forshtat.com%2Frpc",
+      "prediction": {
+        "verdict": "admitted",
+        "source": "model",
+        "verified": false
+      },
+      "outcome": {
+        "verdict": "admitted",
+        "included": false,
+        "status": "New"
+      },
+      "match": true
+    },
+    {
+      "case": 3,
+      "name": "unstaked contract whose VERIFY reads another contract's storage",
+      "mempool": "public",
+      "expectation": "rejected (storage)",
+      "hash": "0x281eb048d081fe5699e5489c18541cc3ec840ee87ac878daa8f2468eda773cfe",
+      "explorer": "https://explorer.altmempool.wtf/tx/0x281eb048d081fe5699e5489c18541cc3ec840ee87ac878daa8f2468eda773cfe?node=https%3A%2F%2Faltmempool.forshtat.com%2Frpc",
+      "prediction": {
+        "verdict": "rejected",
+        "source": "simulate",
+        "verified": true,
+        "rule": "public-storage",
+        "message": "StorageReadNonSender"
+      },
+      "outcome": {
+        "verdict": "rejected",
+        "rule": "public-storage",
+        "code": -32000,
+        "message": "Invalid params: Frame transaction validation-prefix simulation failed: StorageReadNonSender"
+      },
+      "match": true,
+      "ruleMatch": true
+    },
+    {
+      "case": 3,
+      "name": "unstaked contract whose VERIFY reads another contract's storage",
+      "mempool": "alt",
+      "expectation": "rejected (unstaked)",
+      "hash": "0xfc916dbb1787bf102867773495ffb7e53cac88eb83d9932fd76278ded63ab4ac",
+      "explorer": "https://explorer.altmempool.wtf/tx/0xfc916dbb1787bf102867773495ffb7e53cac88eb83d9932fd76278ded63ab4ac?node=https%3A%2F%2Faltmempool.forshtat.com%2Frpc",
+      "prediction": {
+        "verdict": "rejected",
+        "source": "model",
+        "verified": false,
+        "rule": "storage",
+        "message": "Stake sender 0x242b11e48466a63171d1027cc33ad834db4eb5ba in the staking registry (> 0.01 ETH, 1-day unstake delay), then resend to the alt mempool. If it is already staked, check its reputation: a banned entity is reported as unstaked."
+      },
+      "outcome": {
+        "verdict": "rejected",
+        "rule": "storage",
+        "code": -32502,
+        "message": "unstaked payer accessed 0xaf1675799c967019034b1808919f27cc6cd29d30 slot 0x0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "match": true,
+      "ruleMatch": true
+    },
+    {
+      "case": 4,
+      "name": "the same contract, staked",
+      "mempool": "public",
+      "expectation": "rejected (storage)",
+      "hash": "0xcb9ebe4dd8fec05353750e855d9c53bbc7a292cf813c9aa76ec6ad1c2c7636ec",
+      "explorer": "https://explorer.altmempool.wtf/tx/0xcb9ebe4dd8fec05353750e855d9c53bbc7a292cf813c9aa76ec6ad1c2c7636ec?node=https%3A%2F%2Faltmempool.forshtat.com%2Frpc",
+      "prediction": {
+        "verdict": "rejected",
+        "source": "simulate",
+        "verified": true,
+        "rule": "public-storage",
+        "message": "StorageReadNonSender"
+      },
+      "outcome": {
+        "verdict": "rejected",
+        "rule": "public-storage",
+        "code": -32000,
+        "message": "Invalid params: Frame transaction validation-prefix simulation failed: StorageReadNonSender"
+      },
+      "match": true,
+      "ruleMatch": true
+    },
+    {
+      "case": 4,
+      "name": "the same contract, staked",
+      "mempool": "alt",
+      "expectation": "admitted",
+      "hash": "0x5b7a6f0d5cb36e21dd1a1254560438b89c5dab0bbf44f6040a207928599dfcd5",
+      "explorer": "https://explorer.altmempool.wtf/tx/0x5b7a6f0d5cb36e21dd1a1254560438b89c5dab0bbf44f6040a207928599dfcd5?node=https%3A%2F%2Faltmempool.forshtat.com%2Frpc",
+      "prediction": {
+        "verdict": "rejected",
+        "source": "model",
+        "verified": false,
+        "rule": "storage",
+        "message": "Stake sender 0x242b11e48466a63171d1027cc33ad834db4eb5ba in the staking registry (> 0.01 ETH, 1-day unstake delay), then resend to the alt mempool. If it is already staked, check its reputation: a banned entity is reported as unstaked."
+      },
+      "outcome": {
+        "verdict": "admitted",
+        "included": false,
+        "status": "New"
+      },
+      "match": false
+    },
+    {
+      "case": 5,
+      "name": "bad signature",
+      "mempool": "public",
+      "expectation": "rejected",
+      "hash": "0xee198501217aeeba524243b527437ac388ef88799a1431af08a252c8737e536e",
+      "explorer": "https://explorer.altmempool.wtf/tx/0xee198501217aeeba524243b527437ac388ef88799a1431af08a252c8737e536e?node=https%3A%2F%2Faltmempool.forshtat.com%2Frpc",
+      "prediction": {
+        "verdict": "rejected",
+        "source": "simulate",
+        "verified": true,
+        "rule": "unknown",
+        "message": "frame signature list does not authenticate the sender"
+      },
+      "outcome": {
+        "verdict": "rejected",
+        "rule": "signature",
+        "code": -32000,
+        "message": "Invalid params: Invalid frame transaction signature"
+      },
+      "match": true,
+      "ruleMatch": false
+    },
+    {
+      "case": 5,
+      "name": "bad signature",
+      "mempool": "alt",
+      "expectation": "rejected",
+      "hash": "0x146445298a3449950c803000c07171c07a92e059f258508dde16452bc6550431",
+      "explorer": "https://explorer.altmempool.wtf/tx/0x146445298a3449950c803000c07171c07a92e059f258508dde16452bc6550431?node=https%3A%2F%2Faltmempool.forshtat.com%2Frpc",
+      "prediction": {
+        "verdict": "rejected",
+        "source": "model",
+        "verified": false,
+        "rule": "unknown",
+        "message": "frame signature list does not authenticate the sender"
+      },
+      "outcome": {
+        "verdict": "rejected",
+        "rule": "signature",
+        "code": -32507,
+        "message": "Invalid frame transaction signature"
+      },
+      "match": true,
+      "ruleMatch": false
+    },
+    {
+      "case": 6,
+      "name": "ATOMIC_BATCH flag on the last frame",
+      "mempool": "public",
+      "expectation": "rejected at submit",
+      "hash": "0x4f3fa488b28a56b4fca9dda466078c2fcec0e5e58c8f60c5e1911c9b71503942",
+      "explorer": "https://explorer.altmempool.wtf/tx/0x4f3fa488b28a56b4fca9dda466078c2fcec0e5e58c8f60c5e1911c9b71503942?node=https%3A%2F%2Faltmempool.forshtat.com%2Frpc",
+      "prediction": {
+        "verdict": "rejected",
+        "source": "simulate",
+        "verified": true,
+        "rule": "unknown",
+        "message": "Frame 1: atomic batch flag on last frame"
+      },
+      "outcome": {
+        "verdict": "rejected",
+        "rule": "unknown",
+        "code": -32000,
+        "message": "Invalid params: Invalid frame transaction: Frame 1: atomic batch flag on last frame"
+      },
+      "match": true,
+      "ruleMatch": true
+    },
+    {
+      "case": 6,
+      "name": "ATOMIC_BATCH flag on the last frame",
+      "mempool": "alt",
+      "expectation": "rejected at submit",
+      "hash": "0x3cdee6b199ea81a4bef24b0ee35b173f3a82a35be7546c11531f87b30d4f621f",
+      "explorer": "https://explorer.altmempool.wtf/tx/0x3cdee6b199ea81a4bef24b0ee35b173f3a82a35be7546c11531f87b30d4f621f?node=https%3A%2F%2Faltmempool.forshtat.com%2Frpc",
+      "prediction": {
+        "verdict": "rejected",
+        "source": "model",
+        "verified": false,
+        "rule": "unknown",
+        "message": "Frame 1: atomic batch flag on last frame"
+      },
+      "outcome": {
+        "verdict": "rejected",
+        "rule": "unknown",
+        "code": -32500,
+        "message": "Frame 1: atomic batch flag on last frame"
+      },
+      "match": true,
+      "ruleMatch": true
+    },
+    {
+      "case": 7,
+      "name": "nonce replay of an included tx",
+      "mempool": "public",
+      "expectation": "rejected (nonce)",
+      "hash": "0x174e06afd24bf517bf0d602866b71d5a28446f0cddce53f26883b8db5798e63d",
+      "explorer": "https://explorer.altmempool.wtf/tx/0x174e06afd24bf517bf0d602866b71d5a28446f0cddce53f26883b8db5798e63d?node=https%3A%2F%2Faltmempool.forshtat.com%2Frpc",
+      "prediction": {
+        "verdict": "rejected",
+        "source": "simulate",
+        "verified": true,
+        "rule": "simulation",
+        "message": "Invalid Transaction: Nonce mismatch: expected 1, got 0"
+      },
+      "outcome": {
+        "verdict": "rejected",
+        "rule": "simulation",
+        "code": -32000,
+        "message": "Invalid params: Frame transaction validation-prefix simulation failed: Invalid Transaction: Nonce mismatch: expected 1, got 0"
+      },
+      "match": true,
+      "ruleMatch": true
+    },
+    {
+      "case": 8,
+      "name": "expiry deadline in the past",
+      "mempool": "public",
+      "expectation": "rejected (expired)",
+      "hash": "0x868eb24ece4b0c17d7d9fd8c92f9b7c99b1343be68d4c0a7dfb6d66de51bc173",
+      "explorer": "https://explorer.altmempool.wtf/tx/0x868eb24ece4b0c17d7d9fd8c92f9b7c99b1343be68d4c0a7dfb6d66de51bc173?node=https%3A%2F%2Faltmempool.forshtat.com%2Frpc",
+      "prediction": {
+        "verdict": "rejected",
+        "source": "simulate",
+        "verified": true,
+        "rule": "simulation",
+        "message": "Invalid Transaction: Invalid frame transaction: VERIFY frame 0 (target 0x0000000000000000000000000000000000008141, 26 bytes of code) failed: RevertOpcode (revert data 0x)"
+      },
+      "outcome": {
+        "verdict": "rejected",
+        "rule": "unknown",
+        "code": -32000,
+        "message": "Invalid params: Frame transaction expiry deadline has passed"
+      },
+      "match": true,
+      "ruleMatch": false
+    },
+    {
+      "case": 8,
+      "name": "expiry deadline in the past",
+      "mempool": "alt",
+      "expectation": "rejected (expired)",
+      "hash": "0x1e5bccae8e08e2c39cc5e27ba891c15d7c2e8aaa31fa96d5f1b6e42b75726dd2",
+      "explorer": "https://explorer.altmempool.wtf/tx/0x1e5bccae8e08e2c39cc5e27ba891c15d7c2e8aaa31fa96d5f1b6e42b75726dd2?node=https%3A%2F%2Faltmempool.forshtat.com%2Frpc",
+      "prediction": {
+        "verdict": "rejected",
+        "source": "model",
+        "verified": false,
+        "rule": "simulation",
+        "message": "Invalid Transaction: Invalid frame transaction: VERIFY frame 0 (target 0x0000000000000000000000000000000000008141, 26 bytes of code) failed: RevertOpcode (revert data 0x)"
+      },
+      "outcome": {
+        "verdict": "rejected",
+        "rule": "simulation",
+        "code": -32500,
+        "message": "validation frame 0: reverted"
+      },
+      "match": true,
+      "ruleMatch": true
+    },
+    {
+      "case": 9,
+      "name": "double-spend: newest included ExitRelay exit, re-sent (block 8545, original 0x77092af5c049ccb645a2ae535475ee751107f019e472ca1d7441d12c3d57db25)",
+      "mempool": "public",
+      "expectation": "rejected (nonce used)",
+      "hash": "0x77092af5c049ccb645a2ae535475ee751107f019e472ca1d7441d12c3d57db25",
+      "explorer": "https://explorer.altmempool.wtf/tx/0x77092af5c049ccb645a2ae535475ee751107f019e472ca1d7441d12c3d57db25?node=https%3A%2F%2Faltmempool.forshtat.com%2Frpc",
+      "prediction": {
+        "verdict": "rejected",
+        "source": "simulate",
+        "verified": true,
+        "rule": "simulation",
+        "message": "Invalid Transaction: Nonce mismatch: expected 1, got 0"
+      },
+      "outcome": {
+        "verdict": "rejected",
+        "rule": "unknown",
+        "code": -32000,
+        "message": "Invalid params: Frame transaction expiry deadline has passed"
+      },
+      "match": true,
+      "ruleMatch": false
+    },
+    {
+      "case": 9,
+      "name": "double-spend: newest included ExitRelay exit, re-sent (block 8545, original 0x77092af5c049ccb645a2ae535475ee751107f019e472ca1d7441d12c3d57db25)",
+      "mempool": "alt",
+      "expectation": "rejected (nonce used)",
+      "hash": "0x77092af5c049ccb645a2ae535475ee751107f019e472ca1d7441d12c3d57db25",
+      "explorer": "https://explorer.altmempool.wtf/tx/0x77092af5c049ccb645a2ae535475ee751107f019e472ca1d7441d12c3d57db25?node=https%3A%2F%2Faltmempool.forshtat.com%2Frpc",
+      "prediction": {
+        "verdict": "rejected",
+        "source": "model",
+        "verified": false,
+        "rule": "simulation",
+        "message": "Invalid Transaction: Nonce mismatch: expected 1, got 0"
+      },
+      "outcome": {
+        "verdict": "rejected",
+        "rule": "structure",
+        "code": -32500,
+        "message": "prefix gas budget exceeded: 450000 > 100000 (MAX_VERIFY_GAS)"
+      },
+      "match": true,
+      "ruleMatch": false
+    }
+  ],
+  "skipped": [
+    {
+      "case": 7,
+      "name": "nonce replay of an included tx (alt)",
+      "reason": "the case-1 alt tx was not included within the wait, so there is no included tx to replay"
+    }
+  ]
+}

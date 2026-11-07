@@ -62,7 +62,7 @@ export const QuickSwitch = ({ target, node, feeParam }: { target: Target; node: 
   return (
     <div className="relative min-w-0 flex-1 basis-72">
       <label htmlFor={`${id}-in`} className="sr-only">Switch entity: pick one, or paste an address or transaction hash</label>
-      <div className="flex min-h-11 items-center gap-2 rounded-lg border border-ln2 bg-s1 pl-3 pr-2 focus-within:border-amberln">
+      <div className="flex min-h-11 items-center gap-2 rounded-lg border border-ln2 bg-s1 pl-3 pr-2 focus-within:border-accln">
         <input ref={input} id={`${id}-in`} role="combobox" aria-expanded={open} aria-controls={`${id}-list`} aria-autocomplete="list" aria-invalid={!!err}
           aria-activedescendant={open && options[active] ? `${id}-o${active}` : undefined}
           value={text} onChange={(e) => { setText(e.target.value); setOpen(true); setErr(undefined); }}
@@ -73,11 +73,11 @@ export const QuickSwitch = ({ target, node, feeParam }: { target: Target; node: 
       </div>
       {open && options.length > 0 && (
         <ul id={`${id}-list`} role="listbox" aria-label="Entities"
-          className="absolute inset-x-0 top-[calc(100%+6px)] z-20 m-0 flex max-h-72 list-none flex-col overflow-auto rounded-lg border border-ln2 bg-s1 p-1 shadow-[0_12px_32px_rgba(0,0,0,.5)]">
+          className="absolute inset-x-0 top-[calc(100%+6px)] z-20 m-0 flex max-h-72 list-none flex-col overflow-auto rounded-lg border border-ln2 bg-s1 p-1 shadow-[0_12px_32px_var(--color-ln2)]">
           {options.map((o, i) => (
             <li key={o.id} id={`${id}-o${i}`} role="option" aria-selected={i === active}
               onMouseDown={(e) => { e.preventDefault(); go(o); }} onMouseEnter={() => setActive(i)}
-              className={cx("flex min-h-11 cursor-pointer items-center justify-between gap-3 rounded-md px-3 text-[14px]", i === active ? "bg-amberbg text-amber" : "text-fg1")}>
+              className={cx("flex min-h-11 cursor-pointer items-center justify-between gap-3 rounded-md px-3 text-[14px]", i === active ? "bg-accbg text-acc" : "text-fg1")}>
               <span className="min-w-0 truncate">{o.label}</span>
               <span className="flex-none font-mono text-[12px] text-fg2">{o.hint}</span>
             </li>

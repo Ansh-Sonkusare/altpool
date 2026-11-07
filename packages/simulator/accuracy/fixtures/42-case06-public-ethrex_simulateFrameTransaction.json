@@ -1,0 +1,32 @@
+{
+  "endpoint": "https://altmempool.forshtat.com",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "ethrex_simulateFrameTransaction",
+    "params": [
+      "0x06f8b9820539d998531a446ba40371f49163b155696b5f28e398075b95eddf458094bfd22c58b44564f0bdafe6a768cdbd87e3831209edca010380c482ea60808080e1020494000000000000000000000000000000000000deadc782c35083030d400180f848f846018080b841000c7c504aad31bb4dc0c2fb7b62fee8707e8c84bdba03fcc42e6c4570cc2d76ac3dde5ed12754e4951e2d5316a2ac15acb4ae8484f546fe910288aee57051be1ecb843b9aca00847735940080c0c0",
+      "latest",
+      {
+        "trace": true
+      }
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "canonicalMempoolValid": false,
+      "canonicalMempoolViolation": "Frame 1: atomic batch flag on last frame",
+      "erc7562Trace": null,
+      "erc7562TraceError": null,
+      "executionError": null,
+      "executionStatus": null,
+      "frames": null,
+      "gasUsed": null,
+      "maxCost": "0x25e1aff5f0800",
+      "payer": null,
+      "prefixShape": null
+    }
+  }
+}

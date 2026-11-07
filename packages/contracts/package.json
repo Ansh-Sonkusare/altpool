@@ -14,6 +14,7 @@
     "test": "forge test -vv",
     "deploy": "bun scripts/deploy.ts",
     "exit": "bun scripts/exit-smoke.ts",
+    "exit-rr": "bun scripts/exit-rr-smoke.ts",
     "pledge": "bun scripts/pledge.ts"
   },
   "dependencies": {

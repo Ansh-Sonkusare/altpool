@@ -2,12 +2,10 @@ import { useState } from "react";
 import type { EntityReport } from "@altpool/monitor";
 import type { Live } from "../live";
 import { Code } from "./Code";
-import { Card, CardBar, cx, Eyebrow, ExtLink, Section } from "./ui";
+import { Card, cx, InkPanel, Section } from "./ui";
 import { PipelineStrip } from "./toolkit/Pipeline";
 import { AdmissionPanel, McpPanel, SdkPanel, WatchPanel } from "./toolkit/panels";
 import { usePipeline } from "./toolkit/usePipeline";
-
-const REPO = "https://github.com/Ansh-Sonkusare/altpool/tree/main";
 
 interface Tool {
   id: string;
@@ -91,81 +89,21 @@ get_admission_report   { hash, node?: "miner" | "gateway" }   what a node did wi
 entity_status          { address }               stake, reputation, headroom, pending, inclusions`,
     notes: ["Bad input returns an MCP error with a Fix: line.", "An alt verdict with source \"model\" is labelled unverified in the tool output."],
   },
-];
+  {
+    id: "vitest",
+    tab: "Vitest preset",
+    value: "Assert in CI that a frame transaction is admitted by the alt mempool. One line in the Vitest config puts the matchers on expect.",
+    file: "@altpool/simulator/vitest-setup",
+    code: `// vitest.config.ts
+import { defineConfig } from "vitest/config";
+export default defineConfig({ test: { setupFiles: ["@altpool/simulator/vitest-setup"] } });
 
-interface Entry {
-  path: string;
-  name: string;
-  job: string;
-  uses: readonly string[];
-}
-
-// In the order they act in Pledge Paid, then the tools around it.
-const ENTRIES: readonly Entry[] = [
-  {
-    path: "packages/prover", name: "@altpool/prover",
-    job: "Builds the note, rebuilds the pool's Merkle path and makes the Groth16 proof that frames 1 and 2 use. The QuietSend exit and Pledge Paid share it. The site runs a browser websnark port in src/liveExit.",
-    uses: ["createNote", "rootFor", "pathFor", "prove"],
-  },
-  {
-    path: "packages/contracts", name: "@altpool/contracts",
-    job: "The on-chain side of both flows. PayRelayWETH checks the proof, pays the gas and pins frames 2 to 8. SettlerFactory deploys the Settler at an address fixed by the invoice terms, and InvoiceBook records the payment. ExitRelay and ExitRelayToken are the plain QuietSend exit.",
-    uses: ["payTx", "settlerAddress", "exitTx", "deployments"],
-  },
-  {
-    path: "packages/core", name: "@altpool/core",
-    job: "The devnet constants, the chain definition and the RPC clients that every other package uses.",
-    uses: ["DEVNET", "altDevnet", "gateway", "ethrex"],
-  },
-  {
-    path: "packages/sdk", name: "altpool",
-    job: "The viem extension that prepares, checks and sends the nine-frame transaction to the sidecar, then reads back what the node decided.",
-    uses: ["preflightFrameTransaction", "sendFrameTransaction", "waitForFrameTransactionReceipt", "getAdmissionReport", "prepareNonceKeys", "stakeEntity"],
-  },
-  {
-    path: "packages/simulator", name: "@altpool/simulator",
-    job: "Tells you whether each mempool will admit the transaction before you sign it. The frame-doctor CLI wraps it.",
-    uses: ["checkAdmission", "createSimulator", "diagnoseAdmission", "frame-doctor"],
-  },
-  {
-    path: "packages/monitor", name: "@altpool/monitor",
-    job: "Watches a staked relay on the gateway and the miner's sidecar. It reports reputation, stake, balance, and stuck or rejected transactions.",
-    uses: ["watchEntity", "entityStatus", "txReport", "watch-entity"],
-  },
-  {
-    path: "packages/mcp", name: "@altpool/mcp",
-    job: "A stdio MCP server that lets an AI agent ask whether a frame transaction will be admitted.",
-    uses: ["check_admission", "get_admission_report", "entity_status"],
-  },
-  {
-    path: "packages/falcon", name: "@altpool/falcon",
-    job: "Not part of Pledge Paid. A Falcon-512 wallet that can receive a QuietSend payout and spend it with a frame transaction. Its VERIFY frame needs more gas than the public cap, so only the alt mempool admits it.",
-    uses: ["falconKeygen", "falconSign", "falconSpendTx", "predictWalletAddress"],
-  },
-  {
-    path: "packages/wallet-bridge", name: "@altpool/wallet-bridge",
-    job: "Not part of Pledge Paid. BridgeAccount lets MetaMask or Rabby control a frame-tx account: the wallet signs EIP-712 and the account's VERIFY frame checks it with ecrecover. Try it at /wallet.",
-    uses: ["bridgeAccount", "typedDataSigner", "authorizeSession", "connectAltDevnet"],
-  },
-  {
-    path: "apps/quietsend", name: "quietsend",
-    job: "The command-line QuietSend exit on the ETH pool, which is frames 0 to 2 on their own.",
-    uses: ["quietsend deposit", "quietsend withdraw <note>"],
-  },
-  {
-    path: "apps/demo", name: "@altpool/demo",
-    job: "A scripted run of the exit against the live devnet. It checks both mempools, sends, and explains the result.",
-    uses: ["bun run demo", "--prepare", "--stage", "--fixture"],
-  },
-  {
-    path: "apps/monitor-web", name: "@altpool/monitor-web",
-    job: "A browser view of one entity or one transaction across the sidecars, built on the monitor package.",
-    uses: ["?entity=0x…", "?tx=0x…"],
-  },
-  {
-    path: "apps/site", name: "@altpool/site",
-    job: "This page. Its Pledge Paid sender runs the prover, the contracts package and the SDK in your browser against the devnet. /monitor is the operator console and /wallet is the Wallet Bridge demo.",
-    uses: ["src/livePledge/run.ts", "/monitor", "/wallet"],
+// tx.test.ts
+import { expect, test } from "vitest";
+test("my tx is admitted by alt", async () => {
+  await expect(tx).toBeAdmittedBy("alt");
+});`,
+    notes: ["Other matchers: toBeRejectedFor(mempool, rule) and toRouteTo(\"alt\", \"miner\").", "Pass { verified: true } so only a node's own answer counts. A verdict from the local rule model is unverified."],
   },
 ];
 
@@ -173,17 +111,18 @@ export const Codebase = ({ entity }: { entity: Live<EntityReport> }) => {
   const [id, setId] = useState(TOOLS[0]!.id);
   const t = TOOLS.find((x) => x.id === id)!;
   const p = usePipeline(entity);
-  const wide = id === "monitor";
+  const wide = id === "monitor" || id === "vitest";
   const snippet = (
-    <Card className="overflow-hidden">
-      <CardBar windowDots><span>{t.file}</span></CardBar>
-      <Code code={t.code} lang={t.id === "mcp" ? "sh" : "ts"} className="p-4 text-[12px]/[19px]" />
-      <ul className="m-0 flex list-none flex-col gap-1.5 border-t border-ln p-4 text-[13px]/[20px] text-fg2">
+    <div className="flex min-w-0 flex-col gap-3">
+      <InkPanel title={t.file}>
+        <Code code={t.code} lang={t.id === "mcp" ? "sh" : "ts"} className="p-4 text-[12px]/[19px]" />
+      </InkPanel>
+      <ul className="m-0 flex list-none flex-col gap-1.5 p-0 text-[13px]/[20px] text-fg2">
         {t.notes.map((n) => <li key={n}>{n}</li>)}
       </ul>
-    </Card>
+    </div>
   );
-  const demo = (
+  const demo = id === "vitest" ? null : (
     <Card className="overflow-hidden">
       {id === "sdk" && <SdkPanel p={p} />}
       {id === "admission" && <AdmissionPanel p={p} />}
@@ -192,16 +131,13 @@ export const Codebase = ({ entity }: { entity: Live<EntityReport> }) => {
     </Card>
   );
   return (
-    <Section id="toolkit">
-      <div className="flex flex-col gap-4">
-        <Eyebrow>The toolkit</Eyebrow>
-        <h2 className="m-0 text-balance text-[clamp(36px,5vw,56px)]/[1.07] font-light tracking-[-.03em]">
-          Four tools for the alt mempool.
-        </h2>
-        <p className="m-0 max-w-[640px] text-[16px]/[26px] text-fg2">
-          The strip follows one Pledge Paid through each tool. It follows yours once you send one, and the newest on chain until then.
-        </p>
-      </div>
+    <Section
+      id="toolkit"
+      n="04"
+      label="Toolkit"
+      title="Five tools, one check."
+      lede="The strip follows one Pledge Paid through each tool. It follows yours once you send one, and the newest on chain until then."
+    >
       <PipelineStrip p={p} tab={id} onTab={setId} />
       <div role="tablist" aria-label="Altpool tools" className="flex flex-wrap gap-2">
         {TOOLS.map((x) => (
@@ -213,37 +149,22 @@ export const Codebase = ({ entity }: { entity: Live<EntityReport> }) => {
             aria-controls="tool-panel"
             onClick={() => setId(x.id)}
             className={cx(
-              "min-h-11 rounded-full border px-4 py-2 font-mono text-[14px]",
-              x.id === id ? "border-amberln bg-amberbg text-fg" : "border-ln2 text-fg2 hover:text-fg",
+              "min-h-11 rounded-md border px-4 py-2 font-mono text-[14px]",
+              x.id === id ? "border-accln bg-accbg text-acc" : "border-ln2 text-fg2 hover:text-fg",
             )}
           >{x.tab}</button>
         ))}
       </div>
       <div role="tabpanel" id="tool-panel" aria-labelledby={`tab-${id}`} className="flex flex-col gap-4">
-        <p className="m-0 max-w-[720px] text-[15px]/[24px] text-fg1">{t.value}</p>
+        <p className="m-0 max-w-[68ch] text-[15px]/[24px] text-fg1">{t.value}</p>
         <div className={cx("grid items-start gap-4", wide ? "grid-cols-1" : "grid-cols-[minmax(0,.9fr)_minmax(0,1.1fr)] max-[960px]:grid-cols-1")}>
           {snippet}
           {demo}
         </div>
       </div>
-      <div className="mt-6 flex flex-col gap-3 border-t border-ln pt-8">
-        <h3 className="m-0 text-[22px]/[28px] font-light tracking-[-.01em]">Every package, starting with the ones Pledge Paid uses</h3>
-      </div>
-      <div className="grid grid-cols-3 gap-4 max-[960px]:grid-cols-2 max-[720px]:grid-cols-1">
-        {ENTRIES.map((e) => (
-          <Card key={e.path} className="flex flex-col gap-3 p-5">
-            <span className="truncate font-mono text-[12px] text-dim">{e.path}</span>
-            <h3 className="m-0 font-mono text-[16px] font-medium text-fg">{e.name}</h3>
-            <p className="m-0 text-[14px]/[22px] text-fg2">{e.job}</p>
-            <div className="mt-auto flex flex-wrap gap-1.5">
-              {e.uses.map((u) => (
-                <span key={u} className="inline-flex rounded border border-ln2 px-2 py-1 font-mono text-[12px] text-fg1">{u}</span>
-              ))}
-            </div>
-            <ExtLink href={`${REPO}/${e.path}`} className="font-mono text-[12px] text-amber hover:text-fg">Source</ExtLink>
-          </Card>
-        ))}
-      </div>
+      <p className="m-0 border-t border-ln pt-6 text-[15px]/[24px] text-fg1">
+        Every package, with API and recipes: <a href="/docs" className="font-mono text-acc underline underline-offset-4">/docs</a>
+      </p>
     </Section>
   );
 };

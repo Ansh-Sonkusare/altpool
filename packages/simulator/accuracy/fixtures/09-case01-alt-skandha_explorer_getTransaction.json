@@ -1,0 +1,213 @@
+{
+  "endpoint": "https://altmempool.forshtat.com/rpc",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "skandha_explorer_getTransaction",
+    "params": [
+      "0x80c24c777b0ed53f368e422d57ee994c461c6f43803aebba7d7df70fba416cf9"
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "hash": "0x80c24c777b0ed53f368e422d57ee994c461c6f43803aebba7d7df70fba416cf9",
+      "entry": {
+        "txHash": "0x80c24c777b0ed53f368e422d57ee994c461c6f43803aebba7d7df70fba416cf9",
+        "sender": "0xbFD22C58b44564f0bDaFE6a768CDBd87e3831209",
+        "payer": "0xbFD22C58b44564f0bDaFE6a768CDBd87e3831209",
+        "nonce": "0x0",
+        "nonceKeys": [
+          "0xb316295e593d64c0c25e6a805b4266922f7c0a3bc8d206a4"
+        ],
+        "status": "New",
+        "frames": 2,
+        "maxFeePerGas": "0x77359400",
+        "submittedTime": 1794071711896,
+        "lastUpdatedTime": 1794071713527,
+        "source": "rpc",
+        "tx": {
+          "chainId": "0x539",
+          "nonceKeys": [
+            "0xb316295e593d64c0c25e6a805b4266922f7c0a3bc8d206a4"
+          ],
+          "nonceSeq": "0x0",
+          "sender": "0xbFD22C58b44564f0bDaFE6a768CDBd87e3831209",
+          "frames": [
+            {
+              "mode": 1,
+              "flags": 3,
+              "target": null,
+              "limits": {
+                "execution": "0xea60",
+                "state": "0x0"
+              },
+              "value": "0x0",
+              "data": "0x"
+            },
+            {
+              "mode": 2,
+              "flags": 0,
+              "target": "0x000000000000000000000000000000000000dEaD",
+              "limits": {
+                "execution": "0xc350",
+                "state": "0x30d40"
+              },
+              "value": "0x1",
+              "data": "0x"
+            }
+          ],
+          "signatures": [
+            {
+              "scheme": 1,
+              "signer": "0x",
+              "msg": "0x",
+              "signature": "0x019d9b3a282841c5624e1413abba665a49e92ae7810e7ef07bf7257d5c6b58c61a1cd2c72ec906b8deb216f9036142fcaf0428b645d7b4930f84f985617569100d"
+            }
+          ],
+          "fees": {
+            "maxPriorityFeePerGas": "0x3b9aca00",
+            "maxFeePerGas": "0x77359400",
+            "maxFeePerBlobGas": "0x0"
+          },
+          "blobVersionedHashes": [],
+          "recentRootReferences": []
+        }
+      },
+      "admission": {
+        "id": 23,
+        "txHash": "0x80c24c777b0ed53f368e422d57ee994c461c6f43803aebba7d7df70fba416cf9",
+        "sender": "0xbFD22C58b44564f0bDaFE6a768CDBd87e3831209",
+        "nonce": "0x0",
+        "nonceKeys": [
+          "0xb316295e593d64c0c25e6a805b4266922f7c0a3bc8d206a4"
+        ],
+        "at": 1794071711569,
+        "source": "rpc",
+        "outcome": "accepted",
+        "checks": [
+          {
+            "rule": "gas-limit",
+            "verdict": "pass"
+          },
+          {
+            "rule": "recent-root",
+            "verdict": "pass"
+          },
+          {
+            "rule": "prefix",
+            "verdict": "pass"
+          },
+          {
+            "rule": "structure",
+            "verdict": "pass"
+          },
+          {
+            "rule": "signature",
+            "verdict": "pass"
+          },
+          {
+            "rule": "simulation",
+            "verdict": "pass"
+          },
+          {
+            "rule": "trace-alignment",
+            "verdict": "pass"
+          },
+          {
+            "rule": "OP-061",
+            "verdict": "pass"
+          },
+          {
+            "rule": "execution",
+            "verdict": "pass"
+          },
+          {
+            "rule": "trace-alignment",
+            "frameIndex": 0,
+            "entity": "payer",
+            "verdict": "pass"
+          },
+          {
+            "rule": "out-of-gas",
+            "frameIndex": 0,
+            "entity": "payer",
+            "verdict": "pass"
+          },
+          {
+            "rule": "OP-011",
+            "frameIndex": 0,
+            "entity": "payer",
+            "verdict": "pass"
+          },
+          {
+            "rule": "create",
+            "frameIndex": 0,
+            "entity": "payer",
+            "verdict": "pass"
+          },
+          {
+            "rule": "storage",
+            "frameIndex": 0,
+            "entity": "payer",
+            "verdict": "pass"
+          },
+          {
+            "rule": "COD-010",
+            "frameIndex": 0,
+            "entity": "payer",
+            "verdict": "pass"
+          },
+          {
+            "rule": "entrypoint-access",
+            "frameIndex": 0,
+            "entity": "payer",
+            "verdict": "pass"
+          },
+          {
+            "rule": "mempool",
+            "verdict": "pass"
+          }
+        ],
+        "frames": [
+          {
+            "mode": 1,
+            "flags": 3,
+            "target": null,
+            "limits": {
+              "execution": "0xea60",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          },
+          {
+            "mode": 2,
+            "flags": 0,
+            "target": "0x000000000000000000000000000000000000dEaD",
+            "limits": {
+              "execution": "0xc350",
+              "state": "0x30d40"
+            },
+            "value": "0x1",
+            "data": "0x"
+          }
+        ],
+        "frameStatuses": [
+          "success",
+          "success"
+        ]
+      },
+      "events": [
+        {
+          "seq": 26,
+          "txHash": "0x80c24c777b0ed53f368e422d57ee994c461c6f43803aebba7d7df70fba416cf9",
+          "at": 1794071713535,
+          "kind": "admitted",
+          "status": "New"
+        }
+      ]
+    }
+  }
+}

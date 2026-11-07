@@ -6,8 +6,8 @@ const MARK = { pass: "✓", fail: "✗", unchecked: "–" } as const;
 const WORD = { pass: "pass", fail: "fail", unchecked: "not checked" } as const;
 const TONE = {
   pass: "border-okln bg-okbg text-okt",
-  fail: "border-bad/50 bg-bad/10 text-bad",
-  unchecked: "border-ln text-fg2",
+  fail: "border-bad/50 bg-badbg text-bad",
+  unchecked: "border-ln2 text-fg2",
 } as const;
 
 export const RuleGrid = ({ view }: { view?: DoctorView }) => {
@@ -31,7 +31,7 @@ export const RuleGrid = ({ view }: { view?: DoctorView }) => {
                 onMouseEnter={() => setActive(r.id)}
                 onFocus={() => setActive(r.id)}
                 onClick={() => setActive(r.id)}
-                className={cx("flex w-full items-center justify-between gap-2 rounded-lg border px-3 py-2 text-left font-mono text-xs transition-colors", TONE[state], active === r.id && "outline outline-1 outline-fg2")}
+                className={cx("flex min-h-11 w-full items-center justify-between gap-2 rounded-md border px-3 py-2 text-left font-mono text-xs transition-colors duration-120 ease-out", TONE[state], active === r.id && "outline outline-1 outline-fg2")}
               >
                 <span className="min-w-0 truncate">{r.id}</span>
                 <span className="flex-none" aria-label={WORD[state]}>{MARK[state]}</span>
@@ -41,14 +41,14 @@ export const RuleGrid = ({ view }: { view?: DoctorView }) => {
         })}
       </ul>
       {hidden > 0 && (
-        <button type="button" onClick={() => setAll(!all)} className="self-start font-mono text-xs text-fg2 underline decoration-ln2 underline-offset-4 hover:text-fg1">
+        <button type="button" onClick={() => setAll(!all)} className="min-h-11 self-start text-left font-mono text-xs text-fg2 underline decoration-ln2 underline-offset-4 hover:text-fg">
           {all ? "Show only the rules reported for this input" : `${hidden} more rules were not reported for this input. Show them`}
         </button>
       )}
       <p id="rule-info" aria-live="polite" className="m-0 min-h-[42px] text-sm/[21px] text-fg2">
         {shown ? (
           <>
-            <span className="font-mono text-fg1">{shown.id}</span> <span className="font-mono text-[11px]">({shown.scope === "both" ? "both mempools" : `${shown.scope} mempool`}, {WORD[cell?.state ?? "unchecked"]})</span>
+            <span className="font-mono text-fg1">{shown.id}</span> <span className="font-mono text-[12px]">({shown.scope === "both" ? "both mempools" : `${shown.scope} mempool`}, {WORD[cell?.state ?? "unchecked"]})</span>
             {" "}{shown.info}{cell?.why && cell.state === "fail" && <> <span className="text-bad">This input: {cell.why}</span></>}
           </>
         ) : (

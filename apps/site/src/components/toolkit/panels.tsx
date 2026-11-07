@@ -10,9 +10,9 @@ import { Card, CardBar, clock, cx, Dot, dotFor, eth, ExtLink, fmt, Pill, short, 
 import { StepDot } from "./Pipeline";
 import { useCheck, type Async, type FeedEvent, type Pipeline, type Stage } from "./usePipeline";
 
-const Hash = ({ h }: { h: string }) => <ExtLink href={exitUrl(h)} className="font-mono text-amber">{short(h)}</ExtLink>;
+const Hash = ({ h }: { h: string }) => <ExtLink href={exitUrl(h)} className="font-mono text-acc">{short(h)}</ExtLink>;
 const Empty = ({ children }: { children: React.ReactNode }) => (
-  <p className="m-0 p-5 text-[14px]/[22px] text-fg2">{children} <a href="#pledge" className="text-amber">Send one</a>.</p>
+  <p className="m-0 p-5 text-[14px]/[22px] text-fg2">{children} <a href="#pledge" className="text-acc">Send one</a>.</p>
 );
 
 // ---------------------------------------------------------------- SDK
@@ -78,7 +78,7 @@ export const SdkPanel = ({ p }: { p: Pipeline }) => {
       </ol>
       <div className="flex flex-wrap justify-between gap-3 border-t border-ln px-4 py-3 text-[13px] text-fg2">
         <span>{t.origin === "yours" ? "Each row fills as the sidecar reports it." : "Showing the newest run the entity report lists."}</span>
-        <a href="#pledge" className="font-mono text-amber">Send one</a>
+        <a href="#pledge" className="font-mono text-acc">Send one</a>
       </div>
     </div>
   );
@@ -136,10 +136,10 @@ export const AdmissionPanel = ({ p }: { p: Pipeline }) => {
           <span className="text-fg">
             {p.target?.expectRevert ? "This preset is built to revert. " : ""}The alt model admits it, but the node simulation reverts{gap.frame !== undefined ? ` at frame ${gap.frame}` : ""}: <span className="font-mono text-[12.5px] text-fg1">{gap.why}</span>
           </span>
-          <a href="#doctor" className="font-mono text-[12px] text-amber">Explain in frame-doctor</a>
+          <a href="#doctor" className="font-mono text-[12px] text-acc">Explain in frame-doctor</a>
         </div>
       )}
-      {!gap && view?.alt?.verdict === "rejected" && <div className="border-t border-ln px-4 py-3"><a href="#doctor" className="font-mono text-[12px] text-amber">Explain in frame-doctor</a></div>}
+      {!gap && view?.alt?.verdict === "rejected" && <div className="border-t border-ln px-4 py-3"><a href="#doctor" className="font-mono text-[12px] text-acc">Explain in frame-doctor</a></div>}
       <form
         className="flex flex-col gap-2 border-t border-ln px-4 py-3"
         onSubmit={(e) => { e.preventDefault(); if (custom.trim() && !bad) setFresh(custom.trim()); }}
@@ -147,9 +147,9 @@ export const AdmissionPanel = ({ p }: { p: Pipeline }) => {
         <label htmlFor="raw-in" className="text-[13px] text-fg2">Or check a raw frame transaction of your own</label>
         <div className="flex gap-2 max-[560px]:flex-col">
           <input id="raw-in" value={custom} onChange={(e) => setCustom(e.target.value)} placeholder="0x…" spellCheck={false} aria-invalid={bad}
-            className="min-h-11 min-w-0 flex-1 rounded-lg border border-ln2 bg-bg px-3 font-mono text-[12.5px] text-fg placeholder:text-dim" />
-          <button type="submit" disabled={!custom.trim() || bad} className="min-h-11 rounded-lg border border-amberln px-4 font-mono text-[12.5px] text-amber disabled:opacity-40">Check</button>
-          {useFresh && <button type="button" onClick={() => { setFresh(undefined); setCustom(""); }} className="min-h-11 rounded-lg border border-ln2 px-4 font-mono text-[12.5px] text-fg1">Back to the run</button>}
+            className="min-h-11 min-w-0 flex-1 rounded-md border border-ln2 bg-bg px-3 font-mono text-[12.5px] text-fg placeholder:text-fg2" />
+          <button type="submit" disabled={!custom.trim() || bad} className="min-h-11 rounded-md border border-accln px-4 font-mono text-[12.5px] text-acc disabled:opacity-40">Check</button>
+          {useFresh && <button type="button" onClick={() => { setFresh(undefined); setCustom(""); }} className="min-h-11 rounded-md border border-ln2 px-4 font-mono text-[12.5px] text-fg1">Back to the run</button>}
         </div>
         {bad && <span className="font-mono text-[12px] text-bad">Paste even-length hex that starts with 0x.</span>}
       </form>
@@ -199,7 +199,7 @@ export const WatchPanel = ({ entity, p }: { entity: Live<EntityReport>; p: Pipel
         <ul aria-labelledby="feed-h" aria-live="polite" className="m-0 flex list-none flex-col p-0">
           {p.feed.length === 0 && <li className="py-1 text-[13px]/[20px] text-fg2">{s ? "Nothing new since you opened the page. A new inclusion, eviction or rejection appears here within 5 seconds." : "Connecting…"}</li>}
           {p.feed.slice(0, 3).map((e) => (
-            <li key={e.id} className={cx("flex flex-wrap items-baseline gap-x-2 gap-y-0.5 border-b border-ln py-2 text-[12.5px]/[19px] last:border-b-0", e.earlier && "opacity-60", e.hash.toLowerCase() === mine && "bg-amberbg")}>
+            <li key={e.id} className={cx("flex flex-wrap items-baseline gap-x-2 gap-y-0.5 border-b border-ln py-2 text-[12.5px]/[19px] last:border-b-0", e.earlier && "opacity-60", e.hash.toLowerCase() === mine && "bg-accbg")}>
               <span className="font-mono text-[11.5px] text-fg2">{e.at ? clock(e.at) : "earlier"}</span>
               <span className={cx("font-mono", KIND[e.kind].tone)}>{e.earlier ? "inclusion" : KIND[e.kind].label}</span>
               <Hash h={e.hash} />
@@ -210,7 +210,7 @@ export const WatchPanel = ({ entity, p }: { entity: Live<EntityReport>; p: Pipel
       </div>
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-ln px-4 py-3 text-[13px] text-fg2">
         <span>The full dashboard, VERIFY gas chart, tx lookup, network view and alerts are on the monitor page.</span>
-        <a href={`/monitor?entity=${PAY_RELAY}`} className="font-mono text-amber">Open the monitor →</a>
+        <a href={`/monitor?entity=${PAY_RELAY}`} className="font-mono text-acc">Open the monitor →</a>
       </div>
     </div>
   );
@@ -230,7 +230,7 @@ export const McpPanel = ({ p }: { p: Pipeline }) => (
         {p.mcp.map((c) => (
           <div key={c.tool} className="flex min-w-0 flex-col gap-2">
             <span className="break-words font-mono text-[12.5px]/[19px]"><span className="text-kw">{c.tool}</span> <span className="text-fg2">{c.args}</span></span>
-            <div className="min-w-0 rounded-lg border border-ln bg-bg">
+            <div className="min-w-0 rounded-md border border-ln bg-bg">
               <div className="flex items-center justify-between gap-2 border-b border-ln px-3 py-1.5 font-mono text-[11px] text-fg2">
                 <span>what the MCP tool returns</span>
                 <span className={c.status.status === "error" ? "text-bad" : c.status.status === "done" ? "text-ok" : ""}>{c.status.status === "done" ? "ok" : c.status.status === "error" ? "isError" : "calling…"}</span>

@@ -21,7 +21,8 @@ export const DEVNET = {
   treeLevels: 20,
   rootHistorySize: 100,
   minStakeWei: 10n ** 16n,   // stake STRICTLY more than this
-  unstakeDelaySec: 86_400,
+  unstakeDelaySec: 86_400,      // the delay WE stake with (SDK default)
+  minUnstakeDelaySec: 0,        // the node's minimum (skandha_config minUnstakeDelay), live-verified: a delay-0 stake is admitted
   publicVerifyGasCap: 100_000n, // ethrex MAX_VERIFY_GAS, still enforced
   verifyGasMax: 450_000n,       // our self-imposed pin for ExitRelay VERIFY (alt has no cap since Nov 6); 350k ran out of gas (contracts README)
   reputation: { minInclusionDenominator: 10, throttlingSlack: 10, banSlack: 50 },

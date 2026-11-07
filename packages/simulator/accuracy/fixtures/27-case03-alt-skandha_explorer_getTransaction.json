@@ -1,0 +1,154 @@
+{
+  "endpoint": "https://altmempool.forshtat.com/rpc",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "skandha_explorer_getTransaction",
+    "params": [
+      "0xfc916dbb1787bf102867773495ffb7e53cac88eb83d9932fd76278ded63ab4ac"
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "hash": "0xfc916dbb1787bf102867773495ffb7e53cac88eb83d9932fd76278ded63ab4ac",
+      "entry": null,
+      "admission": {
+        "id": 25,
+        "txHash": "0xfc916dbb1787bf102867773495ffb7e53cac88eb83d9932fd76278ded63ab4ac",
+        "sender": "0x242b11e48466a63171d1027cc33ad834db4eb5ba",
+        "nonce": "0x0",
+        "nonceKeys": [
+          "0xb6de57ff2dc3e59eea617192b5d5d1a5184e4d7242814f46"
+        ],
+        "at": 1794071740808,
+        "source": "rpc",
+        "outcome": "rejected",
+        "errorCode": -32502,
+        "checks": [
+          {
+            "rule": "gas-limit",
+            "verdict": "pass"
+          },
+          {
+            "rule": "recent-root",
+            "verdict": "pass"
+          },
+          {
+            "rule": "prefix",
+            "verdict": "pass"
+          },
+          {
+            "rule": "structure",
+            "verdict": "pass"
+          },
+          {
+            "rule": "signature",
+            "verdict": "pass"
+          },
+          {
+            "rule": "simulation",
+            "verdict": "pass"
+          },
+          {
+            "rule": "trace-alignment",
+            "verdict": "pass"
+          },
+          {
+            "rule": "OP-061",
+            "verdict": "pass"
+          },
+          {
+            "rule": "execution",
+            "verdict": "pass"
+          },
+          {
+            "rule": "trace-alignment",
+            "frameIndex": 0,
+            "entity": "payer",
+            "verdict": "pass"
+          },
+          {
+            "rule": "out-of-gas",
+            "frameIndex": 0,
+            "entity": "payer",
+            "verdict": "pass"
+          },
+          {
+            "rule": "OP-011",
+            "frameIndex": 0,
+            "entity": "payer",
+            "verdict": "pass"
+          },
+          {
+            "rule": "create",
+            "frameIndex": 0,
+            "entity": "payer",
+            "verdict": "pass"
+          },
+          {
+            "rule": "storage",
+            "frameIndex": 0,
+            "entity": "payer",
+            "verdict": "fail",
+            "detail": "unstaked payer accessed 0xaf1675799c967019034b1808919f27cc6cd29d30 slot 0x0000000000000000000000000000000000000000000000000000000000000000"
+          },
+          {
+            "rule": "COD-010",
+            "frameIndex": 0,
+            "entity": "payer",
+            "verdict": "pass"
+          },
+          {
+            "rule": "entrypoint-access",
+            "frameIndex": 0,
+            "entity": "payer",
+            "verdict": "pass"
+          },
+          {
+            "rule": "mempool",
+            "verdict": "skipped"
+          }
+        ],
+        "frames": [
+          {
+            "mode": 1,
+            "flags": 3,
+            "target": null,
+            "limits": {
+              "execution": "0x11170",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x01"
+          },
+          {
+            "mode": 2,
+            "flags": 0,
+            "target": "0x000000000000000000000000000000000000dEaD",
+            "limits": {
+              "execution": "0xc350",
+              "state": "0x30d40"
+            },
+            "value": "0x1",
+            "data": "0x"
+          }
+        ],
+        "frameStatuses": [
+          "success",
+          "success"
+        ]
+      },
+      "events": [
+        {
+          "seq": 28,
+          "txHash": "0xfc916dbb1787bf102867773495ffb7e53cac88eb83d9932fd76278ded63ab4ac",
+          "at": 1794071740841,
+          "kind": "rejected",
+          "reason": "unstaked payer accessed 0xaf1675799c967019034b1808919f27cc6cd29d30 slot 0x0000000000000000000000000000000000000000000000000000000000000000"
+        }
+      ]
+    }
+  }
+}

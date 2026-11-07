@@ -1,0 +1,19 @@
+{
+  "endpoint": "https://altmempool.forshtat.com",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "eth_sendRawTransaction",
+    "params": [
+      "0x06f8ba820539d998f1847e19b8019518fa125ce1a9c5edafc9822f97a09a26fa8094bfd22c58b44564f0bdafe6a768cdbd87e3831209eecb010380c5830249f0808080e1028094000000000000000000000000000000000000deadc782c35083030d400180f848f846018080b84101f7419840b5734a40dc8f84dcf931c2e7dcf6460edc06358cc0555ae430b2e8002915bd07334871b5d4040e4c1874b3bbd4b1e8bc230e7d237e0219f20e10df9dcb843b9aca00847735940080c0c0"
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "error": {
+      "code": -32000,
+      "message": "Invalid params: Frame transaction prefix gas budget (frames + sig cost) exceeds MAX_VERIFY_GAS"
+    }
+  }
+}

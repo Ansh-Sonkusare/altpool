@@ -1,0 +1,78 @@
+{
+  "status": "accepted by miner sidecar, not mined",
+  "measuredAt": "2026-11-07",
+  "exitRelayRR": "0x86ea983cfd294ffa8a67aa353c67054c38e95170",
+  "note": "Both RR exits passed the miner sidecar's admission (outcome accepted, all checks pass, status New) and were never included. The miner also did not include a control ExitRelay exit sent the same hour, so the stall is not specific to ExitRelayRR. Recipient balance stays 0 because no exit landed.",
+  "run1": {
+    "depositTx": "0xb914d94e5b5b03585383758397bfc1b1a66128724418c86d9c8e994d2e0179ab",
+    "depositExplorer": "https://explorer.altmempool.wtf/tx/0xb914d94e5b5b03585383758397bfc1b1a66128724418c86d9c8e994d2e0179ab?node=https%3A%2F%2Faltmempool.forshtat.com%2Frpc",
+    "publishRootTx": null,
+    "root": "0x13738612a8e2f06a7ece0c52f999f045b83519333bee8fba6b582739c7d64e96",
+    "rootSlot": 20728,
+    "rootBlock": 20646,
+    "exitTx": "0x1eabf89749d952bf966a5678d138756c7c9c5bcee67532d74687f223fac6d43b",
+    "exitExplorer": "https://explorer.altmempool.wtf/tx/0x1eabf89749d952bf966a5678d138756c7c9c5bcee67532d74687f223fac6d43b?node=https%3A%2F%2Faltmempool.forshtat.com%2Frpc",
+    "minerStatus": "New (never included; no receipt after about 15 min)",
+    "minerAdmission": "accepted; checks gas-limit, prefix, structure, signature, simulation, recent-root, trace-alignment, OP-061, execution, storage (payer frame 1), mempool all pass",
+    "simulate": {
+      "method": "ethrex_simulateFrameTransaction",
+      "executionStatus": "success",
+      "canonicalMempoolValid": false,
+      "canonicalMempoolViolation": "prefix gas budget exceeded: 450000 > 100000 (MAX_VERIFY_GAS)",
+      "prefixShape": "SelfVerify",
+      "frameGasUsed": [
+        {
+          "frame": 0,
+          "role": "VERIFY expiry check",
+          "gas": 3051
+        },
+        {
+          "frame": 1,
+          "role": "VERIFY ExitRelayRR",
+          "gas": 368270
+        },
+        {
+          "frame": 2,
+          "role": "SENDER withdraw",
+          "gas": 306969
+        }
+      ],
+      "totalGasUsed": 986941,
+      "maxCostWei": "9654632431708335"
+    },
+    "recipientBalanceBeforeWei": "0",
+    "recipientBalanceAfterWei": "0 (not mined)"
+  },
+  "run2": {
+    "exitTx": "0xcfc640ec704ccdedf31f84839bdfe7a23dd194d8461b7f1a08daeb7170f71c5d",
+    "exitExplorer": "https://explorer.altmempool.wtf/tx/0xcfc640ec704ccdedf31f84839bdfe7a23dd194d8461b7f1a08daeb7170f71c5d?node=https%3A%2F%2Faltmempool.forshtat.com%2Frpc",
+    "minerStatus": "New (never included)"
+  },
+  "controlExitRelay": {
+    "exitTx": "0x7da3d5ed7c8186f4432a25fabcb3c064fc86feae11cba7989aeafcb47cdc2402",
+    "exitExplorer": "https://explorer.altmempool.wtf/tx/0x7da3d5ed7c8186f4432a25fabcb3c064fc86feae11cba7989aeafcb47cdc2402?node=https%3A%2F%2Faltmempool.forshtat.com%2Frpc",
+    "minerStatus": "New (never included)",
+    "simulateViolation": "prefix gas budget exceeded: 450000 > 100000 (MAX_VERIFY_GAS)"
+  },
+  "verifyGas": {
+    "exitRelayRR": 368270,
+    "exitRelayMeasured": 374217,
+    "deltaGas": -5947,
+    "source": "RR figure: simulate frame 1 today; also the Nov 6 mined exit 0xa015c4c7d411030a9fde923866c8773997d2d17992388735f5cb400a7ed6ee3 (block 6567) frames 3,051 / 368,270 / 306,969; ExitRelay figure from the task brief"
+  },
+  "publicMempoolVerdict": {
+    "rejects": true,
+    "reasons": [
+      "prefix gas budget exceeded: 450000 > 100000 (MAX_VERIFY_GAS)"
+    ],
+    "storageReasonPresent": false,
+    "note": "Simulator reported one violation string only (the gas cap). No storage reason appeared."
+  },
+  "altEstimateEcho": "eth_estimateFrameTransactionGas returned 'validation frame 1: reverted with data 0x7a638b86' (BadWithdrawFrame). The same echo appears for ExitRelay. Treated as an estimator placeholder echo, not a real failure: simulate succeeds and the miner admitted the tx.",
+  "priorMinedRR": {
+    "exitTx": "0xa015c4c7d411030a9fde923866c8773997d2d17992388735f5cb400a7ed6ee3",
+    "explorer": "https://explorer.altmempool.wtf/tx/0xa015c4c7d411030a9fde923866c8773997d2d17992388735f5cb400a7ed6ee3?node=https%3A%2F%2Faltmempool.forshtat.com%2Frpc",
+    "block": 6567,
+    "source": "packages/contracts/README.md (Nov 6)"
+  }
+}

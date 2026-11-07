@@ -97,15 +97,15 @@ export const Activity = ({ r, watched, events, firstSeen, now, blockTime, loadin
                   {it.nodes && <NodeTags on={it.nodes} watched={watched} />}
                 </div>
                 <div className="flex flex-col items-end gap-1 text-right font-mono text-[12px] text-fg2">
-                  <time title={it.at ? clockAt(it.at) : undefined} dateTime={it.at ? new Date(it.at).toISOString() : undefined} className={cx("whitespace-nowrap", !it.at && "text-dim")}>{it.at ? `${ago(now - it.at)} ago` : it.kind === "included" ? "…" : "time not recorded"}</time>
-                  {it.hash && <ExtLink href={explorerUrl(it.hash, it.nodes)} className="text-amber">explorer</ExtLink>}
+                  <time title={it.at ? clockAt(it.at) : undefined} dateTime={it.at ? new Date(it.at).toISOString() : undefined} className="whitespace-nowrap">{it.at ? `${ago(now - it.at)} ago` : it.kind === "included" ? "…" : "time not recorded"}</time>
+                  {it.hash && <ExtLink href={explorerUrl(it.hash, it.nodes)} className="text-acc">explorer</ExtLink>}
                 </div>
               </li>
             ))}
           </ol>
           {list.length > shown && (
             <div className="border-t border-ln p-3 text-center">
-              <button type="button" onClick={() => setShown(shown + PAGE)} className="min-h-11 rounded-lg border border-ln2 px-5 font-mono text-[12.5px] text-fg1 hover:border-amberln hover:text-amber">Show {Math.min(PAGE, list.length - shown)} more of {list.length - shown}</button>
+              <button type="button" onClick={() => setShown(shown + PAGE)} className="min-h-11 rounded-md border border-ln2 px-5 font-mono text-[13px] text-fg1 hover:border-accln hover:text-acc">Show {Math.min(PAGE, list.length - shown)} more of {list.length - shown}</button>
             </div>
           )}
         </>

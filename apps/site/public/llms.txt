@@ -1,6 +1,6 @@
 # Altpool
 
-> Altpool is a viem toolkit for the ERC-8421 alternative mempool on the EIP-8141 frame-transaction devnet (chain 1337): an SDK, an admission simulator with a frame-doctor CLI, an entity monitor, an MCP server, and the contracts and prover behind two demo apps, QuietSend (withdraw to a 0-ETH wallet with no relayer) and Pledge Paid. The demo proves the mechanism, not privacy. Alt-mempool verdicts before sending come from a rule model and are unverified until a node answers.
+> Altpool is a viem toolkit for the ERC-8421 alternative mempool on the EIP-8141 frame-transaction devnet (chain 1337): an SDK, an admission simulator with a frame-doctor CLI, an entity monitor, an MCP server, and the contracts and prover behind Pledge Paid, the showcase transaction. Also built: the ExitRelay exit (QuietSend CLI), Falcon-512 wallets, Wallet Bridge. The demo proves the mechanism, not privacy. Alt-mempool verdicts before sending come from a rule model and are unverified until a node answers.
 
 The full reference (API per package, runnable recipes, rule catalogue, CLI and MCP schemas, devnet facts) is one Markdown file: https://altpool.vercel.app/llms-full.txt . The same content as a web page: https://altpool.vercel.app/docs . Source: https://github.com/Ansh-Sonkusare/altpool
 

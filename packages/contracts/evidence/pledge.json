@@ -1,0 +1,38 @@
+{
+  "status": "accepted by miner sidecar, not mined",
+  "measuredAt": "2026-11-07",
+  "note": "Both Pledge Paid txs were accepted by the miner sidecar (status New) and had no receipt on ethrex when re-checked. Not included.",
+  "txs": [
+    {
+      "tx": "0xda290663c97abd926ad3989de284b526b4cd7830ffd71b1628376f37f298a7ab",
+      "explorer": "https://explorer.altmempool.wtf/tx/0xda290663c97abd926ad3989de284b526b4cd7830ffd71b1628376f37f298a7ab?node=https%3A%2F%2Faltmempool.forshtat.com%2Frpc",
+      "minerStatus": "New",
+      "receipt": null
+    },
+    {
+      "tx": "0x0a0c612e2e14f1bde70c788184159a2374982b4504dcfa4385374e1eff18be6e",
+      "explorer": "https://explorer.altmempool.wtf/tx/0x0a0c612e2e14f1bde70c788184159a2374982b4504dcfa4385374e1eff18be6e?node=https%3A%2F%2Faltmempool.forshtat.com%2Frpc",
+      "minerStatus": "New",
+      "receipt": null
+    }
+  ],
+  "simulate": {
+    "method": "ethrex_simulateFrameTransaction",
+    "allFramesOk": true,
+    "frameGasUsed": [3051, 550095, 328225, 36521, 14870, 116368, 45832, 13037, 7373]
+  },
+  "invoice": {
+    "id": 22,
+    "creationTx": "0x3d14dc2f5cb5c36ed06f6703b4589b0bf13e396ce0ebf426f299d4b2d3448f60",
+    "creationExplorer": "https://explorer.altmempool.wtf/tx/0x3d14dc2f5cb5c36ed06f6703b4589b0bf13e396ce0ebf426f299d4b2d3448f60?node=https%3A%2F%2Faltmempool.forshtat.com%2Frpc",
+    "fund": "0x619838207Bd59fE180df4a2564106d9c8B0edad2",
+    "amountFgUSD": 50,
+    "paid": "not verified (tx not mined)"
+  },
+  "quote": {
+    "fgUSD": 50,
+    "eth": "0.028065",
+    "maxInSlippage": "+3%"
+  },
+  "payRelayWETHFloatEth": "~0.0983"
+}

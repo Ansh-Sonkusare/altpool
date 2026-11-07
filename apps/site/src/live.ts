@@ -227,7 +227,7 @@ export const presetsFor = (runs: readonly PledgeRun[], mine: Hex | undefined, cu
   if (latest) out.push({ id: "latest", label: `Latest Pledge Paid on chain${latest.block ? ` (block ${latest.block})` : ""}`, job: { preset: "latest", title: `Pledge Paid ${short(latest.hash)}`, run: () => doctorHash(latest.hash) } });
   if (revert) out.push({ id: "revert", label: "Latest reverted Pledge Paid", job: { preset: "revert", title: `Reverted Pledge Paid ${short(revert.hash)}`, run: () => doctorHash(revert.hash) } });
   // A rejection on purpose: the newest exit sent again. Its note is withdrawn, so both mempools must refuse it, and the fix says why.
-  out.push({ id: "replay", label: "Double-spend: resend a withdrawn exit", job: { preset: "replay", title: "Double-spend attempt: the newest QuietSend exit, sent again (should be rejected)", run: async () => doctorReplay(await newestExit()) } });
+  out.push({ id: "replay", label: "Double-spend: resend a withdrawn exit", job: { preset: "replay", title: "Double-spend attempt: the newest ExitRelay exit, sent again (should be rejected)", run: async () => doctorReplay(await newestExit()) } });
   if (mine) out.push({ id: "mine", label: "Check the tx you just sent", job: { preset: "mine", title: `Your tx ${short(mine)}`, run: () => doctorHash(mine) } });
   return out;
 };

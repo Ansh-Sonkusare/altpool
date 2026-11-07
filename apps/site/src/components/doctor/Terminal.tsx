@@ -2,7 +2,13 @@ import { useEffect, useState } from "react";
 import { useReducedMotion } from "../../hooks";
 import { paint, type Tone } from "./paint";
 
-const TONE: Record<Tone, string> = { bad: "text-bad", ok: "text-ok", warn: "text-warn", src: "text-okt", dim: "text-fg2" };
+const TONE: Record<Tone, string> = {
+  bad: "font-medium text-[color-mix(in_srgb,var(--color-bad)_45%,white)]",
+  ok: "text-[color-mix(in_srgb,var(--color-ok)_45%,white)]",
+  warn: "text-[color-mix(in_srgb,var(--color-warn)_45%,white)]",
+  src: "text-[color-mix(in_srgb,var(--color-ok)_45%,white)]",
+  dim: "text-inkdim",
+};
 const LINE_MS = 70;
 
 /** Remount per result (key on the text) so a new report always starts hidden. Hidden lines keep their space: no layout shift. */
@@ -24,7 +30,7 @@ const Typed = ({ text }: { text: string }) => {
 };
 
 export const Terminal = ({ text, error }: { text?: string; error?: string }) => (
-  <pre className="m-0 min-h-[250px] whitespace-pre-wrap p-5 font-mono text-[13px]/[22px] text-fg1 [overflow-wrap:anywhere]" aria-live="polite">
-    {error !== undefined ? <span className="text-bad">frame-doctor: {error}</span> : text === undefined ? "asking the devnet…" : <Typed key={text} text={text} />}
+  <pre className="ink m-0 min-h-[250px] whitespace-pre-wrap bg-ink p-5 font-mono text-[13px]/[22px] text-inkfg [overflow-wrap:anywhere]" aria-live="polite">
+    {error !== undefined ? <span className="font-medium text-[color-mix(in_srgb,var(--color-bad)_45%,white)]"><span aria-hidden="true">✕ </span>frame-doctor: {error}</span> : text === undefined ? "asking the devnet…" : <Typed key={text} text={text} />}
   </pre>
 );

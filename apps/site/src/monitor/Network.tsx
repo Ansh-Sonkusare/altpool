@@ -141,7 +141,7 @@ const Entities = ({ r }: { r: NetworkReport }) => {
           <ul className="m-0 list-none p-0">{rows.slice(0, shown).map((e) => <Row key={e.address} e={e} />)}</ul>
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-ln px-4 py-3 font-mono text-[12px] text-fg2" role="status">
             <span>Showing {num(Math.min(shown, rows.length))} of {num(rows.length)} matching</span>
-            {rows.length > shown && <button type="button" onClick={() => setShown(shown + PAGE)} className="min-h-11 rounded-lg border border-ln2 px-5 text-fg1 hover:border-amberln hover:text-amber">Show {Math.min(PAGE, rows.length - shown)} more</button>}
+            {rows.length > shown && <button type="button" onClick={() => setShown(shown + PAGE)} className="min-h-11 rounded-lg border border-ln2 px-5 text-fg1 hover:border-accln hover:text-acc">Show {Math.min(PAGE, rows.length - shown)} more</button>}
           </div>
         </>
       )}
@@ -199,8 +199,8 @@ const Report = ({ r }: { r: NetworkReport }) => {
           <Table head={["From", "To", "Samples", "Median", "p90", "Max"]} right={[2, 3, 4, 5]}>
             {r.propagation.map((p) => (
               <tr key={p.from + p.to}>
-                <Td>{p.from}</Td><Td>{p.to}</Td><Td right>{num(p.samples)}</Td><Td right>{secs(p.medianMs)}</Td><Td right>{secs(p.p90Ms)}</Td>
-                <Td right className={p.maxMs !== undefined && p.maxMs > 10_000 ? "text-warn" : ""}>{secs(p.maxMs)}</Td>
+                <Td label="From">{p.from}</Td><Td label="To">{p.to}</Td><Td label="Samples" right>{num(p.samples)}</Td><Td label="Median" right>{secs(p.medianMs)}</Td><Td label="p90" right>{secs(p.p90Ms)}</Td>
+                <Td label="Max" right className={p.maxMs !== undefined && p.maxMs > 10_000 ? "text-warn" : ""}>{secs(p.maxMs)}</Td>
               </tr>
             ))}
           </Table>
@@ -214,14 +214,14 @@ const Report = ({ r }: { r: NetworkReport }) => {
         <Table head={["Node", "Status", "Version", "Bundling", "Peers", "Latest seq", "Reputation rows", "Rejected (recent)"]} right={[4, 5, 6, 7]}>
           {r.nodes.map((n) => (
             <tr key={n.name}>
-              <Td>{n.name}<div className="break-all text-[12px] text-fg2">{n.url}</div></Td>
-              <Td className="whitespace-nowrap">{n.ok ? <><Tag tone="ok">up</Tag> <span className="text-fg2">{num(n.latencyMs ?? 0)} ms</span></> : <><Tag tone="bad">down</Tag> <span className="text-fg2">{n.error}</span></>}</Td>
-              <Td>{n.version ?? "n/a"}</Td>
-              <Td>{n.bundlingMode ? <Tag tone={n.bundlingMode === "auto" ? "ok" : "info"}>{n.bundlingMode}</Tag> : "n/a"}</Td>
-              <Td right>{n.peers !== undefined ? num(n.peers) : "n/a"}</Td>
-              <Td right>{n.latestSeq !== undefined ? num(n.latestSeq) : "n/a"}</Td>
-              <Td right>{num(n.reputationEntries)}{n.reputationTruncated && <span className="text-warn" title="more pages existed than were read">+</span>}</Td>
-              <Td right>{num(n.rejectedRecent)}</Td>
+              <Td label="Node">{n.name}<div className="break-all text-[12px] text-fg2">{n.url}</div></Td>
+              <Td label="Status" className="whitespace-nowrap max-[720px]:whitespace-normal">{n.ok ? <><Tag tone="ok">up</Tag> <span className="text-fg2">{num(n.latencyMs ?? 0)} ms</span></> : <><Tag tone="bad">down</Tag> <span className="text-fg2">{n.error}</span></>}</Td>
+              <Td label="Version">{n.version ?? "n/a"}</Td>
+              <Td label="Bundling">{n.bundlingMode ? <Tag tone={n.bundlingMode === "auto" ? "ok" : "info"}>{n.bundlingMode}</Tag> : "n/a"}</Td>
+              <Td label="Peers" right>{n.peers !== undefined ? num(n.peers) : "n/a"}</Td>
+              <Td label="Latest seq" right>{n.latestSeq !== undefined ? num(n.latestSeq) : "n/a"}</Td>
+              <Td label="Reputation" right>{num(n.reputationEntries)}{n.reputationTruncated && <span className="text-warn" title="more pages existed than were read">+</span>}</Td>
+              <Td label="Rejected" right>{num(n.rejectedRecent)}</Td>
             </tr>
           ))}
         </Table>

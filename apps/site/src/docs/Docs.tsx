@@ -1,9 +1,9 @@
 // The docs page (/docs). The content is src/docs/reference.md; the same file is copied to public/llms-full.txt on build
 // (package.json "build"), so the page and the plain-text copy for agents cannot drift. Edit the Markdown, not this file.
-import { Fragment, useEffect, type ReactNode } from "react";
+import { Fragment, useEffect, useState, type ReactNode } from "react";
 import { Code } from "../components/Code";
 import { Nav } from "../components/Nav";
-import { Card, CardBar, cx, Eyebrow } from "../components/ui";
+import { cx, Eyebrow, InkPanel } from "../components/ui";
 import { useHeadBlock } from "../hooks";
 import reference from "./reference.md?raw";
 
@@ -69,7 +69,7 @@ const inline = (s: string): ReactNode =>
     if (part.startsWith("`")) return <code key={i} className="rounded bg-s1 px-1 py-px font-mono text-[0.9em] text-fg [overflow-wrap:anywhere]">{part.slice(1, -1)}</code>;
     if (part.startsWith("**")) return <strong key={i} className="font-medium text-fg">{part.slice(2, -2)}</strong>;
     const m = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
-    if (m) return <a key={i} href={m[2]} {...(m[2]!.startsWith("http") ? { target: "_blank", rel: "noreferrer" } : {})} className="text-amber underline-offset-2 hover:underline">{m[1]}</a>;
+    if (m) return <a key={i} href={m[2]} {...(m[2]!.startsWith("http") ? { target: "_blank", rel: "noreferrer" } : {})} className="text-acc underline-offset-2 hover:underline">{m[1]}</a>;
     return <Fragment key={i}>{part}</Fragment>;
   });
 
@@ -77,30 +77,25 @@ const FOLD_AT = 40;
 const CodeBlock = ({ lang, code }: { lang: string; code: string }) => {
   const n = code.split("\n").length;
   const body = lang === "text"
-    ? <pre className="m-0 overflow-x-auto p-4 font-mono text-[12.5px]/[20px] text-fg1">{code}</pre>
+    ? <pre className="m-0 overflow-x-auto p-4 font-mono text-[12.5px]/[20px] text-inkfg">{code}</pre>
     : <Code code={code} lang={lang === "sh" ? "sh" : "ts"} className="p-4 text-[12.5px]/[20px]" />;
   const label = lang === "sh" ? "shell" : lang === "text" ? "output" : lang === "json" ? "json" : "typescript";
-  return (
-    <Card className="overflow-hidden">
-      {n > FOLD_AT ? (
-        <details className="[&>summary]:cursor-pointer">
-          <summary className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 font-mono text-[12px] text-fg2 hover:text-fg">
-            <span>{label} · {n} lines</span><span className="text-amber">expand</span>
-          </summary>
-          {body}
-        </details>
-      ) : (
-        <>
-          <CardBar windowDots><span>{label}</span></CardBar>
-          {body}
-        </>
-      )}
-    </Card>
+  return n > FOLD_AT ? (
+    <div className="ink min-w-0 overflow-hidden rounded-md bg-ink text-inkfg">
+      <details className="[&>summary]:cursor-pointer">
+        <summary className="flex min-h-11 flex-wrap items-center justify-between gap-3 px-4 py-3 font-mono text-[12px] text-inkdim hover:text-inkfg">
+          <span>{label} · {n} lines</span><span>expand</span>
+        </summary>
+        {body}
+      </details>
+    </div>
+  ) : (
+    <InkPanel title={label}>{body}</InkPanel>
   );
 };
 
 const Table = ({ head, rows }: { head: string[]; rows: string[][] }) => (
-  <div className="overflow-x-auto rounded-xl border border-ln2">
+  <div className="overflow-x-auto rounded-md border border-ln2">
     <table className="w-max min-w-full border-collapse text-left text-[13.5px]/[21px]">
       <thead>
         <tr>{head.map((h, i) => <th key={i} className="whitespace-nowrap border-b border-ln bg-s1 px-3 py-2 font-mono text-[12px] font-normal text-fg2">{inline(h)}</th>)}</tr>
@@ -117,8 +112,8 @@ const Table = ({ head, rows }: { head: string[]; rows: string[][] }) => (
 );
 
 const HEADING = {
-  2: "mt-10 border-t border-ln pt-10 text-[28px]/[34px] font-light tracking-[-.02em]",
-  3: "mt-4 text-[20px]/[28px] font-medium",
+  2: "mt-10 border-t border-ln2 pt-10 text-[clamp(26px,3vw,32px)]/[1.15] font-medium tracking-[-.025em] text-balance",
+  3: "mt-4 text-[20px]/[26px] font-medium",
   4: "mt-2 text-[16px]/[24px] font-medium text-fg1",
 } as const;
 
@@ -129,12 +124,12 @@ const render = (b: Block, i: number): ReactNode => {
       const H = `h${b.level}` as "h2" | "h3" | "h4";
       return (
         <H key={i} id={b.id} className={cx("group m-0 min-w-0", HEADING[b.level as 2 | 3 | 4])}>
-          <a href={`#${b.id}`} className="no-underline">{b.text.replace(/`/g, "")}<span aria-hidden="true" className="ml-2 text-dim opacity-0 group-hover:opacity-100">#</span></a>
+          <a href={`#${b.id}`} className="no-underline">{b.text.replace(/`/g, "")}<span aria-hidden="true" className="ml-2 text-fg2 opacity-0 group-hover:opacity-100">#</span></a>
         </H>
       );
     }
-    case "p": return <p key={i} className="m-0 max-w-[760px] text-[15px]/[24px] text-fg2">{inline(b.text)}</p>;
-    case "ul": return <ul key={i} className="m-0 flex max-w-[760px] list-disc flex-col gap-2 pl-5 text-[15px]/[24px] text-fg2">{b.items.map((t, j) => <li key={j}>{inline(t)}</li>)}</ul>;
+    case "p": return <p key={i} className="m-0 max-w-[68ch] text-[16px]/[26px] text-fg1">{inline(b.text)}</p>;
+    case "ul": return <ul key={i} className="m-0 flex max-w-[68ch] list-disc flex-col gap-2 pl-5 text-[16px]/[26px] text-fg1">{b.items.map((t, j) => <li key={j}>{inline(t)}</li>)}</ul>;
     case "code": return <CodeBlock key={i} lang={b.lang} code={b.code} />;
     case "table": return <Table key={i} head={b.head} rows={b.rows} />;
   }
@@ -143,11 +138,12 @@ const render = (b: Block, i: number): ReactNode => {
 const BLOCKS = parse(reference);
 const HEADS = BLOCKS.filter((b): b is Extract<Block, { t: "h" }> => b.t === "h" && (b.level === 2 || b.level === 3));
 
-const Toc = ({ onPick }: { onPick?: () => void }) => (
+const Toc = ({ onPick, active }: { onPick?: () => void; active?: string }) => (
   <ul className="m-0 flex list-none flex-col p-0 text-[14px]">
     {HEADS.map((h) => (
       <li key={h.id}>
-        <a href={`#${h.id}`} onClick={onPick} className={cx("block rounded-md py-1 text-fg2 hover:bg-s1 hover:text-fg", h.level === 2 ? "mt-3 px-2 font-medium text-fg1" : "px-2 pl-5 text-[13px]")}>{h.text.replace(/`/g, "")}</a>
+        <a href={`#${h.id}`} onClick={onPick} aria-current={active === h.id ? "location" : undefined}
+          className={cx("block rounded-md py-1 hover:bg-s1 hover:text-fg", active === h.id ? "text-acc" : "text-fg2", h.level === 2 ? "mt-3 px-2 font-medium" : "px-2 pl-5 text-[13px]")}>{h.text.replace(/`/g, "")}</a>
       </li>
     ))}
   </ul>
@@ -158,34 +154,43 @@ claude mcp add altpool -- bun $PWD/packages/mcp/src/server.ts`;
 
 export const Docs = () => {
   const head = useHeadBlock();
+  const [active, setActive] = useState<string>();
   useEffect(() => { document.title = "Docs · Altpool"; }, []);
-  const pad = "px-[clamp(56px,8vw,128px)] max-[960px]:px-6 max-[560px]:px-4";
+  useEffect(() => {
+    const els = HEADS.map((h) => document.getElementById(h.id)).filter((e): e is HTMLElement => !!e);
+    const io = new IntersectionObserver((entries) => {
+      const hit = entries.find((e) => e.isIntersecting);
+      if (hit) setActive(hit.target.id);
+    }, { rootMargin: "-80px 0px -70% 0px" });
+    els.forEach((e) => io.observe(e));
+    return () => io.disconnect();
+  }, []);
+  const pad = "px-[clamp(20px,5vw,72px)]";
   return (
-    <div className="relative mx-auto min-h-screen max-w-[1360px] overflow-x-clip border-x border-ln">
-      <div className="pointer-events-none absolute -top-[180px] -right-[160px] h-[420px] w-[700px] max-w-full bg-[radial-gradient(closest-side,rgba(241,201,140,.09),rgba(241,201,140,.02)_55%,transparent)]" aria-hidden="true"></div>
+    <div className="min-h-screen">
       <Nav head={head} />
-      <header className={cx("relative flex flex-col gap-4 pt-14 pb-8", pad)}>
-        <Eyebrow tone="amber">docs</Eyebrow>
-        <h1 className="m-0 text-balance text-[clamp(36px,5vw,56px)]/[1.07] font-light tracking-[-.03em]">
-          Build with every package, <span className="font-serif font-normal italic">without opening the repo.</span>
+      <header className={cx("mx-auto flex max-w-[1200px] flex-col gap-4 pt-[72px] pb-8", pad)}>
+        <Eyebrow tone="acc">docs</Eyebrow>
+        <h1 className="m-0 max-w-[20ch] text-balance text-[clamp(36px,5vw,56px)]/[1.05] font-medium tracking-[-.03em]">
+          Build with every package, without opening the repo.
         </h1>
-        <p className="m-0 max-w-[720px] text-[16px]/[26px] text-fg1">
+        <p className="m-0 max-w-[62ch] text-[18px]/[28px] text-fg1">
           Full API reference, eight runnable recipes, the rule catalogue, every CLI flag and MCP tool schema, and the devnet facts that bite. Checked against the source and the live devnet.
         </p>
         <p className="m-0 flex flex-wrap gap-x-5 gap-y-1 font-mono text-[13px]">
           <span className="text-fg2">For agents:</span>
-          <a href="/llms.txt" className="text-amber hover:underline">/llms.txt</a>
-          <a href="/llms-full.txt" className="text-amber hover:underline">/llms-full.txt</a>
+          <a href="/llms.txt" className="text-acc hover:underline">/llms.txt</a>
+          <a href="/llms-full.txt" className="text-acc hover:underline">/llms-full.txt</a>
           <span className="text-fg2">(this page as plain Markdown)</span>
         </p>
         <div className="max-w-[760px]"><CodeBlock lang="sh" code={MCP_INSTALL} /></div>
       </header>
 
-      <div className={cx("relative grid grid-cols-[240px_minmax(0,1fr)] items-start gap-x-12 pb-20 max-[960px]:grid-cols-1", pad)}>
-        <aside className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto pr-2 max-[960px]:hidden"><Toc /></aside>
-        <details className="mb-6 rounded-xl border border-ln2 bg-s1 px-3 py-2 min-[961px]:hidden [&>summary]:cursor-pointer [&>summary]:py-1 [&>summary]:font-mono [&>summary]:text-[13px] [&>summary]:text-fg2">
+      <div className={cx("mx-auto grid max-w-[1200px] grid-cols-[240px_minmax(0,1fr)] items-start gap-x-12 pb-[72px] max-[960px]:grid-cols-1", pad)}>
+        <aside className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto pr-2 max-[960px]:hidden"><Toc active={active} /></aside>
+        <details className="mb-6 rounded-md border border-ln2 bg-s1 px-3 py-2 min-[961px]:hidden [&>summary]:min-h-11 [&>summary]:cursor-pointer [&>summary]:py-3 [&>summary]:font-mono [&>summary]:text-[13px] [&>summary]:text-fg2">
           <summary>On this page</summary>
-          <div className="max-h-[60vh] overflow-y-auto pt-2"><Toc /></div>
+          <div className="max-h-[60vh] overflow-y-auto pt-2"><Toc active={active} /></div>
         </details>
         <main className="flex min-w-0 flex-col gap-4">{BLOCKS.map(render)}</main>
       </div>

@@ -9,7 +9,7 @@ import { A, Heading, Square, TEXT, type Tone } from "./parts";
 
 const Spark = ({ r }: { r: EntityReport }) => {
   const pts = r.inclusions.filter((i) => i.verifyGas !== undefined).sort((a, b) => a.block - b.block);
-  if (pts.length < 2) return <div className="h-10 font-mono text-[12px] leading-10 text-dim">{pts.length ? `VERIFY ${num(pts[0]!.verifyGas!)}` : "no inclusions yet"}</div>;
+  if (pts.length < 2) return <div className="h-10 font-mono text-[12px] leading-10 text-fg2">{pts.length ? `VERIFY ${num(pts[0]!.verifyGas!)}` : "no inclusions yet"}</div>;
   const max = Math.max(Number(DEVNET.verifyGasMax) * 1.12, ...pts.map((p) => Number(p.verifyGas) * 1.1));
   const y = (v: number) => 40 - (v / max) * 36;
   const d = pts.map((p, i) => `${i ? "L" : "M"}${(4 + (i * 292) / (pts.length - 1)).toFixed(1)},${y(Number(p.verifyGas)).toFixed(1)}`).join(" ");
@@ -17,7 +17,7 @@ const Spark = ({ r }: { r: EntityReport }) => {
   return (
     <svg viewBox="0 0 300 40" preserveAspectRatio="none" className="block h-10 w-full" role="img" aria-label={`VERIFY gas over the last ${pts.length} inclusions`}>
       <line x1="0" x2="300" y1={cap} y2={cap} className="stroke-warn" strokeDasharray="4 4" vectorEffect="non-scaling-stroke" />
-      <path d={d} fill="none" className="stroke-amber" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+      <path d={d} fill="none" className="stroke-acc" strokeWidth="2" vectorEffect="non-scaling-stroke" />
     </svg>
   );
 };
@@ -37,7 +37,7 @@ const EntityCard = ({ addr, choice, fee }: { addr: Address; choice: NodeChoice; 
   const latest = r?.inclusions[0];
   return (
     <Card className="overflow-hidden">
-      <A to={{ kind: "entity", addr }} className="flex flex-wrap items-baseline justify-between gap-2 border-b border-ln px-4 py-3 hover:bg-white/[.02]">
+      <A to={{ kind: "entity", addr }} className="flex min-h-11 flex-wrap items-baseline justify-between gap-2 border-b border-ln px-4 py-3 hover:bg-band">
         <span className="text-[18px] text-fg">{known?.label ?? "Entity"}</span><span className="font-mono text-[12px] text-fg2">{short(addr)} · open entity</span>
       </A>
       {!r ? (
@@ -50,7 +50,7 @@ const EntityCard = ({ addr, choice, fee }: { addr: Address; choice: NodeChoice; 
             <Row k="Reputation"><Square tone={repTone} /><span className={TEXT[repTone]}>{rep!.status}</span> {num(rep!.opsSeen)}/{num(rep!.opsIncluded)}</Row>
             <Row k="Headroom">{num(r.headroom.untilThrottled)} sends</Row>
             <Row k="Funds">{ethDp(r.funds.balance)}{r.funds.txsLeft !== undefined && ` · ${num(r.funds.txsLeft)} txs`}</Row>
-            <Row k="Latest VERIFY">{latest?.verifyGas !== undefined ? <>{num(latest.verifyGas)} <span className="text-dim">block {num(latest.block)}</span></> : "n/a"}</Row>
+            <Row k="Latest VERIFY">{latest?.verifyGas !== undefined ? <>{num(latest.verifyGas)} <span className="text-fg2">block {num(latest.block)}</span></> : "n/a"}</Row>
             <Row k="Activity">{num(r.inclusions.length)} in · <span className={r.rejections.length ? "text-bad" : ""}>{num(r.rejections.length)} rejected</span> · <span className={cx(r.pending.some((p) => p.stuck) && "text-bad")}>{num(r.pending.length)} pending</span></Row>
             <Row k="Nodes"><span className={up === r.nodes.length ? "text-ok" : "text-bad"}>{up} of {r.nodes.length} up</span></Row>
           </div>

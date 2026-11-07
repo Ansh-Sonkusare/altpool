@@ -22,12 +22,12 @@ const WHAT: Record<Condition, string> = {
   "key-clash": "Two or more pending txs share a sender and nonce key, so only one can land.",
 };
 const KINDS: AlertKind[] = ["throttle", "unlocking", "unstaked", "low-balance", "stuck", "evicted", "rejected"];
-const field = "min-h-11 min-w-0 rounded-lg border border-ln2 bg-bg px-3 font-mono text-[12.5px] text-fg placeholder:text-dim";
-const btn = "min-h-11 rounded-lg border border-amberln px-4 font-mono text-[12.5px] text-amber disabled:opacity-40";
+const field = "min-h-11 min-w-0 rounded-md border border-ln2 bg-s1 px-3 font-mono text-[13px] text-fg placeholder:text-fg2";
+const btn = "min-h-11 rounded-md border border-accln px-4 font-mono text-[13px] text-acc disabled:opacity-40";
 
 const Check = ({ checked, onChange, children }: { checked: boolean; onChange: (c: boolean) => void; children: string }) => (
   <label className="flex min-h-9 cursor-pointer items-center gap-2 font-mono text-[12.5px] text-fg1">
-    <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="size-4 accent-[#f1c98c]" />{children}
+    <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="size-4 accent-acc" />{children}
   </label>
 );
 
@@ -68,7 +68,7 @@ export const Alerts = ({ r, cfg, setCfg, sent }: { r: EntityReport; cfg: AlertCf
               const on = conds.includes(c);
               return (
                 <li key={c} className={cx("grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-x-3 gap-y-1 border-b border-ln px-4 py-3 last:border-b-0", !on && "opacity-60")}>
-                  <input id={`c-${c}`} type="checkbox" checked={on} onChange={(e) => setConds(e.target.checked ? [...conds, c] : conds.filter((x) => x !== c))} className="mt-1 size-4 accent-[#f1c98c]" />
+                  <input id={`c-${c}`} type="checkbox" checked={on} onChange={(e) => setConds(e.target.checked ? [...conds, c] : conds.filter((x) => x !== c))} className="mt-1 size-4 accent-acc" />
                   <label htmlFor={`c-${c}`} className="min-w-0 cursor-pointer">
                     <span className="block font-mono text-[13px] text-fg">{c}</span>
                     <span className="block text-[13px]/[20px] text-fg2">{hit ? <span className="text-bad">{hit.reason}</span> : WHAT[c]}</span>
@@ -88,7 +88,7 @@ export const Alerts = ({ r, cfg, setCfg, sent }: { r: EntityReport; cfg: AlertCf
           <Card className="overflow-hidden">
             <CardBar><span className="text-fg">The same check in CI</span><CopyButton text={cli + cliHook} label="Copy command" /></CardBar>
             <div className="p-4">
-              <code className="block whitespace-pre-wrap break-all rounded-lg border border-ln bg-bg p-3 font-mono text-[12px] text-fg1">{cli}{cliHook}</code>
+              <code className="block whitespace-pre-wrap break-all rounded-md bg-ink p-3 font-mono text-[12px] text-inkfg">{cli}{cliHook}</code>
               <p className="mb-0 mt-3 text-[12.5px]/[19px] text-fg2">Run it from a checkout of the repo. It exits 1 when a selected condition fails, which fails the CI job.</p>
             </div>
           </Card>
@@ -104,12 +104,12 @@ export const Alerts = ({ r, cfg, setCfg, sent }: { r: EntityReport; cfg: AlertCf
             {cfg.urls.map((u) => (
               <li key={u} className="flex flex-wrap items-center gap-2 font-mono text-[12px] text-fg1">
                 <span className="min-w-0 flex-1 break-all">{new URL(u).origin}/…</span>
-                <button className="min-h-9 rounded-lg border border-ln2 px-3 text-fg1" onClick={async () => {
+                <button className="min-h-11 rounded-md border border-ln2 px-3 text-fg1" onClick={async () => {
                   setTest("sending…");
                   await postAlert([u], { kind: "throttle", entity: r.address, label: "test", message: "test alert from the Altpool monitor", at: Date.now() },
                     { onSent: (_a, ok, err) => setTest(ok ? `test sent to ${new URL(u).host}` : `test failed: ${err}. The endpoint may block cross-origin POSTs; the CLI sends from a server.`) });
                 }}>Send test</button>
-                <button className="min-h-9 rounded-lg border border-ln2 px-3 text-fg1" onClick={() => setCfg({ ...cfg, urls: cfg.urls.filter((x) => x !== u) })}>Remove</button>
+                <button className="min-h-11 rounded-md border border-ln2 px-3 text-fg1" onClick={() => setCfg({ ...cfg, urls: cfg.urls.filter((x) => x !== u) })}>Remove</button>
               </li>
             ))}
           </ul>

@@ -56,7 +56,7 @@ function useFroms(hashes: Hex[]) {
 }
 
 type Kind = "you" | "crowd" | "in" | "after";
-const BAR = { you: "bg-amber", crowd: "bg-ok", in: "bg-okt/35", after: "bg-ln2" } as const;
+const BAR = { you: "bg-acc", crowd: "bg-ok", in: "bg-okt/35", after: "bg-ln2" } as const;
 const WHAT = {
   you: "the depositor's leaf",
   crowd: "a crowd deposit after yours, in the proof's root",
@@ -64,8 +64,8 @@ const WHAT = {
   after: "landed after the proof's root",
 } as const;
 
-const Tx = ({ hash, label }: { hash: Hex; label: string }) => <ExtLink href={exitUrl(hash)} className="text-amber underline decoration-amberln underline-offset-4">{label}</ExtLink>;
-const Addr = ({ a }: { a?: Address }) => (a ? <ExtLink href={addrUrl(a)} className="text-amber underline decoration-amberln underline-offset-4">{short(a)}</ExtLink> : <>…</>);
+const Tx = ({ hash, label }: { hash: Hex; label: string }) => <ExtLink href={exitUrl(hash)} className="text-acc underline decoration-accln underline-offset-4">{label}</ExtLink>;
+const Addr = ({ a }: { a?: Address }) => (a ? <ExtLink href={addrUrl(a)} className="text-acc underline decoration-accln underline-offset-4">{short(a)}</ExtLink> : <>…</>);
 
 export function Crowd({ pool, mine, runHash }: { pool: Address; mine?: number; runHash?: Hex }) {
   const { snap, error } = usePool(pool);
@@ -137,12 +137,12 @@ export function Crowd({ pool, mine, runHash }: { pool: Address; mine?: number; r
                 {snap.deps.map((d) => {
                   const k = kind(d.leaf);
                   const label = `leaf ${d.leaf}${k === "you" || leaves !== undefined ? `, ${WHAT[k]}` : ""}`;
-                  return <i key={d.leaf} role="listitem" tabIndex={0} title={label} aria-label={label} className={cx("h-[18px] w-2.5 rounded-sm", BAR[k], k === "you" && "outline-1 outline-amber")} />;
+                  return <i key={d.leaf} role="listitem" tabIndex={0} title={label} aria-label={label} className={cx("h-[18px] w-2.5 rounded-sm", BAR[k], k === "you" && "outline-1 outline-acc")} />;
                 })}
               </div>
               <p className="m-0 text-[12.5px]/[1.6] text-fg2">
                 Leaves 0 to {fmt(snap.deps.length - 1)} now.
-                {mine !== undefined && <> <span className="text-amber">Amber</span> is the depositor's leaf {mine}.</>}
+                {mine !== undefined && <> <span className="text-acc">Amber</span> is the depositor's leaf {mine}.</>}
                 {leaves !== undefined
                   ? <>{mine !== undefined && <> <span className="text-ok">Green</span> are the crowd deposits after it.</>} Dim green are the other leaves in the proof's root (0 to {leaves - 1}), grey landed after the root.</>
                   : <> Run one to mark the root it proves against.</>}

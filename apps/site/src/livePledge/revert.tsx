@@ -41,7 +41,7 @@ export const PresetBar = ({ intent, paid, disabled, onPick }: { intent: Intent; 
         {PRESETS.map((p) => (
           <button key={p.id} type="button" aria-pressed={intent.id === p.id} disabled={disabled || missing(p.id)} onClick={() => onPick(p.id)}
             className={cx("min-h-9 rounded-full border px-3.5 py-[7px] text-left text-sm disabled:cursor-not-allowed disabled:opacity-40",
-              intent.id === p.id ? "border-amberln bg-amberbg text-amber" : "border-ln2 text-fg1")}>{p.label}</button>
+              intent.id === p.id ? "border-accln bg-accbg text-acc" : "border-ln2 text-fg1")}>{p.label}</button>
         ))}
       </div>
       <p aria-live="polite" className="m-0 max-w-[760px] text-[13.5px]/[21px] text-fg2">
@@ -67,7 +67,7 @@ export const GatePanel = ({ g, onChoose }: { g: GateState; onChoose: (d: "send" 
       <GapStory view={gate.view} preset={def.label} />
       {!gate.view && <p className="m-0 text-sm/[21px] text-fg1">The node's simulation says frame {gate.frame} reverts. frame-doctor's report did not load. The step list above has the result for each frame.</p>}
       <div className="flex flex-wrap items-center gap-3">
-        <button type="button" onClick={() => onChoose("fix")} className={cx(btn, "border-transparent bg-fg text-[#0a0a0c]")}>Use the fix</button>
+        <button type="button" onClick={() => onChoose("fix")} className={cx(btn, "border-transparent bg-fg text-bg")}>Use the fix</button>
         <button type="button" onClick={() => onChoose("send")} className={cx(btn, "border-warnln text-warn")}>Send anyway to see it on chain</button>
         <button type="button" onClick={openInDoctor} className={cx(btn, "border-ln2 text-fg1")}>Open in frame-doctor</button>
         <button type="button" onClick={() => onChoose("stop")} className="min-h-11 cursor-pointer px-2 text-[13px] text-fg2 underline decoration-ln2 underline-offset-4">Stop here</button>
@@ -109,16 +109,16 @@ export const RecoverPanel = ({ rescue, now }: { rescue: Rescue; now: number }) =
       <p className="m-0 font-serif text-[30px]/[1.1] text-fg">The funds can come home.</p>
       <p className="m-0 max-w-[760px] text-[14px]/[22px] text-fg2">
         {rescue.invoicePaid
-          ? <>Anyone may call <span className="font-mono text-fg1">Settler.refund()</span> once the invoice is paid, and this one is. The rollback undid the deploy, so the Settler has no code yet. A fresh key, funded by the faucet and unrelated to the depositor, first calls <span className="font-mono text-fg1">SettlerFactory.deploy(terms)</span> at the same address, then <span className="font-mono text-fg1">refund()</span> sends its WETH to the change address <ExtLink href={addrUrl(rescue.change)} className="font-mono text-amber">{short(rescue.change)}</ExtLink>.</>
-          : <><span className="font-mono text-fg1">refund()</span> reverts unless the invoice is paid, and this Settler's swap can never pay it: its maxIn is fixed below the price. But <span className="font-mono text-fg1">InvoiceBook.settle</span> accepts any payer whose invoiceId matches, so a fresh key, funded by the faucet and unrelated to the depositor, deploys a second Settler for the same invoice with a fresh quote, funds its swap with about 0.005 ETH of its own, and pays the invoice. Then it deploys this Settler and calls <span className="font-mono text-fg1">refund()</span>, which sends its WETH to the change address <ExtLink href={addrUrl(rescue.change)} className="font-mono text-amber">{short(rescue.change)}</ExtLink>.</>}
+          ? <>Anyone may call <span className="font-mono text-fg1">Settler.refund()</span> once the invoice is paid, and this one is. The rollback undid the deploy, so the Settler has no code yet. A fresh key, funded by the faucet and unrelated to the depositor, first calls <span className="font-mono text-fg1">SettlerFactory.deploy(terms)</span> at the same address, then <span className="font-mono text-fg1">refund()</span> sends its WETH to the change address <ExtLink href={addrUrl(rescue.change)} className="font-mono text-acc">{short(rescue.change)}</ExtLink>.</>
+          : <><span className="font-mono text-fg1">refund()</span> reverts unless the invoice is paid, and this Settler's swap can never pay it: its maxIn is fixed below the price. But <span className="font-mono text-fg1">InvoiceBook.settle</span> accepts any payer whose invoiceId matches, so a fresh key, funded by the faucet and unrelated to the depositor, deploys a second Settler for the same invoice with a fresh quote, funds its swap with about 0.005 ETH of its own, and pays the invoice. Then it deploys this Settler and calls <span className="font-mono text-fg1">refund()</span>, which sends its WETH to the change address <ExtLink href={addrUrl(rescue.change)} className="font-mono text-acc">{short(rescue.change)}</ExtLink>.</>}
       </p>
       <p className="m-0 max-w-[760px] text-[14px]/[22px] text-fg2">
         refund() sends the Settler's whole balance to the change address. The change goes to the fund by default, so unless you chose another address the fund receives these funds, not the donor.
       </p>
       {phase !== "done" && (
         <div className="flex flex-wrap items-center gap-4">
-          <button type="button" onClick={go} disabled={phase === "running"} className={cx(btn, "border-transparent bg-fg text-[#0a0a0c]")}>{phase === "running" ? "Recovering…" : "Recover the funds: call refund()"}</button>
-          <span className="text-[13px] text-fg2">Signed by a fresh rescue key <ExtLink href={addrUrl(funder.address)} className="font-mono text-amber">{short(funder.address)}</ExtLink>, never by the depositor.</span>
+          <button type="button" onClick={go} disabled={phase === "running"} className={cx(btn, "border-transparent bg-fg text-bg")}>{phase === "running" ? "Recovering…" : "Recover the funds: call refund()"}</button>
+          <span className="text-[13px] text-fg2">Signed by a fresh rescue key <ExtLink href={addrUrl(funder.address)} className="font-mono text-acc">{short(funder.address)}</ExtLink>, never by the depositor.</span>
         </div>
       )}
       {txs.length > 0 && <ul className="m-0 flex list-none flex-col gap-1.5 p-0">{txs.map((t) => <TxLine key={t.hash} tx={t} now={now} />)}</ul>}

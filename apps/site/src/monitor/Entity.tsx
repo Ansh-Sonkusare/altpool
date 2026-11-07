@@ -63,7 +63,7 @@ export const Entity = ({ addr, choice, fee, alerts }: { addr: Address; choice: N
       <section aria-label="Entity" className="flex flex-wrap items-start justify-between gap-x-8 gap-y-4">
         <div className="flex min-w-0 flex-col gap-2">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-            <h2 className="m-0 text-[clamp(26px,3.4vw,34px)]/[1.15] font-light tracking-[-.03em]">{known?.label ?? "Entity"}</h2>
+            <h2 className="m-0 text-[clamp(22px,3vw,28px)]/[1.15] font-medium tracking-[-.025em]">{known?.label ?? "Entity"}</h2>
             {r && <Tag tone={stakeTone}>{stakeWord.toLowerCase()}</Tag>}
             {rep && <Tag tone={repTone}>reputation {rep.status}</Tag>}
             {r && up < r.nodes.length && <Tag tone="bad">{up} of {r.nodes.length} nodes up</Tag>}
@@ -71,7 +71,7 @@ export const Entity = ({ addr, choice, fee, alerts }: { addr: Address; choice: N
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 font-mono text-[12.5px] text-fg2">
             <span className="break-all">{addr}</span>
             <CopyButton text={addr} label="Copy address" />
-            <ExtLink href={addrUrl(addr)} className="text-amber">explorer</ExtLink>
+            <ExtLink href={addrUrl(addr)} className="text-acc">explorer</ExtLink>
           </div>
         </div>
         <Pulse state={live.error ? "err" : r ? "live" : undefined} word={live.error ? "Poll failed, retrying." : r ? "Live." : "Connecting."}>
@@ -79,6 +79,16 @@ export const Entity = ({ addr, choice, fee, alerts }: { addr: Address; choice: N
             ? <span title="A report is emitted when anything changed; the watcher checks every 10 s and on explorer events.">Last change {ago(now - r.updatedAt)} ago ({clockAt(r.updatedAt)}).{pollLine} From {watched.map((n) => n.name).join(" + ")}, and on explorer events.</span>
             : `Reading ${watched.map((n) => n.name).join(" and ")}…`}
         </Pulse>
+      </section>
+
+      <section aria-label="Sends left" className="flex flex-col gap-1 border-y border-ln2 py-4">
+        <span className="font-mono text-[12px] uppercase tracking-[.08em] text-fg2">Sends left</span>
+        {h ? (
+          <>
+            <span className={cx("num text-[40px]/[1.1] font-medium", hTone === "ok" ? "text-okt" : hTone === "warn" ? "text-warn" : hTone === "bad" ? "text-bad" : "text-fg")}>{num(h.untilThrottled)}</span>
+            <span className="text-[14px]/[22px] text-fg2">before throttling; throttle threshold is {num(throttleAt)} sends at {num(rep!.opsIncluded)} included, warns at {WARN_AT}. {num(h.untilBanned)} until banned.</span>
+          </>
+        ) : <Skeleton className="my-2 h-10 w-32" />}
       </section>
 
       <Card className="overflow-hidden">
@@ -108,7 +118,7 @@ export const Entity = ({ addr, choice, fee, alerts }: { addr: Address; choice: N
         <CardBar>
           <span className="text-fg">VERIFY gas per inclusion</span>
           <span className="flex flex-wrap items-center gap-x-4 gap-y-1">
-            <span><i className="mr-1.5 inline-block h-0.5 w-4 bg-amber align-middle" />gas used</span>
+            <span><i className="mr-1.5 inline-block h-0.5 w-4 bg-acc align-middle" />gas used</span>
             <span className="text-warn"><i className="mr-1.5 inline-block w-4 border-t border-dashed border-warn align-middle" />public cap</span>
             {pin !== undefined && <span><i className="mr-1.5 inline-block w-4 border-t border-dashed border-fg2 align-middle" />our pin</span>}
           </span>
@@ -128,7 +138,7 @@ export const Entity = ({ addr, choice, fee, alerts }: { addr: Address; choice: N
 
       <p className="m-0 font-mono text-[12px]/[19px] text-fg2">
         Chain {DEVNET.chainId}. Reputation moves from ok to throttled to banned as sends outnumber inclusions.{" "}
-        <A to={{ kind: "alerts", addr }} className="text-amber hover:underline">Set alerts for this entity</A> or see <A to={{ kind: "network" }} className="text-amber hover:underline">every entity on the network</A>.
+        <A to={{ kind: "alerts", addr }} className="text-acc hover:underline">Set alerts for this entity</A> or see <A to={{ kind: "network" }} className="text-acc hover:underline">every entity on the network</A>.
       </p>
     </div>
   );

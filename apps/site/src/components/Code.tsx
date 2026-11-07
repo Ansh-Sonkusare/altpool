@@ -24,7 +24,7 @@ const shell = (code: string) =>
   }).join("\n");
 
 export const Code = ({ code, lang = "ts", className }: { code: string; lang?: "ts" | "sh"; className?: string }) => (
-  <pre className={cx("m-0 overflow-x-auto font-mono text-fg1", className)}>
+  <pre className={cx("ink m-0 overflow-x-auto bg-ink font-mono text-inkfg", className)}>
     <code dangerouslySetInnerHTML={{ __html: lang === "sh" ? shell(code) : highlight(code) }} />
   </pre>
 );

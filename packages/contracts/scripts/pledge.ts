@@ -138,7 +138,9 @@ async function freshDonor() {
   const donor = privateKeyToAccount(generatePrivateKey());
   console.log(`donor ${donor.address}, faucet ${j(await gateway().faucet(donor.address))}`);
   for (let i = 0; i < 60 && (await pub.getBalance({ address: donor.address })) < DEVNET.denomination + parseEther("0.01"); i++) await sleep(2000);
-  return createWalletClient({ account: donor, chain: altDevnet, transport: http(DEVNET.ethrexUrl) });
+  // The node's suggested gas price can reach hundreds of gwei, and 2M gas at that price exceeds the faucet's 1 ETH. The base fee is 7 wei.
+  const chain = { ...altDevnet, fees: { estimateFeesPerGas: async () => ({ gasPrice: 1_000_000_000n }) } };
+  return createWalletClient({ account: donor, chain, transport: http(DEVNET.ethrexUrl) });
 }
 
 const wethOf = (a: Address) => pub.readContract({ address: WETH9, abi: wethAbi, functionName: "balanceOf", args: [a] });
@@ -174,7 +176,8 @@ async function pledge(kind: "pay" | "revert", invoiceId: bigint, fund: Address) 
   const proof = await prove(note, { recipient: settler, relayer: payRelay, fee: EXIT_FEE, refund: 0n }, wethPool);
   console.log(`proved: recipient = Settler ${settler}, change ${change}, rootIdx ${proof.rootIdx}`);
   const gp = await ap.getGasPrice();
-  const tx: FrameTx = payTx(proof, { payRelay, pool: wethPool, factory, settlerCodeHash, terms, maxPriorityFeePerGas: gp.maxPriorityFeePerGas });
+  const cap = payTx(proof, { payRelay, pool: wethPool, factory, settlerCodeHash, terms }).fees.maxFeePerGas; // the tip must not exceed the fee cap
+  const tx: FrameTx = payTx(proof, { payRelay, pool: wethPool, factory, settlerCodeHash, terms, maxPriorityFeePerGas: gp.maxPriorityFeePerGas < cap ? gp.maxPriorityFeePerGas : cap });
 
   const admission = await checkAdmission(tx);
   console.log(`checkAdmission (before send): ${j(admission.verdicts)}`);

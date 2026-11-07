@@ -1,0 +1,136 @@
+{
+  "endpoint": "https://altmempool.forshtat.com/rpc",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "skandha_explorer_getTransaction",
+    "params": [
+      "0x146445298a3449950c803000c07171c07a92e059f258508dde16452bc6550431"
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "hash": "0x146445298a3449950c803000c07171c07a92e059f258508dde16452bc6550431",
+      "entry": null,
+      "admission": {
+        "id": 27,
+        "txHash": "0x146445298a3449950c803000c07171c07a92e059f258508dde16452bc6550431",
+        "sender": "0xbFD22C58b44564f0bDaFE6a768CDBd87e3831209",
+        "nonce": "0x0",
+        "nonceKeys": [
+          "0xf07ddfe8e1762de466e3e92137ad91c886d567a4a593b695"
+        ],
+        "at": 1794071761790,
+        "source": "rpc",
+        "outcome": "rejected",
+        "errorCode": -32507,
+        "checks": [
+          {
+            "rule": "gas-limit",
+            "verdict": "pass"
+          },
+          {
+            "rule": "recent-root",
+            "verdict": "pass"
+          },
+          {
+            "rule": "prefix",
+            "verdict": "pass"
+          },
+          {
+            "rule": "structure",
+            "verdict": "pass"
+          },
+          {
+            "rule": "signature",
+            "verdict": "fail",
+            "detail": "Invalid frame transaction signature"
+          },
+          {
+            "rule": "simulation",
+            "verdict": "skipped"
+          },
+          {
+            "rule": "trace-alignment",
+            "verdict": "skipped"
+          },
+          {
+            "rule": "OP-061",
+            "verdict": "skipped"
+          },
+          {
+            "rule": "execution",
+            "verdict": "skipped"
+          },
+          {
+            "rule": "mempool",
+            "verdict": "skipped"
+          },
+          {
+            "rule": "out-of-gas",
+            "verdict": "skipped"
+          },
+          {
+            "rule": "OP-011",
+            "verdict": "skipped"
+          },
+          {
+            "rule": "create",
+            "verdict": "skipped"
+          },
+          {
+            "rule": "storage",
+            "verdict": "skipped"
+          },
+          {
+            "rule": "COD-010",
+            "verdict": "skipped"
+          },
+          {
+            "rule": "entrypoint-access",
+            "verdict": "skipped"
+          }
+        ],
+        "frames": [
+          {
+            "mode": 1,
+            "flags": 3,
+            "target": null,
+            "limits": {
+              "execution": "0xea60",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          },
+          {
+            "mode": 2,
+            "flags": 0,
+            "target": "0x000000000000000000000000000000000000dEaD",
+            "limits": {
+              "execution": "0xc350",
+              "state": "0x30d40"
+            },
+            "value": "0x1",
+            "data": "0x"
+          }
+        ],
+        "frameStatuses": [
+          "not-run",
+          "not-run"
+        ]
+      },
+      "events": [
+        {
+          "seq": 30,
+          "txHash": "0x146445298a3449950c803000c07171c07a92e059f258508dde16452bc6550431",
+          "at": 1794071761803,
+          "kind": "rejected",
+          "reason": "Invalid frame transaction signature"
+        }
+      ]
+    }
+  }
+}

@@ -40,15 +40,15 @@ export const GasChart = ({ r, pin: pinG, blockTime }: { r: EntityReport; pin?: b
         if (e.key === "Escape") setHover(undefined);
       }}>
       <svg viewBox={`0 0 1000 ${H}`} preserveAspectRatio="none" className="block h-[180px] w-full" aria-hidden="true">
-        <defs><linearGradient id="gasfade" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#f1c98c" stopOpacity=".24" /><stop offset="1" stopColor="#f1c98c" stopOpacity="0" /></linearGradient></defs>
+        <defs><linearGradient id="gasfade" x1="0" x2="0" y1="0" y2="1"><stop offset="0" style={{ stopColor: "var(--color-acc)" }} stopOpacity=".24" /><stop offset="1" style={{ stopColor: "var(--color-acc)" }} stopOpacity="0" /></linearGradient></defs>
         {pinG && <line x1="0" x2="1000" y1={y(pin)} y2={y(pin)} className="stroke-fg2" strokeDasharray="6 6" vectorEffect="non-scaling-stroke" />}
         <line x1="0" x2="1000" y1={y(cap)} y2={y(cap)} className="stroke-warn" strokeDasharray="6 6" vectorEffect="non-scaling-stroke" />
         {pts.length > 1 && <path d={area} fill="url(#gasfade)" />}
-        {pts.length > 1 && <path d={line} fill="none" className="stroke-amber" strokeWidth="2" vectorEffect="non-scaling-stroke" />}
+        {pts.length > 1 && <path d={line} fill="none" className="stroke-acc" strokeWidth="2" vectorEffect="non-scaling-stroke" />}
         {a && <line x1={xp(hover!) * 10} x2={xp(hover!) * 10} y1="0" y2={H} className="stroke-fg2" strokeWidth="1" vectorEffect="non-scaling-stroke" />}
       </svg>
       {pts.map((p, i) => (
-        <i key={p.hash} aria-hidden="true" className={cx("absolute size-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber ring-2 ring-bg", i === hover ? "scale-150 ring-amber/40" : "opacity-80")}
+        <i key={p.hash} aria-hidden="true" className={cx("absolute size-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-acc ring-2 ring-bg", i === hover ? "scale-150 ring-acc/40" : "opacity-80")}
           style={{ left: `${xp(i)}%`, top: y(Number(p.verifyGas)) }} />
       ))}
       {pinG && <span className="pointer-events-none absolute right-0 -translate-y-full pb-0.5 font-mono text-[11px] text-fg2" style={{ top: y(pin) }}>our pin {num(pin)}</span>}
@@ -56,10 +56,10 @@ export const GasChart = ({ r, pin: pinG, blockTime }: { r: EntityReport; pin?: b
       <span className="pointer-events-none absolute bottom-0 left-0 font-mono text-[11px] text-dim">block {num(pts[0]!.block)}</span>
       <span className="pointer-events-none absolute bottom-0 right-0 font-mono text-[11px] text-dim">block {num(last.block)}</span>
       {a && (
-        <div role="status" className="pointer-events-none absolute top-1 z-10 w-max max-w-[220px] rounded-lg border border-ln2 bg-bg/95 px-3 py-2 font-mono text-[11.5px]/[17px] text-fg1 shadow-[0_8px_24px_rgba(0,0,0,.5)]"
+        <div role="status" className="pointer-events-none absolute top-1 z-10 w-max max-w-[220px] rounded-lg border border-ln2 bg-bg/95 px-3 py-2 font-mono text-[11.5px]/[17px] text-fg1 shadow-[0_8px_24px_var(--color-ln2)]"
           style={{ left: `${xp(hover!)}%`, transform: `translateX(${xp(hover!) > 62 ? "calc(-100% - 12px)" : "12px"})` }}>
           <div className="text-fg">block {num(a.block)}{aT && <span className="text-fg2"> · {clockAt(aT)}</span>}</div>
-          <div>VERIFY <span className="text-amber">{num(a.verifyGas!)}</span> gas</div>
+          <div>VERIFY <span className="text-acc">{num(a.verifyGas!)}</span> gas</div>
           <div className={over > 1 ? "text-warn" : "text-ok"}>{over > 1 ? `${over.toFixed(1)}× the public cap` : "under the public cap"}</div>
           {a.cost !== undefined && <div className="text-fg2">cost {ethDp(a.cost)}</div>}
           <div className="text-fg2">{short(a.hash)}</div>

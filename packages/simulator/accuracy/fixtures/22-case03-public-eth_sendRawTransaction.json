@@ -1,0 +1,19 @@
+{
+  "endpoint": "https://altmempool.forshtat.com",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "eth_sendRawTransaction",
+    "params": [
+      "0x06f8ce820539d99889808b2bf0879c63df6ede4a28d9613a4ac9f4e4a56453628094242b11e48466a63171d1027cc33ad834db4eb5baeecb010380c583011170808001e1028094000000000000000000000000000000000000deadc782c35083030d400180f85cf85a0194bfd22c58b44564f0bdafe6a768cdbd87e383120980b84100aca7f887d6dfa20731783e108137d7927f4664f39a84badc7e1a23800e2088c36df1855cc7cddecd8264f6a672a2cc1ff5728cd7e7fcf2652a489ed2c9be850dcb843b9aca00847735940080c0c0"
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "error": {
+      "code": -32000,
+      "message": "Invalid params: Frame transaction validation-prefix simulation failed: StorageReadNonSender"
+    }
+  }
+}

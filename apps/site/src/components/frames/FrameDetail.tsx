@@ -14,9 +14,9 @@ export const FrameDetail = ({ row, rows, state }: { row: FrameRow; rows: FrameRo
   const u = row.used;
   const does = doesOf(row);
   return (
-    <div aria-live="polite" className="flex flex-col gap-4 rounded-lg border border-ln2 bg-s1 p-4">
+    <div aria-live="polite" className="flex flex-col gap-4 rounded-lg border border-ln2 bg-s1 p-4 sm:p-5">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <span className="font-mono text-[12px] text-amber">frame {row.index}</span>
+        <span className="font-mono text-[12px] text-acc">frame {row.index}</span>
         <span className="text-[15px] text-fg">{stepName(row)}</span>
         <ModeChip mode={row.mode} /><StatePill state={st} />
       </div>
@@ -24,7 +24,7 @@ export const FrameDetail = ({ row, rows, state }: { row: FrameRow; rows: FrameRo
       <p className={cx("text-[14px]/[22px]", st === "success" || st === "pending" ? "text-fg2" : "text-fg1")}>{explain(row, st, rows)}</p>
       <dl className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-x-6 gap-y-4">
         <KV k="Target">
-          <ExtLink href={addrUrl(row.target)} className="text-amber">{row.targetName ?? short(row.target)}</ExtLink>
+          <ExtLink href={addrUrl(row.target)} className="text-acc">{row.targetName ?? short(row.target)}</ExtLink>
           {row.targetName && row.targetName !== "sender" && <span className="block text-[11px] text-fg2">{short(row.target)}</span>}
         </KV>
         <KV k="Call">{row.call}</KV>

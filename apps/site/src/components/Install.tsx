@@ -2,9 +2,14 @@
 // Every name in SNIPPET is exported by altpool (packages/sdk/src); the shape follows packages/sdk/scripts/live.ts.
 import type { ReactNode } from "react";
 import { Code } from "./Code";
-import { Card, CardBar, cx, Eyebrow, Section } from "./ui";
+import { cx, InkPanel, Section } from "./ui";
 
-const INSTALL = `npm i altpool viem @forshtat/hegota-support`;
+const INSTALL = `git clone https://github.com/Ansh-Sonkusare/altpool
+cd altpool && bun install
+bun run --filter altpool build          # not on npm yet: build from the repo
+(cd packages/sdk && npm pack)           # writes altpool-<version>.tgz
+# in your project:
+npm i /path/to/altpool/packages/sdk/altpool-*.tgz viem @forshtat/hegota-support`;
 
 const SNIPPET = `import { profile } from "@forshtat/hegota-support/profiles/ethrex-eip8141-tracer";
 import { createPublicClient, http } from "viem";
@@ -38,34 +43,32 @@ claude mcp add altpool -- bun $PWD/packages/mcp/src/server.ts`;
 const Step = ({ n, title, lead, file, children, className, lang }: { n: string; title: string; lead: ReactNode; file: string; children: string; className?: string; lang?: "ts" | "sh" }) => (
   <div className={cx("flex min-w-0 flex-col gap-3", className)}>
     <div className="flex items-baseline gap-3">
-      <span className="font-mono text-[12px] text-amber">{n}</span>
+      <span className="font-mono text-[12px] text-fg2">{n}</span>
       <h3 className="m-0 text-[19px]/[25px] font-medium">{title}</h3>
     </div>
-    <p className="m-0 max-w-[560px] text-[15px]/[23px] text-fg2">{lead}</p>
-    <Card className="overflow-hidden">
-      <CardBar windowDots><span>{file}</span></CardBar>
+    <p className="m-0 max-w-[62ch] text-[15px]/[23px] text-fg1">{lead}</p>
+    <InkPanel title={file}>
       <Code code={children} lang={lang} className="p-4 text-[12.5px]/[20px]" />
-    </Card>
+    </InkPanel>
   </div>
 );
 
-const code = "font-mono text-fg1";
+const code = "font-mono text-fg";
+const link = "text-acc underline underline-offset-2";
 
 export const Install = () => (
-  <Section id="install" band>
-    <div className="flex flex-col gap-4">
-      <Eyebrow>Use it</Eyebrow>
-      <h2 className="m-0 text-balance text-[clamp(36px,5vw,56px)]/[1.07] font-light tracking-[-.03em]">
-        An admitted frame transaction, from viem.
-      </h2>
-      <p className="m-0 max-w-[640px] text-[16px]/[26px] text-fg2">
-        Altpool extends the viem client you already use. It encodes with the devnet's own codec, fills each frame's gas, picks a free nonce key, and can run frame-doctor's admission check before it sends.
-      </p>
-    </div>
-    <div className="grid grid-cols-[minmax(0,.8fr)_minmax(0,1.2fr)] items-start gap-x-10 gap-y-8 min-[961px]:grid-rows-[auto_1fr] max-[960px]:grid-cols-1">
-      <Step n="01" title="Install" className="min-[961px]:col-start-1" file="shell" lang="sh" lead={<>Installs next to viem and the devnet's codec. Works in Node and in the browser; <a href="/wallet" className="text-amber">/wallet</a> runs it in this tab with MetaMask.</>}>{INSTALL}</Step>
-      <Step n="02" title="Send" file="send.ts" className="min-[961px]:col-start-2 min-[961px]:row-span-2 min-[961px]:row-start-1" lead={<><span className={code}>prepare: true</span> estimates every frame's gas before signing. Every failure is an <span className={code}>AltpoolSdkError</span> with a <span className={code}>.fix</span>. <span className={code}>account</span> is any viem local account; fund it with <span className={code}>ap.faucet(address)</span>.</>}>{SNIPPET}</Step>
-      <Step n="03" title="Give an agent the same checks" className="min-[961px]:col-start-1" file="shell · Claude Code" lang="sh" lead={<>The MCP server exposes <span className={code}>check_admission</span>, <span className={code}>get_admission_report</span> and <span className={code}>entity_status</span>. A session exported from <a href="/wallet" className="text-amber">/wallet</a> lets an agent send within the limits you signed.</>}>{MCP}</Step>
+  <Section
+    id="install"
+    band
+    n="05"
+    label="Install"
+    title="An admitted frame transaction, from viem."
+    lede="Altpool extends the viem client you already use. It encodes with the devnet's own codec, fills each frame's gas, picks a free nonce key, and can run frame-doctor's admission check before it sends."
+  >
+    <div className="grid grid-cols-1 items-start gap-x-10 gap-y-10 min-[1100px]:grid-cols-2">
+      <Step n="01" title="Install" className="min-[1100px]:col-start-1" file="shell" lang="sh" lead={<>The packages are not on npm yet. Build and pack the SDK from the repo, then install the tarball next to viem and the devnet's codec. Works in Node and in the browser; <a href="/wallet" className={link}>/wallet</a> runs it in this tab with MetaMask.</>}>{INSTALL}</Step>
+      <Step n="02" title="Send" file="send.ts" className="min-[1100px]:col-start-2 min-[1100px]:row-span-2 min-[1100px]:row-start-1" lead={<><span className={code}>prepare: true</span> estimates every frame's gas before signing. Every failure is an <span className={code}>AltpoolSdkError</span> with a <span className={code}>.fix</span>. <span className={code}>account</span> is any viem local account; fund it with <span className={code}>ap.faucet(address)</span>.</>}>{SNIPPET}</Step>
+      <Step n="03" title="Give an agent the same checks" className="min-[1100px]:col-start-1" file="shell · Claude Code" lang="sh" lead={<>The MCP server exposes <span className={code}>check_admission</span>, <span className={code}>get_admission_report</span> and <span className={code}>entity_status</span>. A session exported from <a href="/wallet" className={link}>/wallet</a> lets an agent send within the limits you signed.</>}>{MCP}</Step>
     </div>
   </Section>
 );

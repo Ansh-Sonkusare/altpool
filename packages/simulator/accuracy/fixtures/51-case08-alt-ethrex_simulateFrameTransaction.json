@@ -1,0 +1,36 @@
+{
+  "endpoint": "https://altmempool.forshtat.com",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "ethrex_simulateFrameTransaction",
+    "params": [
+      "0x06f8e1820539d998a43962ad4a2c0d8f51be558a15899ba899dae0d9b9dbd0a48094bfd22c58b44564f0bdafe6a768cdbd87e3831209f854e60180940000000000000000000000000000000000008141c4822710808088000000006aef4f83ca010380c482ea60808080e1028094000000000000000000000000000000000000deadc782c35083030d400180f848f846018080b841008a09ac2a7002ab012f2bdb64dd9053a94cc05150e1851fd063de4eac1e9e6b2e5f3056dcb351b09f989a716ccf6a2a5246d2128471b76c69ba77caa2e81d3cdfcb843b9aca00847735940080c0c0",
+      "latest",
+      {
+        "trace": true
+      }
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "canonicalMempoolValid": false,
+      "canonicalMempoolViolation": "validation prefix frame reverted",
+      "erc7562Trace": null,
+      "erc7562TraceError": null,
+      "executionError": "Invalid Transaction: Invalid frame transaction: VERIFY frame 0 (target 0x0000000000000000000000000000000000008141, 26 bytes of code) failed: RevertOpcode",
+      "executionStatus": null,
+      "failedFrameIndex": 0,
+      "frames": null,
+      "gasUsed": null,
+      "haltDetail": "the frame reverted",
+      "haltReason": "revert",
+      "maxCost": "0x2714e0d6c2400",
+      "payer": null,
+      "prefixShape": "SelfVerify",
+      "revertData": "0x"
+    }
+  }
+}

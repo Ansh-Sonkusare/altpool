@@ -25,11 +25,11 @@ export const StepDot = ({ status }: { status: StepState["status"] }) => (
     className={cx(
       "relative grid size-6 flex-none place-items-center rounded-full border text-[12px]/none",
       status === "idle" && "border-dashed border-ln2",
-      status === "running" && "border-amberln bg-amberbg",
+      status === "running" && "border-accln bg-accbg",
       status === "done" && "border-okln bg-okbg text-okt",
       status === "error" && "border-bad/60 bg-bad/10 text-bad",
     )}>
-    {status === "running" && <i className="absolute -inset-px rounded-full border border-transparent border-t-amber animate-spin motion-reduce:animate-none" />}
+    {status === "running" && <i className="absolute -inset-px rounded-full border border-transparent border-t-acc animate-spin motion-reduce:animate-none" />}
     {status === "done" ? "✓" : status === "error" ? "×" : null}
   </span>
 );
@@ -43,10 +43,10 @@ export const TxLine = ({ tx, now }: { tx: ChainTx; now: number }) => (
   <li className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-ln bg-bg px-3 py-2 font-mono text-[12.5px]">
     <span className={cx(
       "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2 py-0.5 text-[11px]/normal before:size-[5px] before:rounded-full before:bg-current before:content-['']",
-      tx.state === "confirmed" ? "border-okln bg-okbg text-okt" : tx.state === "failed" ? "border-bad/40 bg-bad/10 text-bad" : "border-amberln bg-amberbg text-amber before:animate-bl",
+      tx.state === "confirmed" ? "border-okln bg-okbg text-okt" : tx.state === "failed" ? "border-bad/40 bg-bad/10 text-bad" : "border-accln bg-accbg text-acc before:animate-bl",
     )}>{tx.state === "confirmed" && tx.block !== undefined ? `confirmed, block ${tx.block.toLocaleString("en-US")}` : TX_TEXT[tx.state]}</span>
     <span className="text-fg">{tx.label}</span>
-    <ExtLink href={exitUrl(tx.hash)} className="min-h-6 text-amber tabular-nums underline decoration-amberln underline-offset-4">{short(tx.hash)}</ExtLink>
+    <ExtLink href={exitUrl(tx.hash)} className="min-h-6 text-acc tabular-nums underline decoration-accln underline-offset-4">{short(tx.hash)}</ExtLink>
     <span className="ml-auto text-fg2 tabular-nums">{secs((tx.doneAt ?? now) - tx.sentAt)}</span>
   </li>
 );
@@ -123,8 +123,8 @@ export const LifecyclePanel = ({ lc, now }: { lc: Lifecycle; now: number }) => {
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 font-mono text-[12px] text-fg2">
         <span className="flex items-center gap-2" aria-live="polite">
           <span className="relative grid size-3 place-items-center" aria-hidden="true">
-            <i className={cx("size-[7px] rounded-full", lc.live ? "bg-amber" : "bg-dim")} />
-            {lc.live && <i key={lc.polls} className="absolute inset-0 rounded-full border border-amber animate-ping [animation-iteration-count:1] motion-reduce:hidden" />}
+            <i className={cx("size-[7px] rounded-full", lc.live ? "bg-acc" : "bg-dim")} />
+            {lc.live && <i key={lc.polls} className="absolute inset-0 rounded-full border border-acc animate-ping [animation-iteration-count:1] motion-reduce:hidden" />}
           </span>
           {lc.live
             ? <span>polling skandha_frameTransactionStatus every {secs(lc.intervalMs)}, poll {lc.polls}{lc.lastPollAt ? `, last ${secs(now - lc.lastPollAt)} ago` : ""}{visible ? "" : ", tab hidden so the browser slows it"}</span>
@@ -137,10 +137,10 @@ export const LifecyclePanel = ({ lc, now }: { lc: Lifecycle; now: number }) => {
           const failed = i === failedAt;
           const state = failed ? "failed" : bad ? (i < failedAt ? "done" : "idle") : i < reached ? "done" : i === reached ? (lc.live ? "now" : "done") : i === reached + 1 && lc.live ? "next" : "idle";
           const hit = failed ? bad : good.find((e) => stageOf(e.status) === i);
-          const tone = state === "failed" ? "text-bad" : state === "done" ? "text-okt" : state === "idle" ? "text-dim" : "text-amber";
+          const tone = state === "failed" ? "text-bad" : state === "done" ? "text-okt" : state === "idle" ? "text-dim" : "text-acc";
           return (
             <li key={name} className={cx("flex min-w-0 flex-col gap-1 rounded-md border px-3 py-2",
-              state === "failed" ? "border-bad/40 bg-bad/10" : state === "done" ? "border-okln bg-okbg" : state === "idle" ? "border-dashed border-ln2" : "border-amberln bg-amberbg")}>
+              state === "failed" ? "border-bad/40 bg-bad/10" : state === "done" ? "border-okln bg-okbg" : state === "idle" ? "border-dashed border-ln2" : "border-accln bg-accbg")}>
               <span className={cx("flex items-center gap-2 font-mono text-[12px]", tone)}>
                 <span aria-hidden="true">{state === "failed" ? "×" : state === "done" ? "✓" : state === "idle" ? "○" : "…"}</span>
                 {failed ? bad!.status : name}
@@ -163,7 +163,7 @@ export const LifecyclePanel = ({ lc, now }: { lc: Lifecycle; now: number }) => {
             <span className="min-w-0 break-words">{e.note ?? STAGE_HELP[e.status]}</span>
           </li>
         ))}
-        {lc.carriedBy && <li className="flex flex-wrap gap-x-3 text-fg2"><span>carried by chain tx</span><ExtLink href={exitUrl(lc.carriedBy)} className="text-amber">{short(lc.carriedBy)}</ExtLink></li>}
+        {lc.carriedBy && <li className="flex flex-wrap gap-x-3 text-fg2"><span>carried by chain tx</span><ExtLink href={exitUrl(lc.carriedBy)} className="text-acc">{short(lc.carriedBy)}</ExtLink></li>}
       </ol>
       </details>
     </div>

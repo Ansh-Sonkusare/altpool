@@ -7,11 +7,11 @@ import { useCopy } from "./hooks";
 import { navigate, queryFor, type Target } from "./route";
 
 export type Tone = "ok" | "warn" | "bad" | "info" | "muted";
-export const TEXT: Record<Tone, string> = { ok: "text-ok", warn: "text-warn", bad: "text-bad", info: "text-amber", muted: "text-fg2" };
-export const FILL: Record<Tone, string> = { ok: "bg-ok", warn: "bg-warn", bad: "bg-bad", info: "bg-amber", muted: "bg-dim" };
+export const TEXT: Record<Tone, string> = { ok: "text-ok", warn: "text-warn", bad: "text-bad", info: "text-acc", muted: "text-fg2" };
+export const FILL: Record<Tone, string> = { ok: "bg-ok", warn: "bg-warn", bad: "bg-bad", info: "bg-acc", muted: "bg-dim" };
 const TAG: Record<Tone, string> = {
   ok: "border-okln bg-okbg text-okt", warn: "border-warnln bg-warnbg text-warn", bad: "border-bad/40 bg-bad/10 text-bad",
-  info: "border-amberln bg-amberbg text-amber", muted: "border-ln2 text-fg2",
+  info: "border-accln bg-accbg text-acc", muted: "border-ln2 text-fg2",
 };
 
 /** Same pill shape as the main page; the tone says ok, warn, bad, or just information. off = dashed, for "not there". */
@@ -39,8 +39,8 @@ export const A = ({ to, className, children, "aria-current": current }: { to: Ta
     }}>{children}</a>
   );
 };
-export const TxLink = ({ hash }: { hash: string }) => <A to={{ kind: "tx", hash: hash as `0x${string}` }} className="font-mono text-amber hover:underline">{short(hash)}</A>;
-export const EntityLink = ({ addr }: { addr: string }) => <A to={{ kind: "entity", addr: addr as `0x${string}` }} className="font-mono text-amber hover:underline focus-visible:underline">{KNOWN[lc(addr)]?.label ?? short(addr)}</A>;
+export const TxLink = ({ hash }: { hash: string }) => <A to={{ kind: "tx", hash: hash as `0x${string}` }} className="font-mono text-acc hover:underline">{short(hash)}</A>;
+export const EntityLink = ({ addr }: { addr: string }) => <A to={{ kind: "entity", addr: addr as `0x${string}` }} className="font-mono text-acc hover:underline focus-visible:underline">{KNOWN[lc(addr)]?.label ?? short(addr)}</A>;
 export { ExtLink };
 
 export const NodeTags = ({ on, watched }: { on: string[]; watched: NodeRef[] }) => (
@@ -53,15 +53,21 @@ export const Empty = ({ children }: { children: ReactNode }) => <p className="m-
 
 const th = "whitespace-nowrap border-b border-ln px-4 py-3 text-[11px] font-normal tracking-[.12em] text-fg2";
 export const Table = ({ head, right = [], children }: { head: string[]; right?: number[]; children: ReactNode }) => (
-  <div className="overflow-x-auto">
-    <table className="w-full border-collapse font-mono text-[13px] tabular-nums">
-      <thead><tr>{head.map((h, i) => <th key={h + i} className={cx(th, right.includes(i) ? "text-right" : "text-left")}>{h}</th>)}</tr></thead>
-      <tbody className="[&_tr:last-child_td]:border-b-0">{children}</tbody>
+  <div className="overflow-x-auto max-[720px]:overflow-visible">
+    <table className="w-full border-collapse font-mono text-[13px] tabular-nums max-[720px]:block">
+      <thead className="max-[720px]:sr-only"><tr>{head.map((h, i) => <th key={h + i} className={cx(th, right.includes(i) ? "text-right" : "text-left")}>{h}</th>)}</tr></thead>
+      <tbody className="[&_tr:last-child_td]:border-b-0 max-[720px]:block [&_tr]:max-[720px]:block [&_tr]:max-[720px]:border-b [&_tr]:max-[720px]:border-ln [&_tr]:max-[720px]:py-2">{children}</tbody>
     </table>
   </div>
 );
-export const Td = ({ right, className, children, colSpan }: { right?: boolean; className?: string; children: ReactNode; colSpan?: number }) => (
-  <td colSpan={colSpan} className={cx("border-b border-ln px-4 py-3 align-top text-fg", right && "text-right", className)}>{children}</td>
+export const Td = ({ right, className, children, colSpan, label }: { right?: boolean; className?: string; children: ReactNode; colSpan?: number; label?: string }) => (
+  <td colSpan={colSpan} data-label={label} className={cx(
+    "border-b border-ln px-4 py-3 align-top text-fg",
+    right && "text-right",
+    "max-[720px]:flex max-[720px]:min-w-0 max-[720px]:items-baseline max-[720px]:gap-3 max-[720px]:border-b-0 max-[720px]:px-0 max-[720px]:py-1 max-[720px]:text-left max-[720px]:break-words",
+    "before:max-[720px]:w-[104px] before:max-[720px]:shrink-0 before:max-[720px]:text-[11px] before:max-[720px]:tracking-[.12em] before:max-[720px]:text-fg2 before:max-[720px]:content-[attr(data-label)]",
+    className,
+  )}>{children}</td>
 );
 
 /** The headline strip: cells separated by hairlines. */
@@ -96,7 +102,7 @@ export const Tabs = <T extends string>({ tabs, value, onChange, tone }: { tabs: 
   <div role="tablist" className="flex overflow-x-auto border-b border-ln">
     {tabs.map((t) => (
       <button key={t.id} role="tab" aria-selected={value === t.id} onClick={() => onChange(t.id)}
-        className={cx("whitespace-nowrap border-r border-ln px-4 py-3 font-mono text-[13px]", value === t.id ? "bg-amberbg text-fg shadow-[inset_0_-2px_0_var(--color-amber)]" : "text-fg2 hover:text-fg")}>
+        className={cx("whitespace-nowrap border-r border-ln px-4 py-3 font-mono text-[13px]", value === t.id ? "bg-accbg text-fg shadow-[inset_0_-2px_0_var(--color-acc)]" : "text-fg2 hover:text-fg")}>
         {t.label}{t.count !== undefined && <> <span className={tone?.[t.id] ? TEXT[tone[t.id]!] : "text-dim"}>{t.count}</span></>}
       </button>
     ))}
@@ -122,7 +128,7 @@ export const CopyButton = ({ text, label = "Copy" }: { text: string; label?: str
   const [done, copy] = useCopy();
   return (
     <button type="button" onClick={() => copy(text)} aria-label={done === text ? "Copied" : `${label} ${text.length > 24 ? "to clipboard" : text}`}
-      className="min-h-7 rounded-md border border-ln2 px-2 font-mono text-[11.5px] text-fg1 hover:border-amberln hover:text-amber">
+      className="min-h-7 rounded-md border border-ln2 px-2 font-mono text-[11.5px] text-fg1 hover:border-accln hover:text-acc">
       {done === text ? "Copied" : label}
     </button>
   );
@@ -162,7 +168,7 @@ export const Meter = ({ value, max, tone, label, ticks = [] }: { value: number; 
 
 export const Chip = ({ on, count, tone, onClick, children }: { on: boolean; count?: number; tone?: Tone; onClick: () => void; children: ReactNode }) => (
   <button type="button" aria-pressed={on} onClick={onClick}
-    className={cx("min-h-9 whitespace-nowrap rounded-full border px-3 font-mono text-[12px]", on ? "border-amberln bg-amberbg text-amber" : "border-ln2 text-fg2 hover:text-fg")}>
+    className={cx("min-h-9 whitespace-nowrap rounded-full border px-3 font-mono text-[12px]", on ? "border-accln bg-accbg text-acc" : "border-ln2 text-fg2 hover:text-fg")}>
     {children}{count !== undefined && <> <span className={cx(!on && count > 0 && tone ? TEXT[tone] : "")}>{count}</span></>}
   </button>
 );

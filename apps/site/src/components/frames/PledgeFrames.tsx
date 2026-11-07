@@ -14,7 +14,9 @@ import type { Hex } from "viem";
 import { addrUrl, exitUrl } from "../../altpool";
 import { readFrameTx, type FrameRow, type FrameTxView } from "../../frames";
 import type { Live } from "../../live";
-import { clock, Dot, dotFor, ExtLink, fmt, Pill, short } from "../ui";
+import { clock, Dot, dotFor, ExtLink, fmt, Pill, short, TxLink } from "../ui";
+import { plannedRows } from "../../livePledge/plan";
+import { PLEDGE_TX } from "../../proof";
 import { FrameDetail } from "./FrameDetail";
 import { FrameRail } from "./FrameRail";
 import type { FrameState } from "./model";
@@ -41,12 +43,12 @@ export const FramePlayer = ({ rows, states }: { rows: FrameRow[]; states?: Frame
 
   const go = (i: number) => { setPlaying(false); setTouched(true); setSel(Math.min(last, Math.max(0, i))); };
   const play = () => { if (playing) return setPlaying(false); setTouched(true); if (sel >= last) setSel(0); setPlaying(true); };
-  const btn = "cursor-pointer rounded-md border border-ln2 px-3 py-1.5 font-mono text-[12px] text-fg1 hover:border-amberln hover:text-amber focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber disabled:cursor-default disabled:opacity-40 disabled:hover:border-ln2 disabled:hover:text-fg1";
+  const btn = "cursor-pointer rounded-md border border-ln2 min-h-11 px-4 py-1.5 font-mono text-[12px] text-fg1 hover:border-accln hover:text-acc focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-acc disabled:cursor-default disabled:opacity-40 disabled:hover:border-ln2 disabled:hover:text-fg1";
   const row = rows[sel]!;
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <button type="button" onClick={play} className={`${btn} border-amberln text-amber`}>{playing ? "❚❚ Pause" : "▶ Play"}</button>
+        <button type="button" onClick={play} className={`${btn} border-accln text-acc`}>{playing ? "❚❚ Pause" : "▶ Play"}</button>
         <div className="flex items-center gap-2">
           <button type="button" className={btn} disabled={sel === 0} onClick={() => go(sel - 1)}>Prev</button>
           <span className="font-mono text-[12px] text-fg2 tabular-nums">{sel + 1} / {rows.length}</span>
@@ -82,7 +84,7 @@ export const PledgeFrames = ({ hash }: { hash: Hex }) => {
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 font-mono text-[12px] text-fg2">
         <span className="flex items-center gap-2"><Dot state={dotFor(s)} size="sm" />{s.status === "live" ? `read from the chain ${clock(s.at)}` : s.status === "error" ? "devnet did not answer" : "reading the chain…"}</span>
-        <ExtLink href={exitUrl(hash)} className="text-amber">{short(hash)}</ExtLink>
+        <ExtLink href={exitUrl(hash)} className="text-acc">{short(hash)}</ExtLink>
       </div>
       {s.status === "error" && <p className="text-[14px] text-bad">{s.error}</p>}
       {s.status === "loading" && <p className="font-mono text-[13px] text-fg2">reading the transaction and its receipt…</p>}
@@ -90,12 +92,31 @@ export const PledgeFrames = ({ hash }: { hash: Hex }) => {
         <>
           <dl className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-x-6 gap-y-3 font-mono text-[12px]">
             <div><dt className="text-[11px] tracking-[.12em] text-fg2 uppercase">Block</dt><dd className="mt-1 text-fg">{fmt(v.block)}</dd></div>
-            <div><dt className="text-[11px] tracking-[.12em] text-fg2 uppercase">Sender</dt><dd className="mt-1"><ExtLink href={addrUrl(v.sender)} className="text-amber">{short(v.sender)}</ExtLink></dd></div>
+            <div><dt className="text-[11px] tracking-[.12em] text-fg2 uppercase">Sender</dt><dd className="mt-1"><ExtLink href={addrUrl(v.sender)} className="text-acc">{short(v.sender)}</ExtLink></dd></div>
             <div><dt className="text-[11px] tracking-[.12em] text-fg2 uppercase">Transaction status</dt><dd className="mt-1"><Pill kind={v.status === "success" ? "v" : "u"}>{v.status}</Pill></dd></div>
           </dl>
           <FramePlayer rows={v.frames} />
         </>
       )}
+    </div>
+  );
+};
+
+const IncludedRow = () => (
+  <p className="m-0 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[13px] text-fg2">
+    <span className="text-fg">Included on devnet</span>
+    {PLEDGE_TX.hash ? <TxLink hash={PLEDGE_TX.hash} /> : <span className="rounded-md border border-dashed border-ln2 px-2 py-0.5 text-dim">pending</span>}
+  </p>
+);
+
+/** The landing showcase: the real included pledge when PLEDGE_TX has a hash, else the planned nine frames. */
+export const PledgeShowcase = () => {
+  const [rows] = useState<FrameRow[]>(() => plannedRows());
+  const states = rows.map(() => "pending" as const);
+  return (
+    <div className="flex flex-col gap-4">
+      <IncludedRow />
+      {PLEDGE_TX.hash ? <PledgeFrames hash={PLEDGE_TX.hash} /> : <FramePlayer rows={rows} states={states} />}
     </div>
   );
 };

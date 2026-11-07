@@ -1,0 +1,32 @@
+{
+  "endpoint": "https://altmempool.forshtat.com",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "ethrex_simulateFrameTransaction",
+    "params": [
+      "0x06f8b9820539d998d8f66aee58e915a9e47c20a52d407adebcd82bb342bb58548094bfd22c58b44564f0bdafe6a768cdbd87e3831209edca010380c482ea60808080e1028094000000000000000000000000000000000000deadc782c35083030d400180f848f846018080b84100a8d487ee06bce8fb1371d30106b9f3e43fecc212f4a6e2e7deccd366909fe3f057df8f6973650297f702d028d5f029a9e3b55b0a146a81235b29b12c23d0216bcb843b9aca00847735940080c0c0",
+      "latest",
+      {
+        "trace": true
+      }
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "canonicalMempoolValid": false,
+      "canonicalMempoolViolation": "frame signature list does not authenticate the sender",
+      "erc7562Trace": null,
+      "erc7562TraceError": null,
+      "executionError": null,
+      "executionStatus": null,
+      "frames": null,
+      "gasUsed": null,
+      "maxCost": "0x25e1aff5f0800",
+      "payer": null,
+      "prefixShape": null
+    }
+  }
+}

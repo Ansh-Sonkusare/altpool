@@ -1,6 +1,6 @@
 # Altpool reference
 
-Altpool is a viem toolkit for the ERC-8421 alternative mempool on the EIP-8141 frame-transaction devnet (chain 1337). QuietSend and Pledge Paid are apps built with it. This reference is derived from the repository source at https://github.com/Ansh-Sonkusare/altpool and was checked against the live devnet on 2026-11-07. Items marked **unverified** were not confirmed from source or a run.
+Altpool is a viem toolkit for the ERC-8421 alternative mempool on the EIP-8141 frame-transaction devnet (chain 1337). Pledge Paid is the showcase transaction; also built: the ExitRelay exit (QuietSend CLI), Falcon-512 wallets, Wallet Bridge. This reference is derived from the repository source at https://github.com/Ansh-Sonkusare/altpool and was checked against the live devnet on 2026-11-07. Items marked **unverified** were not confirmed from source or a run.
 
 ## Start here
 
@@ -252,7 +252,7 @@ frame-doctor 0xaecb2f60d93c16689ce678d9e956958a1bf256b7877db1f43e778922bf07ffdd
   route  nowhere (unverified)  public rejects public-storage (StorageReadNonSender); alt rejects storage
 ```
 
-### E. QuietSend: deposit, then withdraw to a 0-ETH address through ExitRelay
+### E. ExitRelay exit (QuietSend CLI, also built): deposit, then withdraw to a 0-ETH address through ExitRelay
 
 Needs the prover artifacts once: `bun run --filter @altpool/prover fetch && bun run --filter @altpool/prover convert` (about 70 MB of JSON). The same flow as `apps/quietsend/src/cli.ts`.
 
@@ -1101,7 +1101,7 @@ Condensed from `packages/mcp/src/rules.ts` (source: https://docs.altmempool.wtf/
 | STORAGE | `storage`, `public-storage` | Sender's own storage always (STORAGE-010). Sender-associated slots in another contract if the sender exists (021) or with a staked factory (022). Staked entity: own storage (031), read-only elsewhere in non-entity contracts (032), slots associated with its address (033). Unstaked non-sender entities: no access. Fix: stake the reading entity, send to the alt mempool. |
 | CALLING-010 | `COD-010`, `entrypoint-access` | Calling an address with no code is forbidden. Precompiles 0x01 to 0x11 and P256VERIFY (0x100) are allowed (ecrecover works on the devnet since 2026-11-06). |
 | STAKING-010 | `stake` | Staked iff registry stake `>= MIN_STAKE_VALUE` (devnet 0.01 ETH; the BALANCE carve-out needs strictly more), unstake delay `>= MIN_UNSTAKE_DELAY` (draft 86,400 s; devnet config reports 0), and no withdrawal started. `unlockStake()` drops the status immediately. The registry keys on `msg.sender`: a contract must call `addStake` from its own code. |
-| REPUTATION | `reputation` | Per entity: seen and included, decayed hourly by 23/24. `max_seen = seen / 10`. BANNED if `max_seen > included + 50`; THROTTLED if `> included + 10` (capped at 4 pending). Devnet: `opsIncluded` can stay 0, so a busy staked sender throttles after about 110 sends; replacements count as seen. Fix: use a fresh entity address for demos. |
+| REPUTATION | `reputation` | Per entity: seen and included, decayed hourly by 23/24. `max_seen = seen / 10`. BANNED if `max_seen > included + 50`; THROTTLED if `> included + 10` (capped at 4 pending). Devnet: on Nov 6 `opsIncluded` stayed 0, so a busy staked sender throttled after about 110 sends; fixed by Nov 7. Replacements count as seen. Fix: use a fresh entity address for demos. |
 | LIFECYCLE-010 | `mempool`, `nonce` | 1 to 16 strictly increasing keys; key 0 only alone. `nonceSeq` equals each key's current sequence. One pending tx per (sender, key); a replacement needs +10% on both fees. Unstaked sender: 4 pending linear txs. |
 | SOLVENCY-010 | `execution`, `simulation` | The payer must cover `(all frame limits + intrinsic) x maxFeePerGas`, minus what its other pending txs reserve; re-checked every block, newest dropped first. ethrex reports a missing balance as the ambiguous `validation prefix frame reverted`. Fix: fund the payer (the sender when it self-pays). |
 | STATE-GAS | `execution` | Creating an account costs 183,600 state gas, a new storage slot 97,920. A frame with `limits.state = 0` that creates state halts silently and fails the tx. Unused limits are refunded. |
@@ -1152,7 +1152,7 @@ watch-entity <address>... --once [--fail-if ...]  one snapshot; with --fail-if, 
 
 Exit codes: `0` healthy (or watching), `1` a `--fail-if` condition holds, `2` usage error or no node reachable.
 
-### `quietsend`
+### `quietsend` (QuietSend CLI, also built)
 
 Source: `apps/quietsend/src/cli.ts`; package `bin` is `quietsend`.
 
@@ -1316,7 +1316,7 @@ The 450k and 600k figures are our own pins (`DEVNET.verifyGasMax`, `PAY_VERIFY_G
 - Registry `0xd51c04d7a0b01124e84de152f4e56d9eecb22d2f`, `addStake(uint32 unstakeDelaySec) payable`, keyed on `msg.sender`. Contracts call it from their own code; the MCP `stake_entity { contract }` calls a contract's payable `stake(address registry, uint32 delay)`.
 - Stake **strictly more than** 0.01 ETH (`minStake` = 10000000000000000 wei). PayRelayWETH is staked with 0.012 ETH. The sidecar's config reports `minUnstakeDelay` 0 (live, today) while our constants and the rules text use 86,400 s (1 day); using 86,400 satisfies both.
 - `unlockStake` drops the staked status immediately; the amount is withdrawable after the delay. A banned entity is reported as unstaked.
-- Reputation: throttled when `floor(seen/10) > included + 10`, banned when `> included + 50`. On this devnet `opsIncluded` can stay 0, so a busy staked sender throttles after about 110 sends (`headroom.untilThrottled` 110 for a fresh entity). Replacements count as seen. Use a fresh entity for demos.
+- Reputation: throttled when `floor(seen/10) > included + 10`, banned when `> included + 50`. On Nov 6 `opsIncluded` stayed 0 on this devnet, so a busy staked sender throttled after about 110 sends (`headroom.untilThrottled` 110 for a fresh entity); fixed by Nov 7. Replacements count as seen. Use a fresh entity for demos.
 
 ### Keyed nonces
 

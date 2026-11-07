@@ -107,7 +107,7 @@ export const createSimulator = (opts: SimulatorOptions = {}) => {
     const unstakeDelaySec = Number(delay);
     return {
       stake, unstakeDelaySec, withdrawTime, hasCode: code === undefined ? undefined : code !== "0x",
-      staked: stake > DEVNET.minStakeWei && unstakeDelaySec >= DEVNET.unstakeDelaySec && withdrawTime === 0n,
+      staked: stake > DEVNET.minStakeWei && unstakeDelaySec >= DEVNET.minUnstakeDelaySec && withdrawTime === 0n,
     };
   };
 

@@ -125,12 +125,12 @@ const classify = (message: string, code: number | undefined, data: unknown): Mat
   let x: RegExpMatchArray | null;
 
   if (/Error decoding field/i.test(m)) return { rule: "structure" };
-  if (code === -32507 || /Invalid frame transaction signature|InvalidFrameSignature/i.test(m)) return { rule: "signature" };
+  if (code === -32507 || /Invalid frame transaction signature|InvalidFrameSignature|does not authenticate the sender/i.test(m)) return { rule: "signature" };
   if (/recent-root|RECENT_ROOT|RecentRoot/i.test(m)) return { rule: "recent-root" };
   if (/prefix gas budget|exceeds MAX_VERIFY_GAS|VerifyGasBudgetExceeded|VerifyGasExceeded/i.test(m)) return { rule: "public-gas-cap" };
   if (/gas limit is too high|per-transaction gas cap/i.test(m)) return { rule: "gas-limit" };
   if (/validation prefix not recognized/i.test(m)) return { rule: "prefix" };
-  if (/ATOMIC_BATCH_FLAG|AtomicBatchInPrefix|expected tx\.sender|VerifyTargetNotSender|VERIFY frame after|VerifyFrameAfterPrefix|chain id .* does not match|state gas sum|PreVerify/i.test(m))
+  if (/ATOMIC_BATCH_FLAG|atomic batch flag|AtomicBatchInPrefix|expected tx\.sender|VerifyTargetNotSender|VERIFY frame after|VerifyFrameAfterPrefix|chain id .* does not match|state gas sum|PreVerify/i.test(m))
     return { rule: "structure", frameIndex: frameOf(m) };
 
   if ((x = m.match(new RegExp(`(${ROLES}) uses banned opcode: (CREATE2?)\\b`))) || /too many CREATE2/.test(m))
@@ -154,7 +154,7 @@ const classify = (message: string, code: number | undefined, data: unknown): Mat
     const revertReason = decodeRevert(x[2]);
     return { rule: revertReason && NULLIFIER_SPENT.test(revertReason) ? "nullifier-spent" : "simulation", frameIndex: Number(x[1]), revertReason };
   }
-  if (/validation frame \d+:|Nonce mismatch|Invalid Transaction|has \d+ wei/i.test(m)) return { rule: "simulation", frameIndex: frameOf(m) };
+  if (/validation frame \d+:|Nonce mismatch|expiry deadline has passed|Invalid Transaction|has \d+ wei/i.test(m)) return { rule: "simulation", frameIndex: frameOf(m) };
 
   return { rule: "unknown" };
 };

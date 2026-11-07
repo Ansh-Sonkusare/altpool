@@ -1,0 +1,148 @@
+{
+  "endpoint": "https://altmempool.forshtat.com/rpc",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "skandha_explorer_getTransaction",
+    "params": [
+      "0x1e5bccae8e08e2c39cc5e27ba891c15d7c2e8aaa31fa96d5f1b6e42b75726dd2"
+    ]
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "hash": "0x1e5bccae8e08e2c39cc5e27ba891c15d7c2e8aaa31fa96d5f1b6e42b75726dd2",
+      "entry": null,
+      "admission": {
+        "id": 29,
+        "txHash": "0x1e5bccae8e08e2c39cc5e27ba891c15d7c2e8aaa31fa96d5f1b6e42b75726dd2",
+        "sender": "0xbFD22C58b44564f0bDaFE6a768CDBd87e3831209",
+        "nonce": "0x0",
+        "nonceKeys": [
+          "0xa43962ad4a2c0d8f51be558a15899ba899dae0d9b9dbd0a4"
+        ],
+        "at": 1794071958251,
+        "source": "rpc",
+        "outcome": "rejected",
+        "errorCode": -32500,
+        "checks": [
+          {
+            "rule": "gas-limit",
+            "verdict": "pass"
+          },
+          {
+            "rule": "recent-root",
+            "verdict": "pass"
+          },
+          {
+            "rule": "prefix",
+            "verdict": "pass"
+          },
+          {
+            "rule": "structure",
+            "verdict": "pass"
+          },
+          {
+            "rule": "signature",
+            "verdict": "pass"
+          },
+          {
+            "rule": "simulation",
+            "verdict": "fail",
+            "detail": "validation frame 0: reverted"
+          },
+          {
+            "rule": "trace-alignment",
+            "verdict": "skipped"
+          },
+          {
+            "rule": "OP-061",
+            "verdict": "skipped"
+          },
+          {
+            "rule": "execution",
+            "verdict": "skipped"
+          },
+          {
+            "rule": "mempool",
+            "verdict": "skipped"
+          },
+          {
+            "rule": "out-of-gas",
+            "verdict": "skipped"
+          },
+          {
+            "rule": "OP-011",
+            "verdict": "skipped"
+          },
+          {
+            "rule": "create",
+            "verdict": "skipped"
+          },
+          {
+            "rule": "storage",
+            "verdict": "skipped"
+          },
+          {
+            "rule": "COD-010",
+            "verdict": "skipped"
+          },
+          {
+            "rule": "entrypoint-access",
+            "verdict": "skipped"
+          }
+        ],
+        "frames": [
+          {
+            "mode": 1,
+            "flags": 0,
+            "target": "0x0000000000000000000000000000000000008141",
+            "limits": {
+              "execution": "0x2710",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x000000006aef4f83"
+          },
+          {
+            "mode": 1,
+            "flags": 3,
+            "target": null,
+            "limits": {
+              "execution": "0xea60",
+              "state": "0x0"
+            },
+            "value": "0x0",
+            "data": "0x"
+          },
+          {
+            "mode": 2,
+            "flags": 0,
+            "target": "0x000000000000000000000000000000000000dEaD",
+            "limits": {
+              "execution": "0xc350",
+              "state": "0x30d40"
+            },
+            "value": "0x1",
+            "data": "0x"
+          }
+        ],
+        "frameStatuses": [
+          "not-run",
+          "not-run",
+          "not-run"
+        ]
+      },
+      "events": [
+        {
+          "seq": 32,
+          "txHash": "0x1e5bccae8e08e2c39cc5e27ba891c15d7c2e8aaa31fa96d5f1b6e42b75726dd2",
+          "at": 1794071958263,
+          "kind": "rejected",
+          "reason": "validation frame 0: reverted"
+        }
+      ]
+    }
+  }
+}

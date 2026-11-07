@@ -2,17 +2,17 @@ import type { ReactNode } from "react";
 import { Code } from "../Code";
 
 const Block = ({ title, lead, children, lang }: { title: string; lead: ReactNode; children: string; lang?: "ts" | "sh" }) => (
-  <div className="flex min-w-0 flex-col gap-3 rounded-xl border border-ln bg-s1 p-5">
-    <h3 className="m-0 font-mono text-[12px] font-normal uppercase tracking-[.12em] text-fg2">{title}</h3>
+  <div className="flex min-w-0 flex-col gap-3">
+    <h4 className="m-0 font-mono text-[12px]/4 font-medium uppercase tracking-[.08em] text-fg2">{title}</h4>
     <Code code={children} lang={lang} className="text-[12.5px]/[20px]" />
-    <p className="m-0 mt-auto text-sm/[21px] text-fg2">{lead}</p>
+    <p className="m-0 mt-auto text-sm/[22px] text-fg2">{lead}</p>
   </div>
 );
 
 const code = "font-mono text-fg1";
 
 export const UseIt = () => (
-  <div className="grid grid-cols-3 gap-3 max-[960px]:grid-cols-1">
+  <div className="grid grid-cols-3 gap-6 max-[960px]:grid-cols-1">
     <Block
       title="CLI"
       lang="sh"

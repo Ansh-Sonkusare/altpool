@@ -70,7 +70,7 @@ const Frames = ({ r }: { r: TxReport }) => {
         <div className="flex flex-col gap-5 p-4">
           <FramePlayer rows={v.view.frames} />
           <details className="group">
-            <summary className="min-h-9 w-fit cursor-pointer list-none rounded-md font-mono text-[12.5px] text-amber focus-visible:outline-2">What the chips mean</summary>
+            <summary className="min-h-9 w-fit cursor-pointer list-none rounded-md font-mono text-[12.5px] text-acc focus-visible:outline-2">What the chips mean</summary>
             <div className="pt-4"><FrameLegend /></div>
           </details>
         </div>
@@ -92,12 +92,12 @@ const FrameTable = ({ r }: { r: TxReport }) => (
       const out = r.receipt?.frames[f.index];
       return (
         <tr key={f.index}>
-          <Td>{f.index}</Td>
-          <Td>{MODE[f.mode] ?? f.mode}<div className="font-sans text-[12px] text-fg2">{frameRole(r, f.index)}</div></Td>
-          <Td>{f.target ? (lc(f.target) === EXPIRY_VERIFIER ? <span className="text-fg2">0x…8141</span> : <EntityLink addr={f.target} />) : <span className="text-fg2">sender</span>}</Td>
-          <Td right>{num(f.executionLimit)}{f.stateLimit > 0n && <div className="text-[12px] text-fg2">+ {num(f.stateLimit)} state</div>}</Td>
-          <Td right>{out ? <>{num(out.gasUsed)}{out.stateGasUsed > 0n && <div className="text-[12px] text-fg2">+ {num(out.stateGasUsed)} state</div>}</> : "n/a"}</Td>
-          <Td>{out ? <Tag tone={out.status === "ok" ? "ok" : "bad"}>{out.status === "ok" ? "ok" : "failed"}</Tag> : <span className="text-fg2">n/a</span>}</Td>
+          <Td label="#">{f.index}</Td>
+          <Td label="Mode">{MODE[f.mode] ?? f.mode}<div className="font-sans text-[12px] text-fg2">{frameRole(r, f.index)}</div></Td>
+          <Td label="Target">{f.target ? (lc(f.target) === EXPIRY_VERIFIER ? <span className="text-fg2">0x…8141</span> : <EntityLink addr={f.target} />) : <span className="text-fg2">sender</span>}</Td>
+          <Td label="Limit" right>{num(f.executionLimit)}{f.stateLimit > 0n && <div className="text-[12px] text-fg2">+ {num(f.stateLimit)} state</div>}</Td>
+          <Td label="Used" right>{out ? <>{num(out.gasUsed)}{out.stateGasUsed > 0n && <div className="text-[12px] text-fg2">+ {num(out.stateGasUsed)} state</div>}</> : "n/a"}</Td>
+          <Td label="Status">{out ? <Tag tone={out.status === "ok" ? "ok" : "bad"}>{out.status === "ok" ? "ok" : "failed"}</Tag> : <span className="text-fg2">n/a</span>}</Td>
         </tr>
       );
     })}
@@ -124,7 +124,7 @@ const Report = ({ r, choice }: { r: TxReport; choice: NodeChoice }) => {
   return (
     <>
       <Card className="overflow-hidden">
-        <CardBar><span className="text-fg">Summary</span><ExtLink href={explorerUrl(r.hash, knownOn)} className="text-amber">explorer</ExtLink></CardBar>
+        <CardBar><span className="text-fg">Summary</span><ExtLink href={explorerUrl(r.hash, knownOn)} className="text-acc">explorer</ExtLink></CardBar>
         <Stats cols={4}>
           <Stat label="Status" tone={tone} big={st ?? "unknown"} sub={r.receipt ? `block ${num(r.receipt.block)}` : rejectedOn.length ? `rejected on ${rejectedOn.map((n) => n.name).join(" + ")}` : "not mined"} />
           <Stat label="VERIFY gas" tone={over ? "warn" : "info"} big={r.verifyGas !== undefined ? num(r.verifyGas) : "n/a"}
@@ -146,7 +146,7 @@ const Report = ({ r, choice }: { r: TxReport; choice: NodeChoice }) => {
       {r.frames.length > 0 && <Frames r={r} />}
 
       <Card className="overflow-hidden">
-        <CardBar><span className="text-fg">Path across nodes</span><span className="text-amber">{r.lag.length ? r.lag.map((l) => `${l.node} +${(l.ms / 1000).toFixed(1)}s`).join(" · ") : r.firstSeen ? `first seen on ${r.firstSeen.node}` : ""}</span></CardBar>
+        <CardBar><span className="text-fg">Path across nodes</span><span className="text-acc">{r.lag.length ? r.lag.map((l) => `${l.node} +${(l.ms / 1000).toFixed(1)}s`).join(" · ") : r.firstSeen ? `first seen on ${r.firstSeen.node}` : ""}</span></CardBar>
         <ul className="m-0 list-none p-0">{r.nodes.map((n) => <PathRow key={n.name} r={r} n={n} />)}</ul>
       </Card>
 
@@ -206,7 +206,7 @@ const TxFollow = ({ hash, choice }: { hash: Hex; choice: NodeChoice }) => {
   const t = useTxLive(hash, choice);
   return (
     <div className="flex flex-col gap-6">
-      <Heading title="Transaction" sub={<span className="flex flex-wrap items-center gap-2"><span className="break-all">{hash}</span><CopyButton text={hash} label="Copy hash" /><ExtLink href={explorerUrl(hash)} className="text-amber">explorer</ExtLink></span>}
+      <Heading title="Transaction" sub={<span className="flex flex-wrap items-center gap-2"><span className="break-all">{hash}</span><CopyButton text={hash} label="Copy hash" /><ExtLink href={explorerUrl(hash)} className="text-acc">explorer</ExtLink></span>}
         aside={<Pulse state={t.error ? "err" : t.value && !t.final ? "live" : undefined} word={t.error ? "Lookup failed, retrying." : !t.value ? "Reading." : t.final ? "Final." : "Following."}>
           {t.error ?? (!t.value ? "Asking the nodes for this hash…" : t.final ? `Checked ${clockAt(t.at!)}; it will not change.` : `Checked ${clockAt(t.at!)}; again in 3 s.`)}
         </Pulse>} />
