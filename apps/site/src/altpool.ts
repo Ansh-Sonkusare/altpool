@@ -7,7 +7,8 @@ import { altDevnet, altpoolActions, createAltMempoolClient, DEVNET, explorerTx }
 
 export { profile };
 
-const miner = createAltMempoolClient({ httpUrl: DEVNET.minerSidecarUrl, profile, name: "miner" });
+// The miner simulates a 9-frame Pledge Paid before answering eth_sendFrameTransaction; that took over 20 s (the default) on Nov 7.
+const miner = createAltMempoolClient({ httpUrl: DEVNET.minerSidecarUrl, profile, name: "miner", timeoutMs: 90_000 });
 const gatewaySidecar = createAltMempoolClient({ httpUrl: DEVNET.gatewayUrl, profile, name: "gateway" });
 
 export const client = createPublicClient({ chain: altDevnet, transport: http(DEVNET.ethrexUrl) }).extend(
