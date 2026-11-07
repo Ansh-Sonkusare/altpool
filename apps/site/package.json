@@ -16,6 +16,7 @@
     "@altpool/monitor": "workspace:*",
     "@altpool/prover": "workspace:*",
     "@altpool/simulator": "workspace:*",
+    "@altpool/wallet-bridge": "workspace:*",
     "@forshtat/hegota-support": "0.0.1",
     "altpool": "workspace:*",
     "buffer": "^6.0.3",

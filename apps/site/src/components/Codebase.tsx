@@ -142,6 +142,11 @@ const ENTRIES: readonly Entry[] = [
     uses: ["falconKeygen", "falconSign", "falconSpendTx", "predictWalletAddress"],
   },
   {
+    path: "packages/wallet-bridge", name: "@altpool/wallet-bridge",
+    job: "Not part of Pledge Paid. BridgeAccount lets MetaMask or Rabby control a frame-tx account: the wallet signs EIP-712 and the account's VERIFY frame checks it with ecrecover. Try it at /wallet.",
+    uses: ["bridgeAccount", "typedDataSigner", "authorizeSession", "connectAltDevnet"],
+  },
+  {
     path: "apps/quietsend", name: "quietsend",
     job: "The command-line QuietSend exit on the ETH pool, which is frames 0 to 2 on their own.",
     uses: ["quietsend deposit", "quietsend withdraw <note>"],
@@ -158,8 +163,8 @@ const ENTRIES: readonly Entry[] = [
   },
   {
     path: "apps/site", name: "@altpool/site",
-    job: "This page. Its Pledge Paid sender runs the prover, the contracts package and the SDK in your browser against the devnet.",
-    uses: ["src/livePledge/run.ts"],
+    job: "This page. Its Pledge Paid sender runs the prover, the contracts package and the SDK in your browser against the devnet. /monitor is the operator console and /wallet is the Wallet Bridge demo.",
+    uses: ["src/livePledge/run.ts", "/monitor", "/wallet"],
   },
 ];
 

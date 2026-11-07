@@ -1,6 +1,7 @@
 import { Codebase } from "./components/Codebase";
 import { Doctor } from "./components/Doctor";
 import { Hero } from "./components/Hero";
+import { Install } from "./components/Install";
 import { Nav } from "./components/Nav";
 import { LivePledge } from "./components/LivePledge";
 import { Footer, Why } from "./components/Static";
@@ -20,6 +21,7 @@ export const App = () => {
       <LivePledge entity={entity} />
       <Codebase entity={entity} />
       <Doctor doctor={doctor} entity={entity} />
+      <Install />
       <Why />
       <Footer entity={entity} />
     </div>

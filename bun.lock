@@ -65,6 +65,7 @@
         "@altpool/monitor": "workspace:*",
         "@altpool/prover": "workspace:*",
         "@altpool/simulator": "workspace:*",
+        "@altpool/wallet-bridge": "workspace:*",
         "@forshtat/hegota-support": "0.0.1",
         "altpool": "workspace:*",
         "buffer": "^6.0.3",
@@ -140,7 +141,7 @@
     },
     "packages/mcp": {
       "name": "@altpool/mcp",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "bin": {
         "altpool-mcp": "./src/server.ts",
       },
