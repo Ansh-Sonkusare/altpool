@@ -12,8 +12,10 @@
 //   const signed = await signFrameTransaction(profile, tx, { privateKey: sessionKey });
 import {
   concat, encodeAbiParameters, getAddress, isAddressEqual, recoverTypedDataAddress, toHex,
-  type Address, type Hex, type TypedDataDomain,
+  type Address, type Client, type Hex, type TypedDataDomain,
 } from "viem";
+import { getBalance, getCode, getGasPrice, getTransactionCount } from "viem/actions";
+import { getKeyedNonce } from "./nonces";
 import { frame, newTx, sigHash, sigScheme, type FrameTx } from "@forshtat/hegota-support/tx";
 import type { Profile } from "./profiles";
 import type { FrameSigner } from "./transaction";
@@ -96,6 +98,63 @@ export const DEFAULT_VERIFY_GAS = 40_000n;
 export const sessionVerifyGas = (calls: number): bigint => 60_000n + 4_000n * BigInt(Math.max(0, calls - 1));
 export const EXPIRY_GAS = 10_000n;
 const DEFAULT_CALL_GAS = 50_000n;
+/** prepareTx limits. Unused SENDER-frame gas is refunded and only prefix (VERIFY) limits count toward the 100k cap,
+ * so body frames are declared generously: the cost is a larger balance reservation, not a larger bill. */
+export const PREPARED_CALL_GAS = 100_000n;
+/** A value transfer that creates the recipient: 183,600 state gas on this devnet, plus slack. */
+export const NEW_ACCOUNT_STATE_GAS = 200_000n;
+/** A call with data may write fresh storage (97,920 state gas per new slot); a state limit of 0 halts it silently. */
+export const PREPARED_CALL_STATE_GAS = 300_000n;
+
+/** Where prepareTx takes fees from: the sidecar (preferred, what the alt mempool enforces) or explicit values. */
+export interface FeeSource { getGasPrice: () => Promise<{ maxFeePerGas: bigint; maxPriorityFeePerGas: bigint }> }
+
+export interface PrepareArgs {
+  /** A viem client on the execution RPC (ethrex): nonce, recipient state, and the fallback gas price. */
+  client: Client;
+  calls: BridgeCall[];
+  /** Explicit fees win; else `sidecar.getGasPrice()` x feeMultiplierPercent; else eth_gasPrice. */
+  fees?: { maxFeePerGas: bigint; maxPriorityFeePerGas?: bigint };
+  sidecar?: FeeSource;
+  /** Applied to maxFeePerGas from the node (default 200: room for one base-fee rise). */
+  feeMultiplierPercent?: bigint;
+  /** Explicit nonce sequence; else read for `nonceKey`. */
+  nonce?: bigint;
+  nonceKey?: bigint;
+  verifyGas?: bigint;
+}
+
+/**
+ * Fill each call's limits without a signature. ethrex refuses eth_estimateGas from a contract sender (EIP-3607:
+ * "Sender account ... shouldn't be a contract") and has no state override, and the sidecar estimator needs a
+ * signature over its own probe, so a wallet-controlled account cannot be estimated before signing. Instead:
+ * declare generous body limits (refunded), state gas only where a call can create state, and let the caller check
+ * the SIGNED tx with preflight/checkAdmission before submitting. Explicit `gas`/`state` on a call always win.
+ */
+export async function prepareCalls(client: Client, calls: BridgeCall[]): Promise<BridgeCall[]> {
+  return Promise.all(calls.map(async (c) => {
+    if (c.state !== undefined) return { ...c, gas: c.gas ?? PREPARED_CALL_GAS };
+    const hasData = !!c.data && c.data !== "0x";
+    let state = 0n;
+    if (hasData) state = PREPARED_CALL_STATE_GAS;
+    else if ((c.value ?? 0n) > 0n) {
+      const [balance, nonce, code] = await Promise.all([getBalance(client, { address: c.to }), getTransactionCount(client, { address: c.to }), getCode(client, { address: c.to })]);
+      if (balance === 0n && nonce === 0 && (!code || code === "0x")) state = NEW_ACCOUNT_STATE_GAS;
+    }
+    return { ...c, gas: c.gas ?? PREPARED_CALL_GAS, state };
+  }));
+}
+
+async function prepareFees(a: Pick<PrepareArgs, "client" | "fees" | "sidecar" | "feeMultiplierPercent">) {
+  if (a.fees) return a.fees;
+  const mul = a.feeMultiplierPercent ?? 200n;
+  if (a.sidecar) {
+    const gp = await a.sidecar.getGasPrice();
+    return { maxFeePerGas: (gp.maxFeePerGas * mul) / 100n, maxPriorityFeePerGas: gp.maxPriorityFeePerGas };
+  }
+  const gp = await getGasPrice(a.client);
+  return { maxFeePerGas: (gp * mul) / 100n, maxPriorityFeePerGas: gp };
+}
 
 export const bridgeDomain = (account: Address, chainId: bigint | number): TypedDataDomain => ({
   name: BRIDGE_DOMAIN_NAME, version: BRIDGE_DOMAIN_VERSION, chainId: Number(chainId), verifyingContract: getAddress(account),
@@ -210,11 +269,38 @@ export function bridgeAccount(cfg: BridgeAccountConfig) {
     });
   };
 
+  const nonceFor = async (client: Client, nonce: bigint | undefined, key: bigint | undefined) =>
+    nonce ?? (await getKeyedNonce(client, profile, { sender: address, key: key ?? 0n })).seq;
+
+  /** Mode A, ready to sign: nonce, fees and call limits filled from the chain. No wallet interaction. */
+  const prepareTx = async (a: PrepareArgs) => buildTx({
+    calls: await prepareCalls(a.client, a.calls),
+    nonce: await nonceFor(a.client, a.nonce, a.nonceKey),
+    nonceKey: a.nonceKey,
+    fees: await prepareFees(a),
+    verifyGas: a.verifyGas,
+  });
+
+  /** Mode B, ready for the session key to sign. A fresh random nonce key per tx (default) lets txs fly in parallel. */
+  const prepareSessionTx = async (a: PrepareArgs & { session: BridgeSession; ownerSignature: Hex; deadline?: bigint }) => {
+    const nonceKey = a.nonceKey ?? BigInt(toHex(crypto.getRandomValues(new Uint8Array(24))));
+    const now = BigInt(Math.floor(Date.now() / 1000));
+    const deadline = a.deadline ?? (now + 600n < a.session.validUntil ? now + 600n : a.session.validUntil);
+    return buildSessionTx({
+      session: a.session, ownerSignature: a.ownerSignature, deadline,
+      calls: await prepareCalls(a.client, a.calls),
+      nonce: await nonceFor(a.client, a.nonce, nonceKey),
+      nonceKey,
+      fees: await prepareFees(a),
+      verifyGas: a.verifyGas,
+    });
+  };
+
   /** Off-chain check that `signature` over `tx`'s typed data recovers the owner (what VERIFY will do). */
   const recoverOwner = (tx: FrameTx, signature: Hex) => recoverTypedDataAddress({ ...typedDataFor(tx), signature });
   const isOwnerSignature = async (tx: FrameTx, signature: Hex) => isAddressEqual(await recoverOwner(tx, signature), cfg.owner);
 
-  return { address, owner: getAddress(cfg.owner), profile, buildTx, typedDataFor, attachSignature, authorizeSession, buildSessionTx, recoverOwner, isOwnerSignature };
+  return { address, owner: getAddress(cfg.owner), profile, buildTx, prepareTx, typedDataFor, attachSignature, authorizeSession, buildSessionTx, prepareSessionTx, recoverOwner, isOwnerSignature };
 }
 
 export type BridgeAccount = ReturnType<typeof bridgeAccount>;
@@ -226,11 +312,13 @@ export interface TypedDataWallet {
 
 /**
  * A FrameSigner for a Mode A BridgeAccount tx: asks the wallet for eth_signTypedData_v4 over the FrameTx typed data
- * and stores the r||s||v bytes in the ARBITRARY entry as-is (no v||r||s repack).
+ * and stores the r||s||v bytes in the ARBITRARY entry as-is (no v||r||s repack). Marked interactive: the SDK will
+ * not ask it to sign estimation probes or simulation copies (one popup per tx).
  * `account` is passed for WalletClients without a hoisted account (e.g. the MetaMask address).
  */
 export function typedDataSigner(wallet: TypedDataWallet, bridge: BridgeAccount, account?: Address): Extract<FrameSigner, { signFrame: unknown }> {
   return {
+    interactive: true,
     signFrame: async ({ tx, index }) => {
       if ((index ?? 0) !== 0) throw new Error("BridgeAccount Mode A signs entry 0 only");
       const signature = await wallet.signTypedData({ ...(account ? { account } : {}), ...bridge.typedDataFor(tx) });

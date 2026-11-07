@@ -12,16 +12,16 @@ import {
   compareMempoolProfiles, explainAdmissionFailure, getAdmissionReport, preflightFrameTransaction, simulateFrameTransaction,
   type NodeProfile, type PreflightArgs,
 } from "./admission";
-import { AltpoolSdkError, decodeRpcError, FrameAdmissionError, ProfileMismatchError, ReceiptTimeoutError, UnsupportedCapabilityError } from "./errors";
+import { AltpoolSdkError, decodeRpcError, FrameAdmissionError, InteractiveSignerError, ProfileMismatchError, ReceiptTimeoutError, UnsupportedCapabilityError } from "./errors";
 import type { AdmissionRecord, ExplorerInfo, FrameReceipt, FrameTxStatus, SidecarConfig } from "./normalize";
-import { FINAL_STATUSES } from "./normalize";
+import { FINAL_STATUSES, parseReceipt } from "./normalize";
 import { getKeyedNonce, getNonceSequence, prepareNonceKeys, validateNonceKeys } from "./nonces";
 import { profileExtras } from "./profiles";
 import { encodeRecentRootWrite, getCurrentSlot, getRecentRoot, prepareRecentRootReferences, recentRootSourceId, validateRecentRootReferences, verifyRecentRootPredeploy } from "./recentRoots";
 import type { AltMempoolClient, SubmitResult } from "./sidecar";
 import { getEntityStake, stakeEntity, stakingParameters, unlockEntityStake, withdrawEntityStake, type StakeEntityArgs, type StakingParameters } from "./staking";
 import {
-  applyGasReport, estimationProbe, gasReport, signFrameTransaction, validationPrefixLength,
+  applyGasReport, estimationProbe, gasReport, isInteractiveSigner, signFrameTransaction, validationPrefixLength,
   type FrameGasReport, type FrameSigner, type GasMargin,
 } from "./transaction";
 import {
@@ -60,6 +60,14 @@ export interface Capabilities {
   warnings: string[];
   config: SidecarConfig;
   info?: ExplorerInfo;
+}
+
+/** The estimator's probe is a valid tx with larger body limits: a person must never be asked to sign it. */
+function assertNotInteractive(signer?: FrameSigner) {
+  if (!isInteractiveSigner(signer)) return;
+  throw new InteractiveSignerError("Gas estimation would ask the wallet to sign the estimator's probe (a second popup, over inflated limits).", {
+    fix: "For a BridgeAccount use bridge.prepareTx (fills nonce, fees and limits without signing), then sign once with prepare: false.",
+  });
 }
 
 export function altpoolActions(opts: AltpoolActionsOptions) {
@@ -127,6 +135,7 @@ export function altpoolActions(opts: AltpoolActionsOptions) {
     };
 
     const estimateFrameTransactionGas = async (args: { transaction: FrameTx; signer?: FrameSigner; margin?: GasMargin; mempool?: string }): Promise<FrameGasReport> => {
+      assertNotInteractive(args.signer);
       const node = pick(args.mempool);
       const probe = args.signer ? await signFrameTransaction(profile, estimationProbe(profile, args.transaction), args.signer) : args.transaction;
       return gasReport(profile, args.transaction, await node.estimateFrameTransactionGas(probe), args.margin);
@@ -134,6 +143,7 @@ export function altpoolActions(opts: AltpoolActionsOptions) {
 
     /** Fill fees (node gas price unless given) and body-frame gas (from the estimator). Returns an UNSIGNED tx. */
     const prepareFrameTransaction = async (args: { transaction: FrameTx; signer?: FrameSigner; margin?: GasMargin; fees?: "node" | "keep"; feeMultiplierPercent?: bigint; mempool?: string }) => {
+      assertNotInteractive(args.signer);
       let tx = args.transaction;
       if (args.fees !== "keep") {
         const gp = await pick(args.mempool).getGasPrice();
@@ -180,8 +190,14 @@ export function altpoolActions(opts: AltpoolActionsOptions) {
       const end = Date.now() + (args.timeoutMs ?? 120_000);
       const every = args.pollingIntervalMs ?? 2_000;
       let status: FrameTxStatus | null = null;
+      // The sidecar can lag the chain by minutes (its reconciler marks OnChain late), so after a sidecar miss also ask
+      // the execution client: ethrex's eth_getTransactionReceipt carries frameReceipts for type-0x06 txs.
+      const fromChain = async (): Promise<FrameReceipt | null> => {
+        const r = await client.request({ method: "eth_getTransactionReceipt", params: [args.hash] } as never).catch(() => null);
+        return r ? parseReceipt(args.hash, r, "execution") : null;
+      };
       while (Date.now() < end) {
-        const receipt = await node.getFrameTransactionReceipt(args.hash);
+        const receipt = (await node.getFrameTransactionReceipt(args.hash).catch(() => null)) ?? (await fromChain());
         if (receipt) {
           status = await node.getTransactionStatus(args.hash).catch(() => null);
           if (args.throwOnRevert && receipt.status !== "success") throw new AltpoolSdkError(`Frame tx ${args.hash} was included but failed`, { fix: "Inspect receipt.frames for the failing frame." });

@@ -123,6 +123,26 @@ gas does not count, so the SDK defaults are kept tight.
 frame-doctor reports 40,000 for Mode A and 70,000 for Mode B against the 100,000 cap. Both modes are also valid on
 ethrex's **public** mempool (`canonicalMempoolValid: true`).
 
+## Preparing a tx without a second popup (SDK `bridge.prepareTx`)
+
+A wallet-controlled account cannot be gas-estimated before it signs. The sidecar estimator needs a signature over
+its own probe, which is a valid tx with larger limits, and a person must never be asked to sign that. ethrex refuses
+`eth_estimateGas`/`eth_call` from a contract sender, and it has no state override.
+
+`prepareTx` and `prepareSessionTx` therefore fill the nonce, the fees (sidecar gas price × 2) and the call limits
+without signing:
+- 100k execution per call.
+- 200k state gas for a value transfer that creates its recipient.
+- 300k state gas for any call with data, since a state limit of 0 silently halts a frame that writes fresh storage.
+
+Body-frame limits are only a balance reservation: only the VERIFY limits count toward the 100k cap. Explicit
+`gas`/`state` on a call always win. `typedDataSigner` is marked `interactive`, so `estimate`/`prepare` throw
+`InteractiveSignerError` instead of asking for a second signature, and `preflight` checks the signed tx as given.
+
+Live: [0x0fe30bd5…](https://explorer.altmempool.wtf/tx/0x0fe30bd5ce6c906aa15177c3605767a1f16bd608bc24d10b678131331e57df26?node=https%3A%2F%2Faltmempool.forshtat.com%2Frpc)
+(block 10428). It made one signature, sent 1 wei to a fresh address, and both frames succeeded. The call used
+3,000 execution gas of 100,000 declared and 183,600 state gas of 200,000 declared.
+
 ## Threat model and trade-offs
 
 - **What MetaMask shows and what the contract enforces.** The wallet shows `to`, `value`, `nonce`, `frameCount`,
@@ -162,3 +182,10 @@ ethrex's **public** mempool (`canonicalMempoolValid: true`).
    session keys possible without a protocol change.
 7. A contract funded through its creation `value` needs an explicit `payable` constructor. The probe's first deploy
    reverted because the implicit constructor is non-payable. This is obvious, but cost a deploy.
+8. **ethrex refuses `eth_estimateGas`/`eth_call` from a contract sender**: "Sender account … shouldn't be a
+   contract" (an EIP-3607 check). It also rejects the state-override parameter. A frame-tx account's calls cannot be
+   estimated through the execution RPC.
+9. **The sidecar's receipt lags the chain.** The miner sidecar answered "not found" to
+   `eth_getFrameTransactionReceipt` and `skandha_frameTransactionStatus` for more than 2 minutes after ethrex had
+   the receipt. The SDK's `waitForFrameTransactionReceipt` now falls back to ethrex's `eth_getTransactionReceipt`,
+   which carries `frameReceipts`.

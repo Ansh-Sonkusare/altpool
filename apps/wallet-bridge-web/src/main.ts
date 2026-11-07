@@ -3,7 +3,7 @@
 // Talks to ethrex (reads, deploy receipt) and the miner's sidecar (submit, status) directly; both allow any origin.
 import "./style.css";
 import {
-  createPublicClient, createWalletClient, custom, formatEther, getAddress, http, isAddress, parseEther, toHex,
+  createPublicClient, createWalletClient, custom, formatEther, getAddress, http, isAddress, parseEther,
   type Address, type EIP1193Provider, type Hex, type WalletClient,
 } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
@@ -12,8 +12,8 @@ import { DEVNET, altDevnet, explorerTx, gateway } from "@altpool/core";
 import { checkAdmission, renderReport } from "@altpool/simulator";
 import { BRIDGE_DEPLOY_GAS, bridgeAccountAbi, bridgeAccountBytecode, bridgeDeployments } from "@altpool/wallet-bridge";
 import {
-  altpoolActions, bridgeAccount, createAltMempoolClient, signFrameTransaction, typedDataSigner,
-  type BridgeAccount, type BridgeSession, type FrameTx,
+  WrongNetworkError, altpoolActions, bridgeAccount, checkWalletNetwork, connectAltDevnet, createAltMempoolClient,
+  signFrameTransaction, typedDataSigner, type BridgeAccount, type BridgeSession, type FrameTx,
 } from "altpool";
 
 declare global { interface Window { ethereum?: EIP1193Provider } }
@@ -134,29 +134,19 @@ async function connect() {
   if (addr) { $<HTMLInputElement>("account").value = addr; await useAccount(); }
 }
 
-async function checkChain() {
+/** SDK checkWalletNetwork: same chain id AND same head (MetaMask's Localhost 8545 is also 1337). */
+async function checkChain(connectFirst = false) {
   const wallet = state.wallet!;
-  const id = await wallet.getChainId();
-  if (id !== DEVNET.chainId) {
-    log("wallet-out", `<span class="warn-inline">Wallet is on chain ${id}. Press "Add / switch to chain 1337".</span>`);
-    return;
+  try {
+    const net = connectFirst ? await connectAltDevnet(wallet, { client: pub }) : await checkWalletNetwork(wallet, { client: pub });
+    log("wallet-out", `<span class="ok">Wallet is on the devnet</span> (block ${net.devnetBlock})`);
+  } catch (e) {
+    if (!(e instanceof WrongNetworkError)) throw e;
+    log("wallet-out", `<span class="bad">${esc(e.message)}</span>${e.fix ? `<br>${esc(e.fix)}` : ""}${connectFirst ? "" : ' Press "Add / switch to chain 1337".'}`);
   }
-  // Same chain id, but is it the same chain? Compare heads: Localhost 8545 also says 1337.
-  const [mine, theirs] = await Promise.all([pub.getBlockNumber(), window.ethereum!.request({ method: "eth_blockNumber" }).then((h) => BigInt(h as string))]);
-  const drift = mine > theirs ? mine - theirs : theirs - mine;
-  log("wallet-out", drift > 20n
-    ? `<span class="bad">Chain 1337 in your wallet is at block ${theirs}, the devnet at ${mine}: your wallet's 1337 network is not the devnet.</span>`
-    : `<span class="ok">Wallet is on the devnet</span> (block ${mine})`);
 }
 
-async function addChain() {
-  const wallet = state.wallet!;
-  try { await wallet.switchChain({ id: DEVNET.chainId }); } catch {
-    await wallet.addChain({ chain: altDevnet });
-    await wallet.switchChain({ id: DEVNET.chainId });
-  }
-  await checkChain();
-}
+const addChain = () => checkChain(true);
 
 async function useAccount() {
   const v = $<HTMLInputElement>("account").value.trim();
@@ -199,17 +189,6 @@ async function deployAccount() {
   await useAccount();
 }
 
-/** A 1-wei call to the owner; a fresh owner address needs state gas for the account creation. */
-async function callToOwner(value: bigint) {
-  const to = state.owner!;
-  const exists = (await pub.getBalance({ address: to })) > 0n || (await pub.getTransactionCount({ address: to })) > 0;
-  return { to, value, state: exists ? 0n : 250_000n };
-}
-
-async function fees() {
-  const gp = await sidecar.getGasPrice();
-  return { maxFeePerGas: gp.maxFeePerGas * 2n, maxPriorityFeePerGas: gp.maxPriorityFeePerGas };
-}
 
 /** Admission check (frame-doctor), submit to the alt mempool, follow until included. */
 async function admitAndWatch(out: string, tx: FrameTx, label: string) {
@@ -234,8 +213,8 @@ async function admitAndWatch(out: string, tx: FrameTx, label: string) {
 async function sendModeA() {
   const b = state.bridge!;
   clear("send-out");
-  const nonce = BigInt(await pub.getTransactionCount({ address: b.address }));
-  const { tx, typedData } = b.buildTx({ calls: [await callToOwner(1n)], nonce, fees: await fees() });
+  // SDK prepareTx: nonce, sidecar fees, call limits (state gas if the owner address is fresh). No signing.
+  const { tx, typedData } = await b.prepareTx({ client: pub, sidecar, calls: [{ to: state.owner!, value: 1n }] });
   log("send-out", `<details open><summary>Typed data the wallet signs (every field is re-checked by the account on-chain)</summary>${pre(json(typedData.message))}</details>`);
   log("send-out", "Sign in your wallet…");
   const signed = await signFrameTransaction(profile, tx, typedDataSigner(state.wallet as never, b, state.owner));
@@ -259,15 +238,11 @@ async function authorizeSession() {
 async function burst() {
   const b = state.bridge!;
   const { pk, session, ownerSignature } = state.session!;
-  const call = await callToOwner(1n);
-  const f = await fees();
-  const now = BigInt(Math.floor(Date.now() / 1000));
-  const deadline = now + 600n < session.validUntil ? now + 600n : session.validUntil;
   const txs = [];
   for (let i = 0; i < 3; i++) {
-    // Each tx on its own EIP-8250 nonce key: the sidecar holds one pending tx per (sender, key), so all three fly at once.
-    const nonceKey = BigInt(toHex(crypto.getRandomValues(new Uint8Array(24))));
-    const tx = b.buildSessionTx({ session, ownerSignature, calls: [{ ...call, value: BigInt(i + 1) }], nonce: 0n, nonceKey, deadline, fees: f });
+    // prepareSessionTx puts each tx on a fresh EIP-8250 nonce key: the sidecar holds one pending tx per
+    // (sender, key), so all three fly at once. Deadline: 10 min, capped at the session's validUntil.
+    const tx = await b.prepareSessionTx({ client: pub, sidecar, session, ownerSignature, calls: [{ to: state.owner!, value: BigInt(i + 1) }] });
     txs.push(await signFrameTransaction(profile, tx, { privateKey: pk }));
   }
   log("session-out", "Signed 3 txs with the session key (no wallet popups).");

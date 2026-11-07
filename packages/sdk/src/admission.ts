@@ -15,7 +15,7 @@ import type { Profile } from "./profiles";
 import { validateRecentRootReferences } from "./recentRoots";
 import type { AltMempoolClient } from "./sidecar";
 import { getEntityStake, stakingParameters } from "./staking";
-import { estimationProbe, gasReport, signFrameTransaction, validationPrefixLength, type FrameGasReport, type FrameSigner, type GasMargin } from "./transaction";
+import { estimationProbe, gasReport, isInteractiveSigner, signFrameTransaction, validationPrefixLength, type FrameGasReport, type FrameSigner, type GasMargin } from "./transaction";
 
 export type CheckSource = "local" | "sidecar-estimate" | "ethrex-simulate" | "contract" | "node-reputation" | "node-mempool" | "precheck" | "explorer";
 export type PreflightStage = "structure" | "estimate" | "simulate" | "stake" | "reputation" | "mempool" | "recent-root" | "precheck";
@@ -91,10 +91,16 @@ export async function preflightFrameTransaction(client: Client, sidecar: AltMemp
   pub.push(...structure.map((c) => ({ ...c })));
   alt.push(...structure);
 
+  // An interactive signer (a wallet popup) never signs copies: estimate and simulate run on the tx as given, which
+  // should then already carry the wallet's signature.
+  const interactive = isInteractiveSigner(args.signer);
+  const copySigner = interactive ? undefined : args.signer;
+  if (interactive) notes.push("The signer is interactive (a wallet): preflight signed no copies and checked the tx as given.");
+
   // 2. estimate (alt rule engine)
   let gas: FrameGasReport | undefined;
   try {
-    const probe = args.signer ? await signFrameTransaction(profile, estimationProbe(profile, tx), args.signer) : tx;
+    const probe = copySigner ? await signFrameTransaction(profile, estimationProbe(profile, tx), copySigner) : tx;
     const est = await sidecar.estimateFrameTransactionGas(probe);
     gas = gasReport(profile, tx, est, args.margin);
     alt.push({ stage: "estimate", rule: "simulation", status: "pass", message: "sidecar rule engine accepted the tx (signature, simulation, storage, opcodes, stake)", source: "sidecar-estimate", node });
@@ -105,7 +111,7 @@ export async function preflightFrameTransaction(client: Client, sidecar: AltMemp
     }
   } catch (e) {
     const err = e instanceof AltpoolSdkError ? e : undefined;
-    const sigWithoutSigner = err?.detail?.kind === "signature" && !args.signer;
+    const sigWithoutSigner = err?.detail?.kind === "signature" && !copySigner;
     const x = err ? explainAdmissionFailure(err) : undefined;
     alt.push({
       stage: "estimate", rule: x?.rule ?? "unknown", status: sigWithoutSigner ? "unknown" : "fail", entity: x?.entity, frameIndex: x?.frameIndex,
@@ -117,7 +123,7 @@ export async function preflightFrameTransaction(client: Client, sidecar: AltMemp
   // 3. public simulate (ethrex)
   let simulation: PublicSimulation | undefined;
   try {
-    const signed = args.signer ? await signFrameTransaction(profile, tx, args.signer) : tx;
+    const signed = copySigner ? await signFrameTransaction(profile, tx, copySigner) : tx;
     simulation = await simulateFrameTransaction(client, profile, signed);
     const rule = simulation.violation ? ruleFromMessage(simulation.violation, "public") ?? "unknown" : undefined;
     pub.push({

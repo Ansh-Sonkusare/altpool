@@ -15,6 +15,7 @@ export * from "./recentRoots";
 export * from "./admission";
 export * from "./watch";
 export * from "./bridge";
+export * from "./wallet";
 export { httpRpc, wsRpc, type RpcRequester, type RpcTraceEntry, type WsRpc, type WsStatus, type WsSubscription, type WebSocketCtor } from "./transport";
 export { assertProfile, profileExtras, predeploy, supportedProfileIds, modeName, scopeName, type Profile, type ProfileExtras, type RecentRootLayout } from "./profiles";
 

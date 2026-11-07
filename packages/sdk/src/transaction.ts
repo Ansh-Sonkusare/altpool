@@ -17,12 +17,17 @@ export { toWire, explainRejection } from "@forshtat/hegota-support/rpc";
  * - a viem LocalAccount (anything with `sign({ hash })`): raw-digest signing, re-packed as `v || r || s`.
  * - `{ signFrame }`: fills signature entry `index` itself (e.g. `typedDataSigner` for a BridgeAccount, whose entry
  *   holds an EIP-712 signature checked by the account's own VERIFY code).
+ *   Set `interactive: true` when it prompts a person (a wallet popup): the SDK then signs only the tx you submit
+ *   with it, never an estimation probe or a simulation copy (see InteractiveSignerError).
  * Note: `signMessage` (EIP-191) is NOT a raw-digest signature and will not verify.
  */
 export type FrameSigner =
   | { privateKey: Hex }
   | { sign: (args: { hash: Hex }) => Promise<Hex> }
-  | { signFrame: (args: { profile: Profile; tx: FrameTx; index: number }) => Promise<FrameTx> };
+  | { signFrame: (args: { profile: Profile; tx: FrameTx; index: number }) => Promise<FrameTx>; interactive?: boolean };
+
+/** True for a signer that prompts a person. Such a signer must sign one tx per user action, and never a probe. */
+export const isInteractiveSigner = (signer?: FrameSigner): boolean => !!signer && "signFrame" in signer && signer.interactive === true;
 
 /** Number of leading frames that form the validation prefix: everything up to and including the last VERIFY frame. */
 export function validationPrefixLength(profile: Profile, tx: Pick<FrameTx, "frames">): number {

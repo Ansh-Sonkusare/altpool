@@ -49,6 +49,10 @@ export class InsufficientStakeError extends AltpoolSdkError { override name = "I
 export class ProfileMismatchError extends AltpoolSdkError { override name = "ProfileMismatchError"; }
 export class SubscriptionError extends AltpoolSdkError { override name = "SubscriptionError"; }
 export class ReceiptTimeoutError extends AltpoolSdkError { override name = "ReceiptTimeoutError"; }
+/** An action would have asked a person (a browser wallet) to sign a copy of the tx: an estimation probe or simulation copy. */
+export class InteractiveSignerError extends AltpoolSdkError { override name = "InteractiveSignerError"; }
+/** The wallet is not on the devnet: wrong chain id, or a different chain that shares the id (MetaMask's Localhost 8545 is also 1337). */
+export class WrongNetworkError extends AltpoolSdkError { override name = "WrongNetworkError"; }
 
 export class UnsupportedCapabilityError extends AltpoolSdkError {
   override name = "UnsupportedCapabilityError";
