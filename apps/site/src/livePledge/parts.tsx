@@ -98,6 +98,7 @@ const STAGE_HELP: Record<string, string> = {
   Finalized: "final",
   Reverted: "included, then failed",
   Cancelled: "dropped by the sidecar",
+  Resent: "sent again after the sidecar dropped it",
 };
 const stageOf = (status: string): number => {
   if (status === "New") return 0;
@@ -111,7 +112,9 @@ export const LifecyclePanel = ({ lc, now }: { lc: Lifecycle; now: number }) => {
   const visible = useVisible();
   const last = lc.events[lc.events.length - 1]!;
   const isBad = (status: string) => status === "Reverted" || status === "Cancelled";
-  const bad = lc.events.find((e) => isBad(e.status));
+  // A resend after a Cancelled starts the transaction over: only a failure after the last resend counts.
+  const resent = lc.events.map((e) => e.status).lastIndexOf("Resent");
+  const bad = lc.events.find((e, i) => i > resent && isBad(e.status));
   const good = lc.events.filter((e) => !isBad(e.status));
   const reached = Math.max(0, ...good.map((e) => stageOf(e.status)));
   const failedAt = bad ? Math.min(reached + 1, STAGES.length - 1) : -1;

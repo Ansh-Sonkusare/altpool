@@ -360,15 +360,26 @@ async function runPay(t: Tracker, ui: Ui, note: Note, inputs: Inputs, labels: La
       return s === "failed" ? null : s;
     };
     try {
-      const end = Date.now() + 180_000;
+      let end = Date.now() + 180_000;
       let r = null;
       let revertedPolls = 0;
+      let resends = 0;
       while (!r) {
         const [s, rec] = await Promise.all([status(), client.altpool.getFrameTransactionReceipt({ hash }).catch(() => null)]);
         r = rec;
         emit();
         revertedPolls = s?.status === "Reverted" ? revertedPolls + 1 : 0;
         if (!r && revertedPolls >= 3 && !sentAnyway) throw new Error(`the sidecar marks the payment Reverted and no receipt followed${s?.reason ? `: ${s.reason}` : ""}`);
+        // The sidecar's privileged submission is one-shot per payload and gives up after a few missed blocks. Its README
+        // allows sending the same transaction again; a reverting batch missed four payloads in a row on Nov 7, then landed.
+        if (!r && s?.status === "Cancelled" && /without being included/.test(s.reason ?? "") && resends < 2) {
+          resends++;
+          await client.altpool.submitFrameTransaction({ transaction: tx });
+          see("Resent", `the sidecar dropped it (${s.reason}), so the same transaction went again (${resends} of 2)`);
+          end = Date.now() + 180_000;
+          await sleep(lc.intervalMs);
+          continue;
+        }
         if (!r && s?.status === "Cancelled") throw new Error(`the sidecar cancelled the payment${s.reason ? `: ${s.reason}` : ""}`);
         if (!r && Date.now() > end) throw new Error(`no receipt for ${hash} after 180 s (last status: ${lc.events[lc.events.length - 1]?.status})`);
         if (!r) await sleep(lc.intervalMs);

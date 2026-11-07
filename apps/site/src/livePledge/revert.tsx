@@ -62,11 +62,10 @@ export interface GateState { gate: Gate; resolve: (d: "send" | "fix" | "stop") =
 export const GatePanel = ({ g, onChoose }: { g: GateState; onChoose: (d: "send" | "fix" | "stop") => void }) => {
   const { gate } = g;
   const def = presetOf(gate.intent);
-  const stranded = gate.intent.id === "price";
   return (
     <div className="flex flex-col gap-4" role="region" aria-label="Decide before sending">
       <GapStory view={gate.view} preset={def.label} />
-      {!gate.view && <p className="m-0 text-sm/[21px] text-fg1">The node's simulation says frame {gate.frame} reverts. frame-doctor's report could not be loaded; the step list above has the per-frame result.</p>}
+      {!gate.view && <p className="m-0 text-sm/[21px] text-fg1">The node's simulation says frame {gate.frame} reverts. frame-doctor's report did not load. The step list above has the result for each frame.</p>}
       <div className="flex flex-wrap items-center gap-3">
         <button type="button" onClick={() => onChoose("fix")} className={cx(btn, "border-transparent bg-fg text-[#0a0a0c]")}>Use the fix</button>
         <button type="button" onClick={() => onChoose("send")} className={cx(btn, "border-warnln text-warn")}>Send anyway to see it on chain</button>
@@ -74,8 +73,10 @@ export const GatePanel = ({ g, onChoose }: { g: GateState; onChoose: (d: "send" 
         <button type="button" onClick={() => onChoose("stop")} className="min-h-11 cursor-pointer px-2 text-[13px] text-fg2 underline decoration-ln2 underline-offset-4">Stop here</button>
       </div>
       <p className="m-0 max-w-[760px] text-[13px]/[20px] text-fg2">
-        The fix rebuilds the payment with {gate.intent.id === "paid" ? "a fresh invoice" : "a fresh quote"} and checks it again, with the same deposit. Sending anyway spends the note: the relay is repaid and the withdraw stands, so 0.09 WETH waits at the Settler{" "}
-        {stranded ? "for good. refund() needs a paid invoice, and nothing will pay this one." : "until refund() sends it to the change address."}
+        The fix rebuilds the payment with {gate.intent.id === "paid" ? "a fresh invoice" : "a fresh quote"} and checks it again, with the same deposit. Sending anyway spends the note. The relay is repaid and the withdraw stands, so 0.09 WETH waits at the Settler{" "}
+        {gate.intent.id === "price"
+          ? "with the invoice still unpaid. refund() needs a paid invoice, so the rescue first pays it through a second Settler with a fresh quote, from a fresh key's own ETH, then calls refund()."
+          : "until refund() sends it to the change address."}
       </p>
     </div>
   );
@@ -105,13 +106,13 @@ export const RecoverPanel = ({ rescue, now }: { rescue: Rescue; now: number }) =
   };
   return (
     <div className="flex flex-col gap-4 p-6 max-[560px]:p-4">
-      <p className="m-0 font-serif text-[30px]/[1.1] text-fg">{rescue.invoicePaid ? "The funds can come home." : "The funds stay at the Settler."}</p>
+      <p className="m-0 font-serif text-[30px]/[1.1] text-fg">The funds can come home.</p>
       <p className="m-0 max-w-[760px] text-[14px]/[22px] text-fg2">
         {rescue.invoicePaid
           ? <>Anyone may call <span className="font-mono text-fg1">Settler.refund()</span> once the invoice is paid, and this one is. The rollback undid the deploy, so the Settler has no code yet. A fresh key, funded by the faucet and unrelated to the depositor, first calls <span className="font-mono text-fg1">SettlerFactory.deploy(terms)</span> at the same address, then <span className="font-mono text-fg1">refund()</span> sends its WETH to the change address <ExtLink href={addrUrl(rescue.change)} className="font-mono text-amber">{short(rescue.change)}</ExtLink>.</>
-          : <><span className="font-mono text-fg1">refund()</span> reverts unless the invoice is paid, and nothing will pay it: the Settler's terms are fixed and its swap can never succeed. The 0.09 WETH are devnet funds. This is the cost of sending a payment you were told would revert.</>}
+          : <><span className="font-mono text-fg1">refund()</span> reverts unless the invoice is paid, and this Settler's swap can never pay it: its maxIn is fixed below the price. But <span className="font-mono text-fg1">InvoiceBook.settle</span> accepts any payer whose invoiceId matches, so a fresh key, funded by the faucet and unrelated to the depositor, deploys a second Settler for the same invoice with a fresh quote, funds its swap with about 0.005 ETH of its own, and pays the invoice. Then it deploys this Settler and calls <span className="font-mono text-fg1">refund()</span>, which sends its WETH to the change address <ExtLink href={addrUrl(rescue.change)} className="font-mono text-amber">{short(rescue.change)}</ExtLink>.</>}
       </p>
-      {rescue.invoicePaid && phase !== "done" && (
+      {phase !== "done" && (
         <div className="flex flex-wrap items-center gap-4">
           <button type="button" onClick={go} disabled={phase === "running"} className={cx(btn, "border-transparent bg-fg text-[#0a0a0c]")}>{phase === "running" ? "Recovering…" : "Recover the funds: call refund()"}</button>
           <span className="text-[13px] text-fg2">Signed by a fresh rescue key <ExtLink href={addrUrl(funder.address)} className="font-mono text-amber">{short(funder.address)}</ExtLink>, never by the depositor.</span>

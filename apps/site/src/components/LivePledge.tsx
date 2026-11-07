@@ -77,9 +77,9 @@ const Field = ({ id, label, hint, error, children }: { id: string; label: string
 
 
 const NOTES: [string, string][] = [
-  ["Why frames", "A staked relay checks a zk proof and pays the gas inside the transaction that withdraws, and the later steps then run atomically. An EOA transaction, a 7702 batch or a 4337 op cannot do proof-gated sponsorship and an atomic multi-call from a 0-ETH wallet in one transaction."],
-  ["Why the alt mempool", "The relay's VERIFY frame runs a Groth16 check, far above the 100k gas the public mempool allows a VERIFY frame, and reads the pool's storage. The alt mempool admits the staked relay under ERC-8421 STORAGE-032 and a lifted verify budget. The later frames add atomicity, not a new mempool rule."],
-  ["How the SDK sends it", "Build the frames with the Altpool SDK and simulate first, because the sidecar admits a transaction that will revert. Then call submitFrameTransaction. The tracker below polls getTransactionStatus and getFrameTransactionReceipt, and the rail is read back with the raw transaction."],
+  ["Why frames", "A staked relay checks a zero-knowledge proof and pays the gas in the same transaction that withdraws. The later steps then run as one atomic batch. The transaction carries no signature, and no wallet of the donor's pays its gas."],
+  ["Why the alt mempool", "PayRelayWETH's VERIFY frame runs a Groth16 check that needs far more than the public mempool's 100k validation cap, and it reads the pool's storage. The alt mempool admits it because the relay is staked (ERC-8421 STORAGE-032) and has no hard validation cap. The later frames need no extra mempool rule."],
+  ["How the SDK sends it", "Build the frames with the Altpool SDK, then simulate them. The sidecar admits a transaction that will revert (finding 9), so the simulation is your check. Then call submitFrameTransaction. The tracker below polls getTransactionStatus and getFrameTransactionReceipt."],
 ];
 
 const Notes = () => (
@@ -243,15 +243,15 @@ export const LivePledge = ({ entity }: { entity: Live<EntityReport> }) => {
       <div className="flex max-w-[760px] flex-col gap-5">
         <h2 className="m-0 text-[clamp(32px,4.5vw,48px)]/[1.1] font-light tracking-[-.03em] text-balance">Pay an invoice from shielded funds, in one transaction. Send it yourself.</h2>
         <p className="m-0 text-fg2">
-          A donor owes an aid fund's invoice and holds a 0.1 WETH note in the privacy pool. One frame transaction, sent by a wallet that never held ETH, withdraws the note, unwraps it, swaps on Uniswap v4, pays the invoice, returns the change and checks that nothing is left. Below, your browser sends that transaction on the public devnet with your amount and addresses, and the page reads every value from the chain as it happens. Designed to unlink, not proven private: this devnet's pool crowd is seeded by us.
+          A donor holds a 0.1 WETH note in the privacy pool and owes an aid fund's invoice. One frame transaction withdraws the note, unwraps it, swaps on Uniswap v4, pays the invoice, returns the change and checks that nothing is left. The staked PayRelayWETH contract sends it and pays the gas, so the donor needs no ETH and no relayer. Below, your browser sends that transaction on the devnet with your amount and addresses, and the page reads each value back from the chain.
         </p>
       </div>
 
       <Notes />
 
       <div className="m-0 flex max-w-[760px] flex-col gap-2 rounded-xl border border-warnln bg-warnbg px-5 py-4 text-[14px] text-fg1">
-        <p className="m-0"><span className="font-medium text-warn">This shows the mechanism, not privacy.</span> The run deposits and pays from this tab one to three minutes apart, so timing links the payment to the deposit. The deposits that land around yours come mostly from a crowd of accounts we run on this devnet: anyone who knows those addresses can set them aside, and your note is then nearly alone again. The invoice amount and the change are public. The host that serves the public RPC also serves the faucet and the sidecar, so one operator sees your IP on both.</p>
-        <p className="m-0">What the run does: your deposit comes from a fresh key. After it lands, the run waits up to 90 s for two later deposits and proves against a root that holds them, so your note is not the newest leaf in it. If none come, it says so and proves anyway, and then your note is the newest leaf. The depositor signs nothing after its deposit. The fund key {short(fund.address)} creates the invoice, and a fresh key signs any rescue.</p>
+        <p className="m-0"><span className="font-medium text-warn">Pledge Paid is designed to unlink a payment from its deposit. This demo shows the mechanism, not privacy.</span> The run deposits and pays from this tab one to three minutes apart, so timing links the two. The deposits around yours come mostly from a crowd of accounts we run on this devnet. Anyone who knows those addresses can set them aside, and your note is then nearly alone. The invoice amount and the change are public. One host serves the RPC, the faucet and the sidecar, so its operator sees your IP on the deposit and on the payment.</p>
+        <p className="m-0">What the run does about it. A fresh key makes your deposit. The run then waits up to 90 s for two later deposits and proves against a root that holds them, so your note is not the newest leaf. If none come, the run says so and proves anyway. The depositor signs nothing after its deposit. The fund key {short(fund.address)} creates the invoice, and a fresh key signs any rescue.</p>
       </div>
 
       <Crowd pool={WETH_POOL} myLeafIndex={myLeaf} />
@@ -261,11 +261,11 @@ export const LivePledge = ({ entity }: { entity: Live<EntityReport> }) => {
       <Card>
         <CardBar><span>invoice</span><span>devnet demo, fgUSD is a test token</span></CardBar>
         <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-x-6 gap-y-5 p-5 max-[560px]:p-4">
-          <Field id="pp-amount" label="Invoice amount (fgUSD)" hint={intent.invoice ? `Set by invoice #${intent.invoice.id}, which fixes its amount.` : "1 to 50: the swap must fit the pool's ~1 ETH of liquidity."} error={errors.amount}>
+          <Field id="pp-amount" label="Invoice amount (fgUSD)" hint={intent.invoice ? `Set by invoice #${intent.invoice.id}, which fixes its amount.` : "1 to 50. The swap must fit the pool's ~1 ETH of liquidity."} error={errors.amount}>
             <input id="pp-amount" className={inputCls} inputMode="decimal" value={raw.amount} disabled={running || !!intent.invoice} aria-describedby="pp-amount-hint" aria-invalid={!!errors.amount}
               onChange={(e) => setRaw({ ...raw, amount: e.target.value })} />
           </Field>
-          <Field id="pp-payee" label="Receiving address (invoice payee)" hint={intent.invoice ? `Set by invoice #${intent.invoice.id}: its payee.` : raw.payee === defaults.payee ? "Default: a fresh demo fund. This is a devnet demo payee, and its key is discarded." : "Receives the fgUSD."} error={errors.payee}>
+          <Field id="pp-payee" label="Receiving address (invoice payee)" hint={intent.invoice ? `Set by invoice #${intent.invoice.id}: its payee.` : raw.payee === defaults.payee ? "Default: a fresh address for the demo fund. Its key is discarded." : "Receives the fgUSD."} error={errors.payee}>
             <input id="pp-payee" className={inputCls} spellCheck={false} value={raw.payee} disabled={running || !!intent.invoice} aria-describedby="pp-payee-hint" aria-invalid={!!errors.payee}
               onChange={(e) => setRaw({ ...raw, payee: e.target.value })} />
           </Field>
@@ -293,8 +293,8 @@ export const LivePledge = ({ entity }: { entity: Live<EntityReport> }) => {
         {(cur?.raw || cur?.hash) && <button type="button" onClick={openInDoctor} className="min-h-11 rounded-full border border-ln2 px-5 text-[14px] text-fg1">Open in frame-doctor</button>}
         <p id="live-pledge-reason" role="status" className="m-0 max-w-[620px] text-[13px] text-fg2">
           {reason ?? (expectsRevert(intent)
-            ? "Uses devnet ETH. Builds the payment, simulates it and stops before the send, so you can see where the verdicts disagree and choose."
-            : "Uses devnet ETH. Takes one to three minutes: after your deposit the run waits up to 90 s for two later deposits, then proves and sends. It is simulated first and never sent if the simulation predicts a revert.")}
+            ? "Uses devnet ETH. The run builds and simulates the payment, then stops before the send so you can compare the verdicts and choose."
+            : "Uses devnet ETH and takes one to three minutes. The run does not send if its simulation predicts a revert.")}
         </p>
       </div>
 
@@ -349,7 +349,7 @@ export const LivePledge = ({ entity }: { entity: Live<EntityReport> }) => {
             </dl>
             <p className="m-0 max-w-[760px] text-[14px]/[22px] text-fg2">
               Your note is 1 of {fmt(result.anonymity.leaves)} notes in the root the proof used, and {fmt(result.anonymity.after)} deposited after yours.{" "}
-              {result.anonymity.after >= 2 ? "The deposits around yours come mostly from our devnet crowd, so this shows the mechanism, not privacy." : "Fewer than two deposits landed after yours, so the root and the timing still point at your note."}
+              {result.anonymity.after >= 2 ? "Most of them come from the crowd we run, so the limits above apply." : "Fewer than two deposits landed after yours, so the root and the timing point at your note."}
             </p>
             <ExtLink href={exitUrl(result.hash)} className="font-mono text-[13px] text-amber underline decoration-amberln underline-offset-4">{short(result.hash)} on the explorer, miner's view</ExtLink>
           </div>

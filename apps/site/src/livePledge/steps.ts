@@ -9,14 +9,14 @@ export const STEPS = [
   { id: "deposit", title: "Wrap and deposit 0.1 WETH", sub: "wrap, approve, pool.deposit" },
   { id: "wait", title: "Wait for later deposits", sub: "watches the pool for 2 deposits after yours, up to 90 s" },
   { id: "tree", title: "Rebuild the Merkle tree", sub: "from the WETH pool's Deposit logs" },
-  { id: "invoice", title: "The fund creates the invoice; quote the swap", sub: "InvoiceBook.create by the fund key, Uniswap v4 quoter" },
+  { id: "invoice", title: "Create the invoice and quote the swap", sub: "InvoiceBook.create by the fund key, Uniswap v4 quoter" },
   { id: "settler", title: "Fix the Settler address", sub: "CREATE2 of the terms, the proof's recipient" },
   { id: "prove", title: "Prove the withdrawal", sub: "Groth16, in this browser" },
   { id: "simulate", title: "Build the 9 frames and simulate", sub: "ethrex_simulateFrameTransaction, before any send" },
-  { id: "check", title: "checkAdmission", sub: "will each mempool admit it?" },
+  { id: "check", title: "checkAdmission", sub: "asks whether each mempool admits it" },
   { id: "submit", title: "Submit to the miner's sidecar", sub: "zero signatures, no relayer" },
   { id: "receipt", title: "Wait for inclusion", sub: "up to 180 s" },
-  { id: "outcome", title: "Read the outcome back", sub: "fund, invoice, Settler, change, relay fee" },
+  { id: "outcome", title: "Read the outcome back", sub: "payee, invoice, Settler, change, relay fee" },
 ] as const;
 
 export type StepId = (typeof STEPS)[number]["id"];
