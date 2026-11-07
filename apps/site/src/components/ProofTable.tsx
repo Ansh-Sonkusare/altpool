@@ -5,6 +5,7 @@ export type FindingStatus =
   | "proposal written"
   | "reported privately"
   | "patch ready (not yet filed)"
+  | "filed upstream"
   | "not yet reported (private)"
   | "fixed on devnet"
   | "not a bug";

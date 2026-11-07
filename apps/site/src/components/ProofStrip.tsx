@@ -8,7 +8,7 @@ const stats: ProofStat[] = [
   {
     value: FINDINGS.filed,
     label: "Findings filed upstream",
-    method: `Of ${FINDINGS.total} found while building; 1 patch ready, not filed.`,
+    method: `Of ${FINDINGS.total} found while building; finding 9 filed with a tested fix (issue #7, PR #8).`,
     href: "#findings",
     state: /^\{.*\}$/.test(FINDINGS.filed) ? "pending" : "ok",
   },

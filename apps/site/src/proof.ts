@@ -28,7 +28,7 @@ export const LIVE_SUITE: ProofStat = {
   state: "ok",
 };
 
-export const FINDINGS: { total: number; filed: string } = { total: 15, filed: "{FILED}" };
+export const FINDINGS: { total: number; filed: string } = { total: 15, filed: "1" };
 
 export const PLEDGE_TX: { hash?: `0x${string}`; placeholder: "{PLEDGE_TX}" } = { placeholder: "{PLEDGE_TX}" };
 

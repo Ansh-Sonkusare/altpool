@@ -90,8 +90,8 @@ We found issues in the devnet node and sidecar while building. The full list is 
 
 Upstream status, exactly:
 
-- A sidecar patch for finding 9 (reject at admission when ethrex simulation predicts a revert and the payer is not the sender) exists on a local branch. It has a test that fails without the fix and passes with it. It is not filed yet.
-- Issue texts are drafted, not posted.
+- Finding 9 (the sidecar admits a tx its own simulation says will revert, so a staked third-party payer funds a guaranteed failure) is filed upstream as [issue #7](https://github.com/forshtat/mempool-workshop-sidecar/issues/7), with a fix and a test in [PR #8](https://github.com/forshtat/mempool-workshop-sidecar/pull/8). The test fails without the fix and passes with it.
+- The rolled-back frame status proposal (finding 10) is drafted for the EIP-8141 discussion, not posted yet.
 - Finding 8 is to be reported privately. It has not been reported.
 
 ## Install
