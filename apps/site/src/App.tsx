@@ -13,7 +13,7 @@ export const App = () => {
   const doctor = useDoctor();
 
   return (
-    <div className="relative mx-auto max-w-[1600px] overflow-x-clip">
+    <div className="relative mx-auto max-w-[1360px] overflow-x-clip">
       <div className="pointer-events-none absolute -top-[180px] -right-[160px] h-[640px] w-[760px] max-w-full bg-[radial-gradient(closest-side,rgba(241,201,140,.16),rgba(241,201,140,.04)_55%,transparent)]" aria-hidden="true"></div>
       <Nav head={head} />
       <Hero head={head} />

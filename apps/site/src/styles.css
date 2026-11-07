@@ -1,4 +1,4 @@
-/* One framed column up to 1600px wide with hairline sides and crosshair section marks; dark, amber LED accent. */
+/* One framed column up to 1360px wide with hairline sides and crosshair section marks; dark, amber LED accent. */
 @import "tailwindcss";
 
 /* The design's tokens only: Tailwind's default palette is cleared so every colour comes from here. */
