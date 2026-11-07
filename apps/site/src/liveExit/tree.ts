@@ -8,9 +8,9 @@ import { client } from "../altpool";
 
 const LEVELS = DEVNET.treeLevels;
 const ZERO_VALUE = 21663839004416932945382355908790599225266501822907911457504978515578255421292n;
-const hashLeftRight = (l: bigint, r: bigint): bigint => BigInt(String(mimcsponge.multiHash([l, r])));
+export const hashLeftRight = (l: bigint, r: bigint): bigint => BigInt(String(mimcsponge.multiHash([l, r])));
 
-const ZEROS: bigint[] = [ZERO_VALUE];
+export const ZEROS: bigint[] = [ZERO_VALUE];
 for (let i = 0; i < LEVELS; i++) ZEROS.push(hashLeftRight(ZEROS[i]!, ZEROS[i]!));
 
 const pathFor = (leaves: bigint[], leafIndex: number): Omit<MerklePath, "rootIdx"> => {

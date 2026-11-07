@@ -16,7 +16,7 @@ export const STEPS = [
   { id: "check", title: "checkAdmission", sub: "asks whether each mempool admits it" },
   { id: "submit", title: "Submit to the miner's sidecar", sub: "zero signatures, no relayer" },
   { id: "receipt", title: "Wait for inclusion", sub: "up to 180 s" },
-  { id: "outcome", title: "Read the outcome back", sub: "payee, invoice, Settler, change, relay fee" },
+  { id: "outcome", title: "Read the outcome back", sub: "payee, invoice, Settler, change to the fund, relay fee" },
 ] as const;
 
 export type StepId = (typeof STEPS)[number]["id"];

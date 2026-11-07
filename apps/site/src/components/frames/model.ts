@@ -94,8 +94,8 @@ const DOES: Record<string, { what: string; why: string }> = {
     why: "It is atomic with the swap, so a payee is never paid twice and a failed payment never keeps the swap.",
   },
   "sweep change": {
-    what: "Calls the Settler to send the ETH left after the swap to the change address.",
-    why: "It is atomic, so the change moves only when the invoice was paid.",
+    what: "Calls the Settler to send the ETH left after the swap to the fund (the invoice payee), unless the sender chose another change address.",
+    why: "It is atomic, so the leftover ETH moves only when the invoice was paid.",
   },
   "check books": {
     what: "Calls assertSettled on the Settler. It reverts unless the invoice is paid and the Settler holds no ETH, WETH or fgUSD.",

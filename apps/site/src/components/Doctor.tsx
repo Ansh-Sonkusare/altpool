@@ -130,7 +130,6 @@ export const Doctor = ({ doctor: { current, run, invalid }, entity }: DoctorProp
       <Card className="mt-4">
         <CardBar windowDots>
           <span>frame-doctor {done?.view.txHash ?? ""}</span>
-          <span>same report, as the CLI prints it</span>
         </CardBar>
         <Terminal
           text={done?.text}

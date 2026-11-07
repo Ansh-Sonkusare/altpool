@@ -230,7 +230,6 @@ export const Codebase = ({ entity }: { entity: Live<EntityReport> }) => {
       </div>
       <div className="mt-6 flex flex-col gap-3 border-t border-ln pt-8">
         <h3 className="m-0 text-[22px]/[28px] font-light tracking-[-.01em]">Every package, starting with the ones Pledge Paid uses</h3>
-        <p className="m-0 max-w-[640px] text-[15px]/[24px] text-fg2">Each card says what the package does and names the exports the flow calls.</p>
       </div>
       <div className="grid grid-cols-3 gap-4 max-[960px]:grid-cols-2 max-[720px]:grid-cols-1">
         {ENTRIES.map((e) => (

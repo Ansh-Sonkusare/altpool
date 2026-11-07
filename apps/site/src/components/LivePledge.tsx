@@ -5,10 +5,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { Hex } from "viem";
 import { formatEther, formatUnits } from "viem";
 import type { EntityReport } from "@altpool/monitor";
-import { addrUrl, exitUrl } from "../altpool";
+import { addrUrl, client, exitUrl } from "../altpool";
 import type { FrameRow } from "../frames";
 import { PAY_RELAY, type DoctorView, type Live } from "../live";
-import { deployments } from "@altpool/contracts";
+import { deployments, EXIT_FEE } from "@altpool/contracts";
+import { DEVNET } from "@altpool/core";
 import type { Address } from "viem";
 import { freshKeyFunder, fundKeyFunder } from "../liveExit/funding";
 import { DEFAULT_FG, freshAddress, validate, type Raw } from "../livePledge/inputs";
@@ -27,11 +28,13 @@ import { FrameDetail } from "./frames/FrameDetail";
 import { FrameRail } from "./frames/FrameRail";
 import { FrameLegend } from "./frames/Legend";
 import { PledgeFrames } from "./frames/PledgeFrames";
-import { Card, CardBar, cx, Dot, ExtLink, fmt, Pill, Section, short, valueOf } from "./ui";
+import { Card, CardBar, cx, Dot, ExtLink, Fact, Facts, fmt, Pill, Section, short, valueOf } from "./ui";
 
 /** Fewer sends than this before PayRelayWETH is throttled and the button stays off: one run adds one send. */
 const MIN_HEADROOM = 5;
 const QUOTE_POLL_MS = 15_000;
+/** The included Pledge Paid with the highest block. The report's list is not reliably newest first. */
+const newestIncluded = (r: EntityReport | undefined) => recentRuns(r).filter((x) => x.outcome === "included").sort((a, b) => (b.block ?? 0) - (a.block ?? 0))[0]?.hash;
 const WETH_POOL = deployments.wethPool as Address;
 
 /** One run at a time per page, however many panels are mounted. */
@@ -65,13 +68,27 @@ const useQuote = (amount: bigint | undefined, active: boolean) => {
   return state;
 };
 
+/** True when the address has contract code. The Settler's sweep() is a plain ETH call, so a contract payee must accept ETH. */
+const useHasCode = (a: Address | undefined) => {
+  const [has, setHas] = useState(false);
+  useEffect(() => {
+    setHas(false);
+    if (!a) return;
+    let alive = true;
+    client.getCode({ address: a }).then((c) => alive && setHas((c ?? "0x").length > 2), () => {});
+    return () => { alive = false; };
+  }, [a]);
+  return has;
+};
+
 const inputCls = "w-full rounded-lg border border-ln2 bg-bg px-3 py-2.5 font-mono text-[13px] text-fg placeholder:text-dim disabled:opacity-50";
 
-const Field = ({ id, label, hint, error, children }: { id: string; label: string; hint: string; error?: string; children: React.ReactNode }) => (
+const Field = ({ id, label, hint, error, warn, children }: { id: string; label: string; hint: string; error?: string; warn?: string; children: React.ReactNode }) => (
   <div className="flex min-w-0 flex-col gap-1.5">
     <label htmlFor={id} className="text-[13px] text-fg">{label}</label>
     {children}
     <p id={`${id}-hint`} className={cx("m-0 text-[12.5px]", error ? "text-bad" : "text-fg2")} role={error ? "alert" : undefined}>{error ?? hint}</p>
+    {warn && !error && <p className="m-0 text-[12.5px] text-warn">{warn}</p>}
   </div>
 );
 
@@ -88,10 +105,6 @@ const Notes = () => (
       <div key={k} className="flex flex-col gap-1.5"><h3 className="m-0 text-[14px] font-medium text-fg">{k}</h3><p className="m-0 text-[14px]/[22px] text-fg2">{t}</p></div>
     ))}
   </div>
-);
-
-const Fact = ({ k, children }: { k: string; children: React.ReactNode }) => (
-  <div><dt className="text-[12px] text-fg2">{k}</dt><dd className="m-0 mt-0.5 font-mono text-[18px] text-fg tabular-nums">{children}</dd></div>
 );
 
 /** Pledge Paid payments PayRelayWETH paid for, read from its live report. Pick one to read its frames from the chain. */
@@ -130,8 +143,8 @@ const failedBeforeSteps = (st: Steps, e: unknown): Steps =>
 
 export const LivePledge = ({ entity }: { entity: Live<EntityReport> }) => {
   const fund = useMemo(fundKeyFunder, []);
-  const [defaults, setDefaults] = useState(() => ({ payee: freshAddress(), change: freshAddress() }));
-  const [raw, setRaw] = useState<Raw>({ amount: DEFAULT_FG, ...defaults });
+  const [defaults, setDefaults] = useState(() => ({ payee: freshAddress() }));
+  const [raw, setRaw] = useState<Raw>({ amount: DEFAULT_FG, ...defaults, change: "" });
   const [steps, setSteps] = useState<Steps>(blankSteps);
   const [txs, setTxs] = useState<ChainTx[]>([]);
   const [lc, setLc] = useState<Lifecycle>();
@@ -157,8 +170,8 @@ export const LivePledge = ({ entity }: { entity: Live<EntityReport> }) => {
     const next: Intent = id === "pay" ? PAY : id === "paid" ? { id, invoice: inv, lowMaxIn: false } : { id, lowMaxIn: true };
     setIntent(next);
     setRaw(next.invoice
-      ? { amount: formatUnits(next.invoice.amount, 6), payee: next.invoice.payee, change: defaults.change }
-      : { amount: DEFAULT_FG, payee: defaults.payee, change: defaults.change });
+      ? { amount: formatUnits(next.invoice.amount, 6), payee: next.invoice.payee, change: "" }
+      : { amount: DEFAULT_FG, payee: defaults.payee, change: "" });
     publish({ preset: presetOf(next).label, expectRevert: expectsRevert(next) }, true);
   };
 
@@ -183,12 +196,14 @@ export const LivePledge = ({ entity }: { entity: Live<EntityReport> }) => {
   const errors = checked.ok ? {} : checked.errors;
   const q = useQuote(checked.ok ? checked.value.amount : undefined, phase !== "running");
 
+  const payeeCode = useHasCode(checked.ok ? checked.value.payee : undefined);
+
   const start = async () => {
     if (busy || !checked.ok) return;
     if (intent.id === "paid" && !intent.invoice) return;
     busy = true;
     const inputs = checked.value;
-    const labels = { payee: intent.invoice ? "the paid invoice's payee" : raw.payee === defaults.payee ? "demo fund" : "your address", change: raw.change === defaults.change ? "fresh address" : "your address" };
+    const labels = { payee: intent.invoice ? "the paid invoice's payee" : raw.payee === defaults.payee ? "demo fund" : "your address", change: raw.change.trim() ? "your address" : "the fund" };
     followed.current = false;
     setPhase("running");
     setSteps(blankSteps());
@@ -218,8 +233,8 @@ export const LivePledge = ({ entity }: { entity: Live<EntityReport> }) => {
     } finally {
       busy = false;
       // The run spent the fresh defaults; offer new ones unless the visitor typed their own.
-      const next = { payee: freshAddress(), change: freshAddress() };
-      setRaw((r) => ({ ...r, payee: r.payee === defaults.payee ? next.payee : r.payee, change: r.change === defaults.change ? next.change : r.change }));
+      const next = { payee: freshAddress() };
+      setRaw((r) => ({ ...r, payee: r.payee === defaults.payee ? next.payee : r.payee }));
       setDefaults(next);
     }
   };
@@ -243,18 +258,21 @@ export const LivePledge = ({ entity }: { entity: Live<EntityReport> }) => {
       <div className="flex max-w-[760px] flex-col gap-5">
         <h2 className="m-0 text-[clamp(32px,4.5vw,48px)]/[1.1] font-light tracking-[-.03em] text-balance">Pay an invoice from shielded funds, in one transaction. Send it yourself.</h2>
         <p className="m-0 text-fg2">
-          A donor holds a 0.1 WETH note in the privacy pool and owes an aid fund's invoice. One frame transaction withdraws the note, unwraps it, swaps on Uniswap v4, pays the invoice, returns the change and checks that nothing is left. The staked PayRelayWETH contract sends it and pays the gas, so the donor needs no ETH and no relayer. Below, your browser sends that transaction on the devnet with your amount and addresses, and the page reads each value back from the chain.
+          A donor holds a 0.1 WETH note in the privacy pool and owes an aid fund's invoice. One frame transaction withdraws the note, unwraps it, swaps on Uniswap v4, pays the invoice, sends the leftover ETH to the fund and checks that nothing is left. The staked PayRelayWETH contract sends it and pays the gas, so the donor needs no ETH and no relayer. Below, your browser sends that transaction on the devnet with your amount and addresses, and the page reads each value back from the chain.
         </p>
       </div>
 
       <Notes />
 
       <div className="m-0 flex max-w-[760px] flex-col gap-2 rounded-xl border border-warnln bg-warnbg px-5 py-4 text-[14px] text-fg1">
-        <p className="m-0"><span className="font-medium text-warn">Pledge Paid is designed to unlink a payment from its deposit. This demo shows the mechanism, not privacy.</span> The run deposits and pays from this tab one to three minutes apart, so timing links the two. The deposits around yours come mostly from a crowd of accounts we run on this devnet. Anyone who knows those addresses can set them aside, and your note is then nearly alone. The invoice amount and the change are public. One host serves the RPC, the faucet and the sidecar, so its operator sees your IP on the deposit and on the payment.</p>
-        <p className="m-0">What the run does about it. A fresh key makes your deposit. The run then waits up to 90 s for two later deposits and proves against a root that holds them, so your note is not the newest leaf. If none come, the run says so and proves anyway. The depositor signs nothing after its deposit. The fund key {short(fund.address)} creates the invoice, and a fresh key signs any rescue.</p>
+        <p className="m-0"><span className="font-medium text-warn">Pledge Paid is designed to unlink a payment from its deposit. This demo shows the mechanism, not privacy.</span> The run deposits and pays from this tab one to three minutes apart, so timing links the two. The deposits around yours come mostly from a crowd of accounts we run on this devnet. Anyone who knows those addresses can set them aside, and your note is then nearly alone. The invoice amount is public. One host serves the RPC, the faucet and the sidecar, so its operator sees your IP on the deposit and on the payment.</p>
+        <details className="text-fg2">
+          <summary className="cursor-pointer">What the run does about it</summary>
+          <p className="m-0 mt-2">A fresh key makes your deposit. The run then waits up to 90 s for two later deposits and proves against a root that holds them, so your note is not the newest leaf. If none come, the run says so and proves anyway. The depositor signs nothing after its deposit. The fund key {short(fund.address)} creates the invoice, and a fresh key signs any rescue. The change goes to the invoice payee, so no separate change address ties back to you.</p>
+        </details>
       </div>
 
-      <Crowd pool={WETH_POOL} myLeafIndex={myLeaf} />
+      <Crowd pool={WETH_POOL} mine={myLeaf} runHash={myLeaf !== undefined ? (result?.hash as Hex | undefined) : newestIncluded(r)} />
 
       <PresetBar intent={intent} paid={paid} disabled={running} onPick={pick} />
 
@@ -265,13 +283,9 @@ export const LivePledge = ({ entity }: { entity: Live<EntityReport> }) => {
             <input id="pp-amount" className={inputCls} inputMode="decimal" value={raw.amount} disabled={running || !!intent.invoice} aria-describedby="pp-amount-hint" aria-invalid={!!errors.amount}
               onChange={(e) => setRaw({ ...raw, amount: e.target.value })} />
           </Field>
-          <Field id="pp-payee" label="Receiving address (invoice payee)" hint={intent.invoice ? `Set by invoice #${intent.invoice.id}: its payee.` : raw.payee === defaults.payee ? "Default: a fresh address for the demo fund. Its key is discarded." : "Receives the fgUSD."} error={errors.payee}>
+          <Field id="pp-payee" label="Receiving address (invoice payee)" hint={intent.invoice ? `Set by invoice #${intent.invoice.id}: its payee.` : raw.payee === defaults.payee ? "Default: a fresh address for the demo fund. Its key is discarded." : "Receives the fgUSD."} error={errors.payee} warn={payeeCode ? "This address has contract code. It must accept a plain ETH transfer, or the batch rolls back." : undefined}>
             <input id="pp-payee" className={inputCls} spellCheck={false} value={raw.payee} disabled={running || !!intent.invoice} aria-describedby="pp-payee-hint" aria-invalid={!!errors.payee}
               onChange={(e) => setRaw({ ...raw, payee: e.target.value })} />
-          </Field>
-          <Field id="pp-change" label="Change address" hint={raw.change === defaults.change ? "Default: a fresh address whose key is discarded, so the change cannot be spent. Paste your own to keep it." : "Receives the ETH left after the swap."} error={errors.change}>
-            <input id="pp-change" className={inputCls} spellCheck={false} value={raw.change} disabled={running} aria-describedby="pp-change-hint" aria-invalid={!!errors.change}
-              onChange={(e) => setRaw({ ...raw, change: e.target.value })} />
           </Field>
         </div>
         <p aria-live="polite" className="m-0 border-t border-ln px-5 py-3 font-mono text-[12.5px] text-fg2 max-[560px]:px-4">
@@ -281,6 +295,21 @@ export const LivePledge = ({ entity }: { entity: Live<EntityReport> }) => {
               : <>maxIn {formatEther(quoted.maxIn)} ETH (+3%)</>} at {quoted.at.toLocaleTimeString()}</>
             : q.status === "error" ? <span className="text-bad">{q.error}</span> : "Quoting…"}
         </p>
+        <p className="m-0 border-t border-ln px-5 py-3 text-[13px] text-fg2 max-[560px]:px-4">
+          <span className="text-fg">Change goes to the fund.</span>{" "}
+          {quoted && checked.ok
+            ? <>About {Number(formatEther(DEVNET.denomination - EXIT_FEE - quoted.amountIn)).toFixed(3)} ETH left after the swap goes {raw.change.trim() ? "to your change address" : "to the fund"} with the payment.</>
+            : "The ETH left after the swap goes to the fund with the payment."}
+        </p>
+        <details className="border-t border-ln px-5 py-3 max-[560px]:px-4">
+          <summary className="cursor-pointer text-[13px] text-fg2">Advanced</summary>
+          <div className="mt-3 max-w-[520px]">
+            <Field id="pp-change" label="Send change elsewhere (optional)" hint="Leave empty to send the change to the fund. Anything you paste here receives it instead." error={errors.change}>
+              <input id="pp-change" className={inputCls} spellCheck={false} placeholder="0x… change address" value={raw.change} disabled={running} aria-describedby="pp-change-hint" aria-invalid={!!errors.change}
+                onChange={(e) => setRaw({ ...raw, change: e.target.value })} />
+            </Field>
+          </div>
+        </details>
       </Card>
 
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
@@ -300,16 +329,20 @@ export const LivePledge = ({ entity }: { entity: Live<EntityReport> }) => {
 
       {started && (
         <Card>
-          <CardBar windowDots>
-            <span>this run, step by step</span>
-            <span className="flex items-center gap-2">
-              <Dot state={phase === "done" ? "live" : phase === "failed" ? "err" : undefined} size="sm" />
-              <span>{running ? (gate ? "waiting for you" : "running") : phase === "done" ? (result?.reverted ? "rolled back" : "landed") : "failed"}</span>
-            </span>
-          </CardBar>
-          <ol className="m-0 list-none p-0">
-            {STEPS.map((def) => <StepRow key={def.id} title={def.title} sub={def.sub} s={steps[def.id]} txs={txs.filter((t) => t.step === def.id)} now={now} />)}
-          </ol>
+          <details open={phase !== "done"}>
+            <summary className="cursor-pointer list-none">
+              <CardBar>
+                <span>this run, step by step</span>
+                <span className="flex items-center gap-2">
+                  <Dot state={phase === "done" ? "live" : phase === "failed" ? "err" : undefined} size="sm" />
+                  <span>{running ? (gate ? "waiting for you" : "running") : phase === "done" ? (result?.reverted ? "rolled back" : "landed") : "failed"}{phase === "done" && ", show the steps"}</span>
+                </span>
+              </CardBar>
+            </summary>
+            <ol className="m-0 list-none p-0">
+              {STEPS.map((def) => <StepRow key={def.id} title={def.title} sub={def.sub} s={steps[def.id]} txs={txs.filter((t) => t.step === def.id)} now={now} />)}
+            </ol>
+          </details>
         </Card>
       )}
 
@@ -323,11 +356,11 @@ export const LivePledge = ({ entity }: { entity: Live<EntityReport> }) => {
         <Card>
           <div className="flex flex-col gap-4 p-6 max-[560px]:p-4">
             <p className="m-0 font-serif text-[40px]/[1.1] text-fg">Rolled back.</p>
-            <dl className="m-0 grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-x-6 gap-y-4">
+            <Facts>
               <Fact k="Frame that failed">{result.reverted.frame} ({result.reverted.status})</Fact>
               <Fact k="Block">{fmt(result.block)}</Fact>
               <Fact k="Whole run">{secs(result.totalMs)}</Fact>
-            </dl>
+            </Facts>
             <ExtLink href={exitUrl(result.hash)} className="font-mono text-[13px] text-amber underline decoration-amberln underline-offset-4">{short(result.hash)} on the explorer, miner's view</ExtLink>
           </div>
           <div className="border-t border-ln"><RecoverPanel rescue={result.rescue} now={now} /></div>
@@ -338,19 +371,12 @@ export const LivePledge = ({ entity }: { entity: Live<EntityReport> }) => {
         <Card>
           <div className="flex flex-col gap-4 p-6 max-[560px]:p-4">
             <p className="m-0 font-serif text-[40px]/[1.1] text-fg">Pledge paid.</p>
-            <dl className="m-0 grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-x-6 gap-y-4">
+            <Facts>
               <Fact k="Frames that succeeded">{result.frames} of 9</Fact>
               <Fact k="Block">{fmt(result.block)}</Fact>
               <Fact k="Gas used">{result.gasUsed === undefined ? "not reported" : fmt(result.gasUsed)}</Fact>
-              <Fact k="Your leaf in the proof's root">{fmt(result.anonymity.leaf)} of 0 to {fmt(result.anonymity.leaves - 1)}</Fact>
-              <Fact k="Deposits after yours in the root">{fmt(result.anonymity.after)}</Fact>
-              <Fact k="Unspent notes in the root (upper bound)">{fmt(result.anonymity.set)}</Fact>
               <Fact k="Whole run">{secs(result.totalMs)}</Fact>
-            </dl>
-            <p className="m-0 max-w-[760px] text-[14px]/[22px] text-fg2">
-              Your note is 1 of {fmt(result.anonymity.leaves)} notes in the root the proof used, and {fmt(result.anonymity.after)} deposited after yours.{" "}
-              {result.anonymity.after >= 2 ? "Most of them come from the crowd we run, so the limits above apply." : "Fewer than two deposits landed after yours, so the root and the timing point at your note."}
-            </p>
+            </Facts>
             <ExtLink href={exitUrl(result.hash)} className="font-mono text-[13px] text-amber underline decoration-amberln underline-offset-4">{short(result.hash)} on the explorer, miner's view</ExtLink>
           </div>
         </Card>
@@ -371,7 +397,7 @@ export const LivePledge = ({ entity }: { entity: Live<EntityReport> }) => {
                 <FrameDetail row={rows[sel]!} rows={rows} state="pending" />
               </div>
             )}
-          <details open className="group rounded-lg border border-ln p-4">
+          <details className="group rounded-lg border border-ln p-4">
             <summary className="cursor-pointer text-[14px] text-fg">How to read the frames</summary>
             <div className="mt-4"><FrameLegend /></div>
           </details>

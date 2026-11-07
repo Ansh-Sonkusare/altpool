@@ -152,7 +152,9 @@ export const LifecyclePanel = ({ lc, now }: { lc: Lifecycle; now: number }) => {
           );
         })}
       </ol>
-      <ol className="m-0 flex list-none flex-col gap-1 p-0 font-mono text-[12px]">
+      <details className="text-[12px] text-fg2">
+        <summary className="cursor-pointer font-mono">event log, {lc.events.length} {lc.events.length === 1 ? "event" : "events"}</summary>
+      <ol className="m-0 mt-2 flex list-none flex-col gap-1 p-0 font-mono text-[12px]">
         {lc.events.map((e, i) => (
           <li key={i} className="flex flex-wrap gap-x-3 text-fg2">
             <span className="tabular-nums">{clockOf(e.at)}</span>
@@ -163,6 +165,7 @@ export const LifecyclePanel = ({ lc, now }: { lc: Lifecycle; now: number }) => {
         ))}
         {lc.carriedBy && <li className="flex flex-wrap gap-x-3 text-fg2"><span>carried by chain tx</span><ExtLink href={exitUrl(lc.carriedBy)} className="text-amber">{short(lc.carriedBy)}</ExtLink></li>}
       </ol>
+      </details>
     </div>
   );
 };

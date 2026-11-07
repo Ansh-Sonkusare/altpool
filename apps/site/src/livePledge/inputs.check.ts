@@ -14,5 +14,8 @@ assert(!wrongCase.ok && wrongCase.errors.payee, "a flipped checksum letter is re
 
 const bad = validate({ amount: "51", payee: "0x123", change: "0x0000000000000000000000000000000000000000" });
 assert(!bad.ok && bad.errors.amount && bad.errors.payee && bad.errors.change, "cap, short address and zero address are refused");
+const dflt = validate({ amount: "5", payee: a, change: "" });
+assert(dflt.ok && dflt.value.change === a, "empty change means the payee");
+assert(!validate({ amount: "5", payee: a, change: "0x123" }).ok, "a typed change address is still validated");
 assert(!validate({ amount: "0.5", payee: a, change: a }).ok, "under 1 fgUSD refused");
 console.log("inputs ok");

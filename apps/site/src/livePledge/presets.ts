@@ -17,7 +17,7 @@ export const PRESETS: PresetDef[] = [
   {
     id: "paid", label: "Revert: invoice already paid", frame: 6,
     headline: "Frame 6 should fail: InvoiceBook.settle.",
-    why: "The run reuses the newest invoice an earlier run already paid. An invoice settles once, so settle reverts AlreadyPaid and the atomic batch (frames 3 to 8) rolls back. The withdraw in frame 2 stays final.",
+    why: "The run reuses the newest invoice an earlier run already paid. An invoice settles once, so settle reverts AlreadyPaid and the atomic batch (frames 3 to 8) rolls back. The withdraw in frame 2 stays final. The change goes to the fund by default, so the rescue sends the fund the 0.09 WETH even though the invoice was already paid.",
     fix: "Create a fresh invoice and point the Settler's terms at it.",
   },
   {

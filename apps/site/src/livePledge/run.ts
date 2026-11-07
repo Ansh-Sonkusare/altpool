@@ -213,7 +213,7 @@ async function runPay(t: Tracker, ui: Ui, note: Note, inputs: Inputs, labels: La
   const build = async () => {
     const { invoiceId, q } = await step("invoice", async () => {
       fact("invoice", { k: `payee (${labels.payee})`, v: inputs.payee, href: addrUrl(inputs.payee) });
-      fact("invoice", { k: `change address (${labels.change})`, v: inputs.change, href: addrUrl(inputs.change) });
+      fact("invoice", { k: `change goes to (${labels.change})`, v: inputs.change, href: addrUrl(inputs.change) });
       const pre = intent.invoice;
       if (pre && pre.amount !== inputs.amount) throw new Error(`invoice #${pre.id} is for ${formatUnits(pre.amount, 6)} fgUSD, not ${formatUnits(inputs.amount, 6)}`);
       let invoiceId: bigint;
@@ -253,7 +253,7 @@ async function runPay(t: Tracker, ui: Ui, note: Note, inputs: Inputs, labels: La
       const onChain = await retry(() => client.readContract({ address: FACTORY, abi: settlerFactoryAbi, functionName: "addressOf", args: [terms] }));
       if (!isAddressEqual(settler, onChain)) throw new Error(`computed Settler ${settler} differs from factory.addressOf ${onChain}`);
       ui.onPlan(plannedRows(settler));
-      fact("settler", { k: "terms", v: `invoice #${invoiceId}, ${formatUnits(inputs.amount, 6)} fgUSD, maxIn ${formatEther(q.maxIn)} ETH, change ${short(inputs.change)}` });
+      fact("settler", { k: "terms", v: `invoice #${invoiceId}, ${formatUnits(inputs.amount, 6)} fgUSD, maxIn ${formatEther(q.maxIn)} ETH, change to ${inputs.change === inputs.payee ? "the fund" : short(inputs.change)}` });
       fact("settler", { k: "Settler", v: settler, href: addrUrl(settler), tone: "ok" });
       fact("settler", { k: "check", v: "CREATE2 in the browser = factory.addressOf(terms); the proof's recipient will be this address", tone: "ok" });
       return { terms, settler, codeHash };
@@ -394,7 +394,7 @@ async function runPay(t: Tracker, ui: Ui, note: Note, inputs: Inputs, labels: La
       if (failed && sentAnyway) {
         landed.reverted = { frame: failed.index, status: failed.status };
         fact("receipt", { k: `frame ${failed.index} ${FRAME_NAMES[failed.index]}`, v: `${failed.status}: the atomic batch rolled back, as the simulation said`, tone: "warn" });
-      } else if (failed) throw new Error(`frame ${failed.index} (${FRAME_NAMES[failed.index]}) ${failed.status}. The withdraw (frame 2) stays final and the relay is repaid; the earlier atomic frames are rolled back and the funds wait at the Settler ${settler}. Anyone can deploy it with the same terms and call refund() to send them to the change address.`);
+      } else if (failed) throw new Error(`frame ${failed.index} (${FRAME_NAMES[failed.index]}) ${failed.status}. The withdraw (frame 2) stays final and the relay is repaid; the earlier atomic frames are rolled back and the funds wait at the Settler ${settler}. Anyone can deploy it with the same terms and call refund(), which sends them to the change address (the fund unless you chose another).`);
     } catch (e) {
       settleTx(hash, undefined, false);
       throw e;
@@ -420,18 +420,19 @@ async function runPay(t: Tracker, ui: Ui, note: Note, inputs: Inputs, labels: La
     const gotChange = after.changeEth - before.changeEth;
     const relayGain = after.relayWeth - before.relayWeth;
     const paidOut = DEVNET.denomination - EXIT_FEE;
+    const changeTo = inputs.change === inputs.payee ? "the fund" : short(inputs.change);
     const checks: [string, string, boolean][] = landed!.reverted ? [
       ["batch", `frame ${landed!.reverted.frame} ${landed!.reverted.status}; frames 3 to 8 undone`, landed!.reverted.frame === built.failed],
       ["withdraw", "frame 2 stands: the note is spent and the relay is repaid", landed!.frames >= 3 && relayGain >= EXIT_FEE],
       ["payee", `+${formatUnits(gotFg, 6)} fgUSD, unchanged`, gotFg === 0n],
       ["invoice", `#${invoiceId} ${paid ? "paid already" : "still unpaid"}`, paid === (intent.invoice !== undefined)],
       ["Settler", `no code deployed; ${formatEther(sw)} WETH parked at ${short(settler)}`, (code ?? "0x").length <= 2 && sw === paidOut],
-      ["change", `+${formatEther(gotChange)} ETH at ${short(inputs.change)}, unchanged`, gotChange === 0n],
+      ["change", `+${formatEther(gotChange)} ETH to ${changeTo}, unchanged`, gotChange === 0n],
     ] : [
       ["payee", `+${formatUnits(gotFg, 6)} fgUSD`, gotFg === inputs.amount],
       ["invoice", `#${invoiceId} ${paid ? "paid" : "NOT paid"}`, paid],
       ["Settler", settlerEmpty ? "deployed and empty: no ETH, WETH or fgUSD left" : "not empty", settlerEmpty],
-      ["change", `+${formatEther(gotChange)} ETH at ${short(inputs.change)}`, gotChange > 0n && gotChange < paidOut],
+      ["change", `+${formatEther(gotChange)} ETH to ${changeTo}`, gotChange > 0n && gotChange < paidOut],
       ["relay fee", `+${formatEther(relayGain)} WETH repaid to PayRelayWETH`, relayGain >= EXIT_FEE],
     ];
     for (const [k, v, ok] of checks) fact("outcome", { k, v, tone: ok ? "ok" : "bad" });

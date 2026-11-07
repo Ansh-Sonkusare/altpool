@@ -76,13 +76,13 @@ export const GatePanel = ({ g, onChoose }: { g: GateState; onChoose: (d: "send" 
         The fix rebuilds the payment with {gate.intent.id === "paid" ? "a fresh invoice" : "a fresh quote"} and checks it again, with the same deposit. Sending anyway spends the note. The relay is repaid and the withdraw stands, so 0.09 WETH waits at the Settler{" "}
         {gate.intent.id === "price"
           ? "with the invoice still unpaid. refund() needs a paid invoice, so the rescue first pays it through a second Settler with a fresh quote, from a fresh key's own ETH, then calls refund()."
-          : "until refund() sends it to the change address."}
+          : "until refund() sends it to the change address, which is the fund unless you chose another."}
       </p>
     </div>
   );
 };
 
-/** After a rolled-back send: deploy the Settler at its fixed address, call refund(), show the change address got the funds. */
+/** After a rolled-back send: deploy the Settler at its fixed address, call refund(), show the change address (the fund by default) got the funds. */
 export const RecoverPanel = ({ rescue, now }: { rescue: Rescue; now: number }) => {
   const [funder] = useState(() => freshKeyFunder("Fresh rescue key"));
   const [phase, setPhase] = useState<"idle" | "running" | "done" | "failed">("idle");
@@ -112,6 +112,9 @@ export const RecoverPanel = ({ rescue, now }: { rescue: Rescue; now: number }) =
           ? <>Anyone may call <span className="font-mono text-fg1">Settler.refund()</span> once the invoice is paid, and this one is. The rollback undid the deploy, so the Settler has no code yet. A fresh key, funded by the faucet and unrelated to the depositor, first calls <span className="font-mono text-fg1">SettlerFactory.deploy(terms)</span> at the same address, then <span className="font-mono text-fg1">refund()</span> sends its WETH to the change address <ExtLink href={addrUrl(rescue.change)} className="font-mono text-amber">{short(rescue.change)}</ExtLink>.</>
           : <><span className="font-mono text-fg1">refund()</span> reverts unless the invoice is paid, and this Settler's swap can never pay it: its maxIn is fixed below the price. But <span className="font-mono text-fg1">InvoiceBook.settle</span> accepts any payer whose invoiceId matches, so a fresh key, funded by the faucet and unrelated to the depositor, deploys a second Settler for the same invoice with a fresh quote, funds its swap with about 0.005 ETH of its own, and pays the invoice. Then it deploys this Settler and calls <span className="font-mono text-fg1">refund()</span>, which sends its WETH to the change address <ExtLink href={addrUrl(rescue.change)} className="font-mono text-amber">{short(rescue.change)}</ExtLink>.</>}
       </p>
+      <p className="m-0 max-w-[760px] text-[14px]/[22px] text-fg2">
+        refund() sends the Settler's whole balance to the change address. The change goes to the fund by default, so unless you chose another address the fund receives these funds, not the donor.
+      </p>
       {phase !== "done" && (
         <div className="flex flex-wrap items-center gap-4">
           <button type="button" onClick={go} disabled={phase === "running"} className={cx(btn, "border-transparent bg-fg text-[#0a0a0c]")}>{phase === "running" ? "Recovering…" : "Recover the funds: call refund()"}</button>
@@ -122,7 +125,7 @@ export const RecoverPanel = ({ rescue, now }: { rescue: Rescue; now: number }) =
       {out && (
         <p role="status" className="m-0 flex flex-wrap items-center gap-3 text-[14px] text-fg1">
           <Pill kind={out.settlerLeft === 0n ? "v" : "u"}>{out.settlerLeft === 0n ? "recovered" : "Settler not empty"}</Pill>
-          Change address {short(rescue.change)} received <span className="font-mono text-fg">{formatEther(out.weth)} WETH</span>; the Settler holds {formatEther(out.settlerLeft)}.
+          The change address {short(rescue.change)} received <span className="font-mono text-fg">{formatEther(out.weth)} WETH</span>; the Settler holds {formatEther(out.settlerLeft)}.
         </p>
       )}
       {err && <p role="alert" className="m-0 break-words font-mono text-[12.5px] text-bad">{err}</p>}

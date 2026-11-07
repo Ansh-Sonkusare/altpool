@@ -12,6 +12,7 @@ export interface Inputs { amount: bigint; payee: Address; change: Address }
 export type Raw = { amount: string; payee: string; change: string };
 export type Errors = Partial<Record<keyof Raw, string>>;
 
+/** `change` is optional in the form: empty means the invoice payee (the fund) gets the change. */
 /** Its private key is dropped here: nobody can spend from the address afterwards. */
 export const freshAddress = (): Address => privateKeyToAccount(generatePrivateKey()).address;
 
@@ -30,12 +31,13 @@ const amountOf = (s: string): bigint | string => {
 };
 
 export const validate = (raw: Raw): { ok: true; value: Inputs } | { ok: false; errors: Errors } => {
-  const [payee, change] = [raw.payee.trim(), raw.change.trim()];
+  const payee = raw.payee.trim();
+  const change = raw.change.trim() || payee;
   const amount = amountOf(raw.amount.trim());
   const errors: Errors = {
     ...(typeof amount === "string" && { amount }),
     ...(addressError(payee) && { payee: addressError(payee) }),
-    ...(addressError(change) && { change: addressError(change) }),
+    ...(raw.change.trim() && addressError(change) && { change: addressError(change) }),
   };
   if (Object.keys(errors).length || typeof amount === "string") return { ok: false, errors };
   return { ok: true, value: { amount, payee: getAddress(payee), change: getAddress(change) } };

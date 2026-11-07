@@ -1,222 +1,163 @@
-// Live view of who else is in a Tornado pool: deposits, withdrawals, and what that means for a proof's anonymity set.
-// Everything is read from the chain. Withdrawals come from Withdrawal logs, from a receipt scan of recent blocks (eth_getLogs
-// omits logs of frame transactions that fail at the top level, r17), and from the pool's token balance as the total.
+// The pool's crowd, and one run's proof. Live: pool counts and one bar per leaf come from the WETH pool's Deposit logs and
+// token balance (polled); the proof facts come from the included Pledge Paid's own transaction. `mine` (the leaf this tab
+// just deposited) marks the depositor's leaf. A run read off the chain cannot name it: the proof hides which leaf paid.
 import { useEffect, useState } from "react";
-import { parseAbiItem, toEventSelector, type Address, type Hex } from "viem";
+import type { Address, Hex } from "viem";
+import { formatEther } from "viem";
 import { DEVNET } from "@altpool/core";
-import { erc20PoolAbi, wethAbi } from "@altpool/contracts";
-import { client } from "../altpool";
-import { Card, CardBar, Dot, cx, fmt } from "./ui";
+import { addrUrl, exitUrl } from "../altpool";
+import { fromOf, readPool, readProof, type Dep, type PoolView, type ProofView } from "../crowd/chain";
+import { Card, CardBar, cx, Dot, ExtLink, Fact, Facts, fmt, Kvl, short } from "./ui";
 
-const DEPOSIT = parseAbiItem("event Deposit(bytes32 indexed commitment, uint32 leafIndex, uint256 timestamp)");
-const WITHDRAWAL = parseAbiItem("event Withdrawal(address to, bytes32 nullifierHash, address indexed relayer, uint256 fee)");
-const WITHDRAWAL_TOPIC = toEventSelector(WITHDRAWAL);
-const BLOCK_SEC = 6;
-const POLL_MS = 6000;
-const SCAN_MAX = 1500; // blocks of receipts to read per pool
-const SCAN_BATCH = 100;
-const DEFAULT_WINDOW = 300;
+const POLL_MS = 8000;
+const SHOWN_CROWD = 5;
 
-interface Dep { leaf: number; block: number; time: number }
-interface Wd { block: number; nullifier: Hex }
-interface Snap { head: number; deps: Dep[]; wds: Wd[]; totalW: number; scanFrom: number }
+const msg = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
-interface PoolCache { scanned: number; scanFrom: number; wds: Map<Hex, Wd>; token?: Address | null; denomination?: bigint }
-const caches = new Map<Address, PoolCache>();
-
-interface Receipt { blockNumber: string; logs?: Log[]; frameReceipts?: { logs?: Log[] }[] }
-interface Log { address: string; topics: string[]; data: string }
-
-async function rpcBatch<T>(calls: { method: string; params: unknown[] }[]): Promise<T[]> {
-  const body = calls.map((c, id) => ({ jsonrpc: "2.0", id, ...c }));
-  const res = await fetch(DEVNET.ethrexUrl, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
-  const out = (await res.json()) as { id: number; result?: T; error?: { message: string } }[];
-  return out.sort((a, b) => a.id - b.id).map((r) => {
-    if (r.error) throw new Error(r.error.message);
-    return r.result as T;
-  });
-}
-
-/** Withdrawal logs of `pool` in one receipt, whichever of the receipt's log lists carries them. */
-function withdrawalsIn(r: Receipt, pool: Address): Wd[] {
-  const logs = r.frameReceipts?.length ? r.frameReceipts.flatMap((f) => f.logs ?? []) : (r.logs ?? []);
-  return logs
-    .filter((l) => l.address.toLowerCase() === pool.toLowerCase() && l.topics[0] === WITHDRAWAL_TOPIC)
-    .map((l) => ({ block: Number.parseInt(r.blockNumber, 16), nullifier: `0x${l.data.slice(2 + 64, 2 + 128)}` as Hex }));
-}
-
-async function load(pool: Address, myLeafIndex?: number): Promise<Snap> {
-  const cache = caches.get(pool) ?? { scanned: -1, scanFrom: -1, wds: new Map<Hex, Wd>() };
-  caches.set(pool, cache);
-  const [head, depLogs, wdLogs] = await Promise.all([
-    client.getBlockNumber({ cacheTime: 0 }).then(Number),
-    client.getLogs({ address: pool, event: DEPOSIT, fromBlock: 0n, toBlock: "latest" }),
-    client.getLogs({ address: pool, event: WITHDRAWAL, fromBlock: 0n, toBlock: "latest" }),
-  ]);
-  const deps: Dep[] = depLogs
-    .map((l) => ({ leaf: Number(l.args.leafIndex), block: Number(l.blockNumber), time: Number(l.args.timestamp) }))
-    .sort((a, b) => a.leaf - b.leaf);
-  for (const l of wdLogs) cache.wds.set(l.args.nullifierHash!, { block: Number(l.blockNumber), nullifier: l.args.nullifierHash! });
-
-  // Receipt scan: from the player's deposit block (or the last few hundred blocks) up to head, resuming where it stopped.
-  const mine = myLeafIndex === undefined ? undefined : deps.find((d) => d.leaf === myLeafIndex);
-  const want = Math.max(mine ? mine.block - 1 : head - DEFAULT_WINDOW, head - SCAN_MAX, 0);
-  if (cache.scanned < 0 || want < cache.scanFrom) {
-    cache.scanFrom = want;
-    cache.scanned = want - 1;
-  }
-  while (cache.scanned < head) {
-    const from = cache.scanned + 1;
-    const to = Math.min(head, from + SCAN_BATCH - 1);
-    const calls = Array.from({ length: to - from + 1 }, (_, i) => ({ method: "eth_getBlockReceipts", params: [`0x${(from + i).toString(16)}`] }));
-    const blocks = await rpcBatch<Receipt[] | null>(calls);
-    for (const r of blocks.flat()) if (r) for (const w of withdrawalsIn(r, pool)) cache.wds.set(w.nullifier, w);
-    cache.scanned = to;
-  }
-
-  // Authoritative total: every deposit put one denomination in the pool, every withdrawal took one out.
-  if (cache.token === undefined) {
-    cache.denomination = await client.readContract({ address: pool, abi: erc20PoolAbi, functionName: "denomination" });
-    cache.token = await client.readContract({ address: pool, abi: erc20PoolAbi, functionName: "token" }).catch(() => null);
-  }
-  const held = cache.token
-    ? await client.readContract({ address: cache.token, abi: wethAbi, functionName: "balanceOf", args: [pool] })
-    : await client.getBalance({ address: pool });
-  const unspent = Number(held / cache.denomination!);
-  const wds = [...cache.wds.values()].sort((a, b) => a.block - b.block);
-  return { head, deps, wds, totalW: Math.max(deps.length - unspent, wds.length), scanFrom: cache.scanFrom };
-}
-
-function useCrowd(pool: Address, myLeafIndex?: number) {
-  const [snap, setSnap] = useState<Snap>();
+function usePool(pool: Address) {
+  const [snap, setSnap] = useState<PoolView>();
   const [error, setError] = useState<string>();
   useEffect(() => {
     let alive = true;
     let id: ReturnType<typeof setTimeout> | undefined;
     const tick = () =>
-      load(pool, myLeafIndex)
+      readPool(pool)
         .then((s) => alive && (setSnap(s), setError(undefined)))
-        .catch((e) => alive && setError(e instanceof Error ? e.message : String(e)))
+        .catch((e) => alive && setError(msg(e)))
         .finally(() => { if (alive) id = setTimeout(tick, POLL_MS); });
     void tick();
     return () => { alive = false; clearTimeout(id); };
-  }, [pool, myLeafIndex]);
+  }, [pool]);
   return { snap, error };
 }
 
-const ago = (blocks: number) => {
-  const s = blocks * BLOCK_SEC;
-  return s < 90 ? `${s} s` : s < 5400 ? `${Math.round(s / 60)} min` : `${(s / 3600).toFixed(1)} h`;
-};
-
-/** Deposits above the baseline, withdrawals below, the player's deposit ringed. */
-function Timeline({ snap, mine }: { snap: Snap; mine?: Dep }) {
-  const start = Math.max(0, mine ? mine.block - 12 : snap.head - DEFAULT_WINDOW);
-  const span = Math.max(snap.head - start, 1);
-  const x = (b: number) => 8 + ((b - start) / span) * 584;
-  const deps = snap.deps.filter((d) => d.block >= start);
-  const wds = snap.wds.filter((w) => w.block >= start);
-  return (
-    <figure className="m-0 flex flex-col gap-1.5">
-      <svg viewBox="0 0 600 76" className="block h-auto w-full" role="img" aria-label={`${deps.length} deposits and ${wds.length} withdrawals in the last ${ago(span)}`}>
-        <line x1="8" x2="592" y1="38" y2="38" className="stroke-ln2" />
-        {deps.map((d) => (
-          <line key={d.leaf} x1={x(d.block)} x2={x(d.block)} y1={d.leaf === mine?.leaf ? 4 : 16} y2="34" strokeWidth={d.leaf === mine?.leaf ? 3 : 2} className={d.leaf === mine?.leaf ? "stroke-amber" : "stroke-ok"} />
-        ))}
-        {wds.map((w) => (
-          <line key={w.nullifier} x1={x(w.block)} x2={x(w.block)} y1="42" y2="60" strokeWidth="2" className="stroke-warn" />
-        ))}
-        {mine && <circle cx={x(mine.block)} cy="8" r="5" fill="none" strokeWidth="1.5" className="stroke-amber" />}
-      </svg>
-      <figcaption className="flex justify-between font-mono text-[11px]/normal text-fg2">
-        <span>{ago(span)} ago</span>
-        <span>now, block {fmt(snap.head)}</span>
-      </figcaption>
-      <p className="m-0 flex flex-wrap gap-x-4 gap-y-1 text-[12px]/normal text-fg2">
-        <span className="inline-flex items-center gap-1.5"><i className="h-3 w-0.5 bg-ok" />deposit</span>
-        <span className="inline-flex items-center gap-1.5"><i className="h-3 w-0.5 bg-warn" />withdrawal</span>
-        {mine && <span className="inline-flex items-center gap-1.5"><i className="size-2.5 rounded-full border-[1.5px] border-amber" />your deposit</span>}
-      </p>
-    </figure>
-  );
+function useProof(hash: Hex | undefined, pool: Address) {
+  const [state, setState] = useState<{ hash: Hex; proof?: ProofView; error?: string }>();
+  useEffect(() => {
+    if (!hash) return;
+    let alive = true;
+    readProof(hash, pool).then((proof) => alive && setState({ hash, proof }), (e) => alive && setState({ hash, error: msg(e) }));
+    return () => { alive = false; };
+  }, [hash, pool]);
+  return hash && state?.hash === hash ? state : undefined;
 }
 
-const Stat = ({ label, value, tone }: { label: string; value: string; tone?: "amber" }) => (
-  <div className="flex min-w-0 flex-col gap-0.5 rounded-lg border border-ln bg-bg px-3 py-2.5">
-    <span className={cx("font-mono text-[20px]/none tabular-nums", tone === "amber" ? "text-amber" : "text-fg")}>{value}</span>
-    <span className="text-[12px]/snug text-fg2">{label}</span>
-  </div>
-);
+/** Accounts that sent the given deposit transactions, filled in as they are read. */
+function useFroms(hashes: Hex[]) {
+  const [map, setMap] = useState<Record<string, Address>>({});
+  const key = hashes.join();
+  useEffect(() => {
+    let alive = true;
+    for (const h of hashes) fromOf(h).then((a) => alive && setMap((m) => (m[h] === a ? m : { ...m, [h]: a })), () => {});
+    return () => { alive = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
+  return map;
+}
 
-const Verdict = ({ title, set, children }: { title: string; set: string; children: string }) => (
-  <div className="flex flex-col gap-1 border-t border-ln pt-3">
-    <div className="flex items-baseline justify-between gap-3">
-      <span className="text-[13px]/snug text-fg1">{title}</span>
-      <span className="flex-none font-mono text-[14px]/none text-amber tabular-nums">{set}</span>
-    </div>
-    <p className="m-0 text-[12px]/snug text-fg2">{children}</p>
-  </div>
-);
+type Kind = "you" | "crowd" | "in" | "after";
+const BAR = { you: "bg-amber", crowd: "bg-ok", in: "bg-okt/35", after: "bg-ln2" } as const;
+const WHAT = {
+  you: "the depositor's leaf",
+  crowd: "a crowd deposit after yours, in the proof's root",
+  in: "in the proof's root",
+  after: "landed after the proof's root",
+} as const;
 
-export function Crowd({ pool, myLeafIndex }: { pool: Address; myLeafIndex?: number }) {
-  const { snap, error } = useCrowd(pool, myLeafIndex);
-  const mine = snap && myLeafIndex !== undefined ? snap.deps.find((d) => d.leaf === myLeafIndex) : undefined;
+const Tx = ({ hash, label }: { hash: Hex; label: string }) => <ExtLink href={exitUrl(hash)} className="text-amber underline decoration-amberln underline-offset-4">{label}</ExtLink>;
+const Addr = ({ a }: { a?: Address }) => (a ? <ExtLink href={addrUrl(a)} className="text-amber underline decoration-amberln underline-offset-4">{short(a)}</ExtLink> : <>…</>);
 
-  let body;
-  if (!snap) {
-    body = <p className="m-0 text-[13px] text-fg2">{error ? `Could not read the pool: ${error}` : "Reading the pool's deposits and withdrawals…"}</p>;
-  } else {
-    const { deps, wds, totalW, head, scanFrom } = snap;
-    const inPool = deps.length - totalW;
-    const hidden = totalW - wds.length;
-    const since = mine ? wds.filter((w) => w.block >= mine.block).length : 0;
-    const after = mine ? deps.filter((d) => d.leaf > mine.leaf).length : 0;
-    // Reference deposit for the older-root row: the player's, else the fifth newest.
-    const ref = mine ?? deps[Math.max(0, deps.length - 5)];
-    const olderUnspent = ref ? ref.leaf + 1 - (totalW - wds.filter((w) => w.block >= ref.block).length) : 0;
-    body = (
-      <>
-        <div className="grid grid-cols-2 gap-2 min-[560px]:grid-cols-3">
-          <Stat label="deposits" value={fmt(deps.length)} />
-          <Stat label="withdrawals" value={fmt(totalW)} />
-          <Stat label="unspent in the pool" value={fmt(inPool)} />
-          {mine && <Stat label="deposits after yours" value={fmt(after)} tone="amber" />}
-          {mine && <Stat label="withdrawals since yours" value={fmt(since)} tone="amber" />}
-        </div>
-        {myLeafIndex !== undefined && !mine && (
-          <p className="m-0 text-[12px]/snug text-fg2">Leaf {myLeafIndex} is not in the pool's deposit logs yet.</p>
-        )}
-        <Timeline snap={snap} mine={mine} />
-        {ref && (
-          <div className="flex flex-col gap-3">
-            <Verdict title="Prove against the latest root" set={mine && after === 0 ? "1 likely" : `${fmt(Math.max(inPool, 1))} possible`}>
-              {mine
-                ? `Your note and ${fmt(Math.max(inPool - 1, 0))} others are unspent inside this root. ${after === 0 ? "Its newest leaf is yours, so an observer guesses you until someone else deposits." : "Its newest leaf is not yours."}`
-                : `${fmt(inPool)} unspent notes sit inside this root. A proof against it is designed to hide the payer among them.`}
-            </Verdict>
-            <Verdict title={mine ? "Prove against the root right after your deposit" : `Prove against the root from leaf ${ref.leaf}`} set={mine ? "1 likely" : `${fmt(Math.max(olderUnspent, 1))} possible`}>
-              {mine
-                ? `${fmt(Math.max(olderUnspent, 1))} unspent notes are inside that root, but your leaf is its newest, so an observer who reads the root guesses you.`
-                : `${fmt(Math.max(olderUnspent, 1))} unspent notes were inside that older root. An older root never holds more notes than the latest one.`}
-            </Verdict>
-          </div>
-        )}
-        <p className="m-0 text-[12px]/snug text-fg2">
-          Most of these deposits and withdrawals come from accounts we run on this devnet.
-          {hidden > 0 && ` ${fmt(hidden)} withdrawal${hidden === 1 ? "" : "s"} counted from the pool balance have no block. Their transactions failed at the top level, so eth_getLogs omits their logs, and they are older than block ${fmt(scanFrom)}, where the receipt scan starts.`}
-          {scanFrom > 0 && hidden === 0 && ` Receipts scanned from block ${fmt(scanFrom)} to ${fmt(head)}.`}
-        </p>
-      </>
-    );
+export function Crowd({ pool, mine, runHash }: { pool: Address; mine?: number; runHash?: Hex }) {
+  const { snap, error } = usePool(pool);
+  const p = useProof(runHash, pool);
+  const proof = p?.proof;
+  const leaves = proof?.leaves;
+  const deps = snap?.deps ?? [];
+  const dep = (leaf: number): Dep | undefined => deps.find((d) => d.leaf === leaf);
+
+  // Leaves the key/value list names: the depositor's, the crowd's after it inside the root, the root's newest, the first after it.
+  const crowd = leaves !== undefined && mine !== undefined ? deps.filter((d) => d.leaf > mine && d.leaf < leaves) : [];
+  const named = [
+    mine !== undefined ? dep(mine) : undefined,
+    ...crowd.slice(0, SHOWN_CROWD),
+    mine === undefined && leaves ? dep(leaves - 1) : undefined,
+    leaves !== undefined ? dep(leaves) : undefined,
+  ].filter((d): d is Dep => !!d);
+  const froms = useFroms(named.map((d) => d.hash));
+
+  const kind = (i: number): Kind =>
+    i === mine ? "you" : leaves === undefined ? "in" : i >= leaves ? "after" : mine !== undefined && i > mine ? "crowd" : "in";
+
+  const rows: [string, React.ReactNode][] = [];
+  const depRow = (d: Dep, label: string) => rows.push([label, <>block {fmt(d.block)}, <Tx hash={d.hash} label={`deposit ${short(d.hash)}`} /> from <Addr a={froms[d.hash]} /></>]);
+  const me = mine !== undefined ? dep(mine) : undefined;
+  if (proof) {
+    if (me) depRow(me, `depositor leaf ${me.leaf}`);
+    else rows.push(["depositor leaf", "not on the chain: the proof hides which leaf paid"]);
+    crowd.slice(0, SHOWN_CROWD).forEach((d) => depRow(d, `crowd leaf ${d.leaf}`));
+    if (crowd.length > SHOWN_CROWD) rows.push(["more crowd leaves", `${crowd.length - SHOWN_CROWD} more after leaf ${crowd[SHOWN_CROWD - 1]!.leaf}`]);
+    if (mine === undefined && leaves) { const d = dep(leaves - 1); if (d) depRow(d, `newest leaf in the root (${d.leaf})`); }
+    const next = leaves !== undefined ? dep(leaves) : undefined;
+    if (next) rows.push(["first leaf after the root", <>leaf {next.leaf} landed in block {fmt(next.block)}, after the root, so the proof does not cover it</>]);
+    rows.push(["proof root", <><span className="break-all">{proof.root}</span><br /><span className="text-fg2">{leaves === undefined
+      ? "no longer among the pool's last 30 roots, so the leaf count cannot be read back"
+      : `checked against the pool (its root history, or its tree rebuilt from the Deposit logs): the root of leaves 0 to ${leaves - 1}`}</span></>]);
+    rows.push(["paid in block", <>{fmt(proof.block)}{me ? `, ${fmt(proof.block - me.block)} blocks after the deposit` : ""}, <Tx hash={proof.hash} label={short(proof.hash)} /></>]);
+    if (proof.invoiceId !== undefined) {
+      const c = proof.created;
+      rows.push([`invoice #${proof.invoiceId}`, <>
+        {c ? <>created in block {fmt(c.block)} by <Addr a={c.by} /> in <Tx hash={c.hash} label={short(c.hash)} />{me ? ", not by the depositor" : ""}</> : "creation not found"}
+        {proof.paidTx && <>. Paid by <Tx hash={proof.paidTx} label={short(proof.paidTx)} /></>}.</>]);
+    }
   }
 
+  const live = snap ? "live" : error ? "err" : undefined;
   return (
     <Card>
       <CardBar>
-        <span>Crowd in this pool</span>
-        <span className="inline-flex items-center gap-2"><Dot state={error ? "err" : snap ? "live" : undefined} size="sm" />{snap ? `block ${fmt(snap.head)}` : "connecting"}</span>
+        <span>the pool's crowd, and this run's proof</span>
+        <span className="inline-flex items-center gap-2">
+          <Dot state={live} size="sm" />
+          WETH pool · {formatEther(DEVNET.denomination)} WETH notes · {snap ? `live, block ${fmt(snap.head)}` : error ? "could not read" : "connecting"}
+        </span>
       </CardBar>
-      <div className="flex flex-col gap-4 p-4">{body}</div>
+      <div className="flex flex-col gap-5 p-5 max-[560px]:p-4">
+        {!snap ? (
+          <p className="m-0 text-[13px] text-fg2">{error ? `Could not read the pool: ${error}` : "Reading the pool's deposits…"}</p>
+        ) : (
+          <>
+            <Facts>
+              <Fact k="Deposits">{fmt(snap.deps.length)}</Fact>
+              <Fact k="Withdrawals">{fmt(snap.withdrawals)}</Fact>
+              <Fact k="Unspent notes">{fmt(snap.unspent)}</Fact>
+              {leaves !== undefined && <Fact k="Leaves in this proof's root">{fmt(leaves)}</Fact>}
+            </Facts>
+            <div className="flex flex-col gap-2.5">
+              <div className="flex flex-wrap gap-[3px]" role="list" aria-label="Pool leaves">
+                {snap.deps.map((d) => {
+                  const k = kind(d.leaf);
+                  const label = `leaf ${d.leaf}${k === "you" || leaves !== undefined ? `, ${WHAT[k]}` : ""}`;
+                  return <i key={d.leaf} role="listitem" tabIndex={0} title={label} aria-label={label} className={cx("h-[18px] w-2.5 rounded-sm", BAR[k], k === "you" && "outline-1 outline-amber")} />;
+                })}
+              </div>
+              <p className="m-0 text-[12.5px]/[1.6] text-fg2">
+                Leaves 0 to {fmt(snap.deps.length - 1)} now.
+                {mine !== undefined && <> <span className="text-amber">Amber</span> is the depositor's leaf {mine}.</>}
+                {leaves !== undefined
+                  ? <>{mine !== undefined && <> <span className="text-ok">Green</span> are the crowd deposits after it.</>} Dim green are the other leaves in the proof's root (0 to {leaves - 1}), grey landed after the root.</>
+                  : <> Run one to mark the root it proves against.</>}
+                {" "}Which leaves are spent is not marked: the pool's balance gives only the count ({fmt(snap.deps.length)} deposits minus {fmt(snap.unspent)} unspent = {fmt(snap.withdrawals)}).
+              </p>
+            </div>
+          </>
+        )}
+        {runHash && !p && <p className="m-0 font-mono text-[12.5px] text-fg2">Reading the run's proof from the chain…</p>}
+        {p?.error && <p className="m-0 font-mono text-[12.5px] text-bad">Could not read the run's proof: {p.error}</p>}
+        {rows.length > 0 && <Kvl rows={rows} />}
+        <p className="m-0 text-[13px]/[21px] text-fg2">
+          The proof hides a note only among the deposits in the root it proves against. The pool keeps taking deposits, so these numbers move.
+        </p>
+      </div>
     </Card>
   );
 }

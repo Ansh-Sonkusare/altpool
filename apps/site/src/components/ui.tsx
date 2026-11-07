@@ -66,3 +66,23 @@ export const Eyebrow = ({ tone = "dim", children }: { tone?: "dim" | "amber"; ch
   <span className={cx("font-mono text-[12px]/normal tracking-[.12em]", tone === "amber" ? "text-amber" : "text-fg2")}>{children}</span>
 );
 
+
+/** The artifact's fact row: a small sans label over a mono number. */
+export const Facts = ({ children }: { children: ReactNode }) => (
+  <dl className="m-0 grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-x-6 gap-y-4">{children}</dl>
+);
+export const Fact = ({ k, children }: { k: string; children: ReactNode }) => (
+  <div><dt className="text-[12px] text-fg2">{k}</dt><dd className="m-0 mt-0.5 font-mono text-[18px] text-fg tabular-nums">{children}</dd></div>
+);
+
+/** Mono key/value list: keys left, values wrap. Rows are [key, value] pairs. */
+export const Kvl = ({ rows }: { rows: [string, ReactNode][] }) => (
+  <dl className="m-0 grid grid-cols-[max-content_minmax(0,1fr)] gap-x-[18px] gap-y-1.5 font-mono text-[12.5px]/[1.5] max-[560px]:grid-cols-1 max-[560px]:gap-y-0">
+    {rows.map(([k, v]) => (
+      <div key={k} className="contents">
+        <dt className="text-fg2">{k}</dt>
+        <dd className="m-0 break-words max-[560px]:mb-1.5 [overflow-wrap:anywhere]">{v}</dd>
+      </div>
+    ))}
+  </dl>
+);

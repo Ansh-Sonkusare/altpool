@@ -21,7 +21,9 @@ export const whyFrameFails = async (raw: Hex, index: number): Promise<string | u
       return paid ? `AlreadyPaid(${id}), because InvoiceBook.paid(${id}) is true` : undefined;
     }
     if (call.functionName === "swap") {
-      const deploy = frames.map((f) => f.data && decodeFunctionData({ abi: settlerFactoryAbi, data: f.data as Hex })).find((d) => d && d.functionName === "deploy");
+      // Only the deploy frame decodes against the factory ABI; every other frame's data throws, so skip those.
+      const asDeploy = (data?: string) => { try { return data ? decodeFunctionData({ abi: settlerFactoryAbi, data: data as Hex }) : undefined; } catch { return undefined; } };
+      const deploy = frames.map((f) => asDeploy(f.data)).find((d) => d?.functionName === "deploy");
       const t = deploy && (deploy.args[0] as { amount: bigint; maxIn: bigint });
       if (!t) return undefined;
       const q = await quote(t.amount);
