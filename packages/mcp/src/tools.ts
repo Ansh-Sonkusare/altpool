@@ -6,19 +6,10 @@ import { DEVNET, altDevnet, type Address, type Hex } from "@altpool/core";
 import { altpoolActions, createAltMempoolClient, fromWire } from "altpool";
 import { checkAdmission, renderReport, summarize } from "@altpool/simulator";
 import { entityStatus } from "@altpool/monitor";
+import { fail, ok, msgOf, toJson, type ToolResult } from "./result";
 
-export interface ToolResult {
-  [key: string]: unknown;
-  content: { type: "text"; text: string }[];
-  isError?: boolean;
-}
+export { toJson, type ToolResult } from "./result";
 
-/** bigint and Date do not survive JSON.stringify; stringify bigints, Dates become ISO. */
-export const toJson = (v: unknown): string => JSON.stringify(v, (_, x) => (typeof x === "bigint" ? x.toString() : x), 2);
-
-const ok = (...parts: string[]): ToolResult => ({ content: parts.map((text) => ({ type: "text", text })) });
-const fail = (message: string, fix: string): ToolResult => ({ isError: true, content: [{ type: "text", text: `${message}\nFix: ${fix}` }] });
-const msgOf = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
 const HEX = /^0x(?:[0-9a-fA-F]{2})+$/;
 const HASH = /^0x[0-9a-fA-F]{64}$/;

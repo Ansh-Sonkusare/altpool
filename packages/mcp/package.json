@@ -1,6 +1,6 @@
 {
   "name": "@altpool/mcp",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "exports": {
@@ -13,7 +13,8 @@
     "typecheck": "tsc -p .",
     "test": "vitest run --passWithNoTests",
     "start": "bun src/server.ts",
-    "smoke": "bun scripts/smoke.ts"
+    "smoke": "bun scripts/smoke.ts",
+    "bridge-smoke": "bun scripts/bridge-smoke.ts"
   },
   "dependencies": {
     "@altpool/core": "workspace:*",
@@ -24,6 +25,7 @@
     "@modelcontextprotocol/sdk": "1.32.2",
     "zod": "^4.6.7",
     "viem": "^2.57.10",
-    "@altpool/contracts": "workspace:*"
+    "@altpool/contracts": "workspace:*",
+    "@altpool/wallet-bridge": "workspace:*"
   }
 }

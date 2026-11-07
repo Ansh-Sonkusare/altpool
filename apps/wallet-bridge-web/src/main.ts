@@ -79,7 +79,7 @@ $("app").innerHTML = `
     <h2><span class="n">4</span> Mode B: approve a session once, then no popups</h2>
     <p>The wallet signs one <code>Session</code> (a key generated in this tab, a 1-hour limit, at most 1000 wei per tx,
     only to you). That key then signs each frame tx natively. The account checks the session on every tx.</p>
-    <div class="row"><button id="authorize" disabled>Authorise session</button><button id="burst" disabled>Send 3 txs</button></div>
+    <div class="row"><button id="authorize" disabled>Authorise session</button><button id="burst" disabled>Send 3 txs</button><button id="export" disabled>Export for an agent</button></div>
     <div id="session-out" class="out"></div>
   </section>
 
@@ -105,6 +105,7 @@ function refresh() {
   $<HTMLButtonElement>("send").disabled = !state.bridge || state.busy;
   $<HTMLButtonElement>("authorize").disabled = !state.bridge || state.busy;
   $<HTMLButtonElement>("burst").disabled = !state.session || state.busy;
+  $<HTMLButtonElement>("export").disabled = !state.session || state.busy;
 }
 
 async function guarded(out: string, fn: () => Promise<void>) {
@@ -235,6 +236,23 @@ async function authorizeSession() {
   log("session-out", `<span class="ok">Session authorised.</span> Key <code>${session.key}</code> lives only in this tab.`);
 }
 
+/** Download the session for packages/mcp (ALTPOOL_SESSION=<file>). It holds the session's private key: anyone with
+ * the file can spend within the session's on-chain limits (target, value and fee per tx) until validUntil. */
+async function exportSession() {
+  const b = state.bridge!;
+  const { pk, session, ownerSignature } = state.session!;
+  const file = {
+    kind: "altpool-bridge-session", chainId: DEVNET.chainId, account: b.address, owner: b.owner,
+    session: { key: session.key, validUntil: String(session.validUntil), maxValuePerTx: String(session.maxValuePerTx), maxCostPerTx: String(session.maxCostPerTx), target: session.target },
+    ownerSignature, sessionPrivateKey: pk,
+  };
+  const url = URL.createObjectURL(new Blob([JSON.stringify(file, null, 2)], { type: "application/json" }));
+  const a = Object.assign(document.createElement("a"), { href: url, download: `altpool-session-${b.address.slice(2, 8)}.json` });
+  a.click();
+  URL.revokeObjectURL(url);
+  log("session-out", `Exported. Give it to the MCP server: <code>ALTPOOL_SESSION=/path/to/${esc(a.download)}</code>. The file holds the session key: it can spend at most ${session.maxValuePerTx} wei per tx, only to <code>${esc(session.target)}</code>, until ${new Date(Number(session.validUntil) * 1000).toLocaleTimeString()}.`);
+}
+
 async function burst() {
   const b = state.bridge!;
   const { pk, session, ownerSignature } = state.session!;
@@ -256,6 +274,7 @@ $("deploy").onclick = () => guarded("account-out", deployAccount);
 $("send").onclick = () => guarded("send-out", sendModeA);
 $("authorize").onclick = () => guarded("session-out", authorizeSession);
 $("burst").onclick = () => guarded("session-out", burst);
+$("export").onclick = () => guarded("session-out", exportSession);
 window.ethereum?.on?.("chainChanged", () => { if (state.wallet) void guarded("wallet-out", checkChain); });
 window.ethereum?.on?.("accountsChanged", () => location.reload());
 refresh();
