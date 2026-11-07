@@ -20,7 +20,7 @@ export const Hero = ({ head }: HeroProps) => {
   const block = valueOf(head);
   return (
     <header id="top" className="relative flex flex-col gap-11 px-14 pt-[88px] pb-20 max-[960px]:px-6 max-[960px]:py-16">
-      <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,.85fr)] items-end gap-12 max-[960px]:grid-cols-[minmax(0,1fr)]">
+      <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,.85fr)] items-center gap-12 max-[960px]:grid-cols-[minmax(0,1fr)]">
         <div className="flex flex-col gap-7">
           <span className="inline-flex w-max max-w-full items-center gap-2.5 rounded-full border border-ln2 px-3 py-1.5 font-mono text-[12px] text-fg2">
             <Dot state={dotFor(head)} />
