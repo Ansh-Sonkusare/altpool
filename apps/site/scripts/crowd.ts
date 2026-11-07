@@ -83,7 +83,9 @@ const wethOf = (a: Address) => pub.readContract({ address: WETH9, abi: wethAbi, 
 /** ETH account i needs for one deposit: gas plus whatever its recycled WETH does not cover. */
 async function need(i: number): Promise<bigint> {
   const weth = await wethOf(wallets(state)[i].address);
-  return GAS + (weth >= DEVNET.denomination ? 0n : DEVNET.denomination - weth);
+  // Each tx reserves gasLimit * gasPrice up front; the devnet's price swings (seen 95 gwei), so budget from the live price.
+  const gas = TX.gas * (await pub.getGasPrice()) * 2n;
+  return (gas > GAS ? gas : GAS) + (weth >= DEVNET.denomination ? 0n : DEVNET.denomination - weth);
 }
 
 /** Ask the faucet for account i if it is short, due, and the hourly budget allows. Returns whether it is funded. */
@@ -133,11 +135,22 @@ async function mined(hash: Hex, what: string) {
 /** Wrap what the account's recycled WETH does not cover, and approve the pool: everything before the deposit itself. */
 async function wrapApprove(i: number) {
   const w = walletOf(i);
+  // A send that timed out on the slow RPC can still mine later and spend this WETH: wait until nothing is in flight.
+  for (let k = 0; k < 60; k++) {
+    const [done, all] = await Promise.all([pub.getTransactionCount({ address: w.account.address }), pub.getTransactionCount({ address: w.account.address, blockTag: "pending" })]);
+    if (done === all) break;
+    await sleep(3000);
+  }
   const weth = await wethOf(w.account.address);
   if (weth < DEVNET.denomination) await mined(await w.writeContract({ address: WETH9, abi: wethAbi, functionName: "deposit", value: DEVNET.denomination - weth, ...TX }), "WETH deposit");
   await mined(await w.writeContract({ address: WETH9, abi: wethAbi, functionName: "approve", args: [pool, DEVNET.denomination], ...TX }), "WETH approve");
 }
-const sendDeposit = (i: number, note: Note) => walletOf(i).writeContract({ address: pool, abi: erc20PoolAbi, functionName: "deposit", args: [note.commitment], ...TX });
+async function sendDeposit(i: number, note: Note) {
+  const w = walletOf(i);
+  // Simulate first: a revert here costs nothing, a mined revert burns ~1M gas.
+  await pub.simulateContract({ account: w.account, address: pool, abi: erc20PoolAbi, functionName: "deposit", args: [note.commitment] });
+  return w.writeContract({ address: pool, abi: erc20PoolAbi, functionName: "deposit", args: [note.commitment], ...TX });
+}
 function recordNote(note: Note) {
   state.notes.push({ note: noteToString(note), attempts: 0 });
   state.deposits++;

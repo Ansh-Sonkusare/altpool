@@ -53,7 +53,7 @@ export interface ExitResult {
 
 /** Submit through the altpool SDK and wait for inclusion; throws unless the tx and every frame succeeded. */
 export async function sendExit(tx: FrameTx, o: { sendUrl?: string } = {}): Promise<ExitResult> {
-  const sidecar = createAltMempoolClient({ httpUrl: o.sendUrl ?? process.env.SEND_URL ?? MINER_SIDECAR, profile: getProfile(DEVNET.profile), name: "send" });
+  const sidecar = createAltMempoolClient({ httpUrl: o.sendUrl ?? process.env.SEND_URL ?? MINER_SIDECAR, profile: getProfile(DEVNET.profile), name: "send", timeoutMs: 90_000 }); // the miner sidecar often takes >20 s to answer a send
   const sdk = createPublicClient({ chain: altDevnet, transport: http(DEVNET.ethrexUrl) }).extend(altpoolActions({ sidecar }));
   // submit, not send: the exit sender is the ExitRelay contract (zero signatures) and ExitRelay pins frame gas.
   const { hash } = await sdk.altpool.submitFrameTransaction({ transaction: tx });
