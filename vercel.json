@@ -1,0 +1,7 @@
+{
+  "installCommand": "bun install",
+  "buildCommand": "cd apps/site && bun run build",
+  "outputDirectory": "apps/site/dist",
+  "framework": null,
+  "rewrites": [{ "source": "/((?!.*\\.).*)", "destination": "/index.html" }]
+}
