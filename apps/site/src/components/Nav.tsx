@@ -3,7 +3,7 @@ import { Dot, dotFor, fmt } from "./ui";
 
 export interface NavProps { head: Live<number> }
 
-const LINKS: [string, string][] = [["/#pledge", "Send Pledge Paid"], ["/#toolkit", "Toolkit"], ["/#doctor", "frame-doctor"], ["/#install", "Install"], ["/#findings", "Why it matters"], ["/monitor", "Monitor"], ["/wallet", "Wallet"]];
+const LINKS: [string, string][] = [["/#pledge", "Send Pledge Paid"], ["/#toolkit", "Toolkit"], ["/#doctor", "frame-doctor"], ["/#install", "Install"], ["/#findings", "Why it matters"], ["/monitor", "Monitor"], ["/wallet", "Wallet"], ["/docs", "Docs"]];
 
 export const Nav = ({ head }: NavProps) => (
   <div className="sticky top-0 z-[5] flex justify-center pt-4">

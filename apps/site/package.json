@@ -8,7 +8,7 @@
     "test": "echo no tests",
     "dev": "vite",
     "prove": "bun server/prove.ts",
-    "build": "vite build"
+    "build": "cp src/docs/reference.md public/llms-full.txt && vite build"
   },
   "dependencies": {
     "@altpool/contracts": "workspace:*",
