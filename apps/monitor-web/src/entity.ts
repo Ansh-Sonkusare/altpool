@@ -69,7 +69,7 @@ const tabBody = (r: EntityReport, tab: Tab, watched: NodeRef[], events: SessionE
   }
   if (tab === "nodes") {
     return table(th("Node") + th("Status") + th("Latency", true) + th("Seen / included", true) + th("URL"), r.nodes.map((n) =>
-      `<tr>${td(`<span class="font-mono font-semibold">${esc(n.name)}</span>`)}${td(n.ok ? `${sq("ok")}<span class="text-accent">up</span>` : `${sq("bad")}<span class="text-bad">down</span> <span class="text-muted">${esc(n.error ?? "")}</span>`)}${td(n.latencyMs !== undefined ? `${num(n.latencyMs)} ms` : "—", "text-right font-mono")}${td(n.reputation ? `${num(n.reputation.opsSeen)} / ${num(n.reputation.opsIncluded)}` : `<span class="text-muted">not seen</span>`, "text-right font-mono")}${td(`<span class="break-all font-mono text-[12px] text-muted">${esc(n.url)}</span>`)}</tr>`));
+      `<tr>${td(`<span class="font-mono font-semibold">${esc(n.name)}</span>`)}${td(n.ok ? `${sq("ok")}<span class="text-accent">up</span>` : `${sq("bad")}<span class="text-bad">down</span> <span class="text-muted">${esc(n.error ?? "")}</span>`)}${td(n.latencyMs !== undefined ? `${num(n.latencyMs)} ms` : "—", "text-right font-mono")}${td(`${n.reputation ? `${num(n.reputation.opsSeen)} / ${num(n.reputation.opsIncluded)}` : `<span class="text-muted">not seen</span>`}${n.reputationError ? `<div class="text-[11px] text-warn" title="${esc(n.reputationError)}">stale${n.reputationAt ? `, from ${clock(n.reputationAt)}` : ""}</div>` : ""}`, "text-right font-mono")}${td(`<span class="break-all font-mono text-[12px] text-muted">${esc(n.url)}</span>`)}</tr>`));
   }
   const inclusions = r.inclusions.length
     ? table(th("Tx") + th("Block", true) + th("VERIFY gas", true) + th("Cost", true) + th("Seen on") + th(""), r.inclusions.map((i) =>
@@ -94,7 +94,7 @@ export const renderEntity = (r: EntityReport, tab: Tab, watched: NodeRef[], even
   const used = Math.min(100, Math.round((rep.opsSeen / throttleAt) * 100));
   const hTone: Tone = rep.status !== "ok" ? "bad" : h.untilThrottled <= 20 ? "warn" : "ok";
   const lowFunds = f.txsLeft !== undefined && f.txsLeft <= 5;
-  const perNode = r.nodes.filter((n) => n.reputation).map((n) => `${n.name} ${n.reputation!.opsSeen}/${n.reputation!.opsIncluded}`).join(" · ");
+  const perNode = r.nodes.filter((n) => n.reputation).map((n) => `${n.name} ${n.reputation!.opsSeen}/${n.reputation!.opsIncluded}${n.reputationError ? " (stale)" : ""}`).join(" · ");
   const up = r.nodes.filter((n) => n.ok).length;
   const counts: Record<Tab, number> = { activity: r.inclusions.length, rejections: r.rejections.length, pending: r.pending.length, nodes: r.nodes.length };
   const tabTone: Partial<Record<Tab, Tone>> = { rejections: r.rejections.length ? "bad" : undefined, pending: r.pending.some((p) => p.stuck) || r.exposure.uncovered ? "bad" : r.exposure.keyClashes.length ? "warn" : undefined, nodes: up < r.nodes.length ? "bad" : undefined };
