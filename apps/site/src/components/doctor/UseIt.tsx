@@ -1,9 +1,10 @@
 import type { ReactNode } from "react";
+import { Code } from "../Code";
 
-const Block = ({ title, lead, children }: { title: string; lead: ReactNode; children: string }) => (
+const Block = ({ title, lead, children, lang }: { title: string; lead: ReactNode; children: string; lang?: "ts" | "sh" }) => (
   <div className="flex min-w-0 flex-col gap-3 rounded-xl border border-ln bg-s1 p-5">
     <h3 className="m-0 font-mono text-[12px] font-normal uppercase tracking-[.12em] text-fg2">{title}</h3>
-    <pre className="m-0 overflow-x-auto font-mono text-[12.5px]/[20px] text-fg1"><code>{children}</code></pre>
+    <Code code={children} lang={lang} className="text-[12.5px]/[20px]" />
     <p className="m-0 mt-auto text-sm/[21px] text-fg2">{lead}</p>
   </div>
 );
@@ -14,6 +15,7 @@ export const UseIt = () => (
   <div className="grid grid-cols-3 gap-3 max-[960px]:grid-cols-1">
     <Block
       title="CLI"
+      lang="sh"
       lead={<>Exits <span className="text-ok">0</span> when the alt mempool admits, <span className="text-bad">1</span> when it rejects and <span className="text-warn">2</span> on usage or RPC errors, so it can gate CI. <span className={code}>--json</span> prints the report as JSON. <span className={code}>-v</span> adds every rule check.</>}
     >{`frame-doctor <rawTx | txHash> [--json] [-v]
 frame-doctor 0x02… --json

@@ -1,5 +1,6 @@
 {
   "lockfileVersion": 1,
+  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "altpool-monorepo",
@@ -74,6 +75,7 @@
         "react": "^19",
         "react-dom": "^19",
         "snarkjs": "0.1.20",
+        "sugar-high": "^2.6.4",
         "viem": "^2.57.10",
         "websnark": "github:tornadocash/websnark#2041cfa5fa0b71cd5cca9022a4eeea4afe28c9f7",
       },
@@ -1466,6 +1468,8 @@
 
     "strip-json-comments": ["strip-json-comments@2.0.1", "", {}, "sha512-4gB8na07fecVVkOI6Rs4e7T6NOTki5EmL7TUduTs6bu3EdnSycntVJ4re8kgZA+wx9IueI2Y11bfbgwtzuE0KQ=="],
 
+    "sugar-high": ["sugar-high@2.6.4", "", {}, "sha512-GJkKsIyzqPMCJabhM8c4IKBg3aKUtI62DMPGdgFuXDo0Z5LY+q3SIT3PsSjGkOT9IglhCR6dZBDVQYmdIfumsw=="],
+
     "supports-color": ["supports-color@5.5.0", "", { "dependencies": { "has-flag": "^3.0.0" } }, "sha512-QjVjwdXIt408MIiAqCX4oUKsgU2EqAGzs2Ppkm4aQYbjm+ZEWEcW4SfFNTr4uMNZma0ey4f5lgLrkB0aX0QMow=="],
 
     "swarm-js": ["swarm-js@0.1.42", "", { "dependencies": { "bluebird": "^3.5.0", "buffer": "^5.0.5", "eth-lib": "^0.1.26", "fs-extra": "^4.0.2", "got": "^11.8.5", "mime-types": "^2.1.16", "mkdirp-promise": "^5.0.1", "mock-fs": "^4.1.0", "setimmediate": "^1.0.5", "tar": "^4.0.2", "xhr-request": "^1.0.1" } }, "sha512-BV7c/dVlA3R6ya1lMlSSNPLYrntt0LUq4YMgy3iwpCIc6rZnS5W2wUoctarZ5pXlpKtxDDf9hNziEkcfrxdhqQ=="],
@@ -1651,8 +1655,6 @@
     "zod": ["zod@4.6.7", "", {}, "sha512-g8W2D2kU6a8untc053fX1uVBKzM7yqAxW/3zwk83+6RyF2+SKOuV+c0wBDhUwzV1PaGapmZH+rmcUzPf+3CGwg=="],
 
     "zod-to-json-schema": ["zod-to-json-schema@3.25.2", "", { "peerDependencies": { "zod": "^3.25.28 || ^4" } }, "sha512-O/PgfnpT1xKSDeQYSCfRI5Gy3hPf91mKVDuYLUHZJMiDFptvP41MSnWofm8dnCm0256ZNfZIM7DSzuSMAFnjHA=="],
-
-    "@altpool/falcon/forge-std": ["forge-std@github:foundry-rs/forge-std#77041d2", {}, "foundry-rs-forge-std-77041d2"],
 
     "@babel/core/semver": ["semver@6.3.2", "", { "bin": { "semver": "bin/semver.js" } }, "sha512-GYrCADwpu6yV5OAvchkQ27Z5wwMxWAEMg5NNWjyHh/5DboFFqbdbvYNIvZouQpxXyeMPoTOh0vdPYKlf0ZswdQ=="],
 

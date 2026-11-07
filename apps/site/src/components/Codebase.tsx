@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { EntityReport } from "@altpool/monitor";
 import type { Live } from "../live";
+import { Code } from "./Code";
 import { Card, CardBar, cx, Eyebrow, ExtLink, Section } from "./ui";
 import { PipelineStrip } from "./toolkit/Pipeline";
 import { AdmissionPanel, McpPanel, SdkPanel, WatchPanel } from "./toolkit/panels";
@@ -168,14 +169,6 @@ const ENTRIES: readonly Entry[] = [
   },
 ];
 
-const Code = ({ code }: { code: string }) => (
-  <pre className="m-0 overflow-x-auto p-4 font-mono text-[12px]/[19px] text-fg1">
-    {code.split("\n").map((l, i) => (
-      <div key={i} className={cx("min-h-5 whitespace-pre", /^\s*(\/\/|#)/.test(l) && "text-dim")}>{l}</div>
-    ))}
-  </pre>
-);
-
 export const Codebase = ({ entity }: { entity: Live<EntityReport> }) => {
   const [id, setId] = useState(TOOLS[0]!.id);
   const t = TOOLS.find((x) => x.id === id)!;
@@ -184,7 +177,7 @@ export const Codebase = ({ entity }: { entity: Live<EntityReport> }) => {
   const snippet = (
     <Card className="overflow-hidden">
       <CardBar windowDots><span>{t.file}</span></CardBar>
-      <Code code={t.code} />
+      <Code code={t.code} lang={t.id === "mcp" ? "sh" : "ts"} className="p-4 text-[12px]/[19px]" />
       <ul className="m-0 flex list-none flex-col gap-1.5 border-t border-ln p-4 text-[13px]/[20px] text-fg2">
         {t.notes.map((n) => <li key={n}>{n}</li>)}
       </ul>

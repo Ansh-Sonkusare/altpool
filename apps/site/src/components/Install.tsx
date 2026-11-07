@@ -1,6 +1,7 @@
 // "Use it": the three ways in. Install the SDK, send an admitted frame tx, give an agent the checks.
 // Every name in SNIPPET is exported by altpool (packages/sdk/src); the shape follows packages/sdk/scripts/live.ts.
 import type { ReactNode } from "react";
+import { Code } from "./Code";
 import { Card, CardBar, cx, Eyebrow, Section } from "./ui";
 
 const INSTALL = `npm i altpool viem @forshtat/hegota-support`;
@@ -34,15 +35,7 @@ const MCP = `git clone https://github.com/Ansh-Sonkusare/altpool
 cd altpool && bun install
 claude mcp add altpool -- bun $PWD/packages/mcp/src/server.ts`;
 
-const Shell = ({ children }: { children: string }) => (
-  <pre className="m-0 overflow-x-auto p-4 font-mono text-[12.5px]/[20px] text-fg1">
-    {children.split("\n").map((l, i) => (
-      <div key={i} className={cx("min-h-5 whitespace-pre", /^\s*\/\//.test(l) && "text-dim")}>{l}</div>
-    ))}
-  </pre>
-);
-
-const Step = ({ n, title, lead, file, children, className }: { n: string; title: string; lead: ReactNode; file: string; children: string; className?: string }) => (
+const Step = ({ n, title, lead, file, children, className, lang }: { n: string; title: string; lead: ReactNode; file: string; children: string; className?: string; lang?: "ts" | "sh" }) => (
   <div className={cx("flex min-w-0 flex-col gap-3", className)}>
     <div className="flex items-baseline gap-3">
       <span className="font-mono text-[12px] text-amber">{n}</span>
@@ -51,7 +44,7 @@ const Step = ({ n, title, lead, file, children, className }: { n: string; title:
     <p className="m-0 max-w-[560px] text-[15px]/[23px] text-fg2">{lead}</p>
     <Card className="overflow-hidden">
       <CardBar windowDots><span>{file}</span></CardBar>
-      <Shell>{children}</Shell>
+      <Code code={children} lang={lang} className="p-4 text-[12.5px]/[20px]" />
     </Card>
   </div>
 );
@@ -70,9 +63,9 @@ export const Install = () => (
       </p>
     </div>
     <div className="grid grid-cols-[minmax(0,.8fr)_minmax(0,1.2fr)] items-start gap-x-10 gap-y-8 min-[961px]:grid-rows-[auto_1fr] max-[960px]:grid-cols-1">
-      <Step n="01" title="Install" className="min-[961px]:col-start-1" file="shell" lead={<>Installs next to viem and the devnet's codec. Works in Node and in the browser; <a href="/wallet" className="text-amber">/wallet</a> runs it in this tab with MetaMask.</>}>{INSTALL}</Step>
+      <Step n="01" title="Install" className="min-[961px]:col-start-1" file="shell" lang="sh" lead={<>Installs next to viem and the devnet's codec. Works in Node and in the browser; <a href="/wallet" className="text-amber">/wallet</a> runs it in this tab with MetaMask.</>}>{INSTALL}</Step>
       <Step n="02" title="Send" file="send.ts" className="min-[961px]:col-start-2 min-[961px]:row-span-2 min-[961px]:row-start-1" lead={<><span className={code}>prepare: true</span> estimates every frame's gas before signing. Every failure is an <span className={code}>AltpoolSdkError</span> with a <span className={code}>.fix</span>. <span className={code}>account</span> is any viem local account; fund it with <span className={code}>ap.faucet(address)</span>.</>}>{SNIPPET}</Step>
-      <Step n="03" title="Give an agent the same checks" className="min-[961px]:col-start-1" file="shell · Claude Code" lead={<>The MCP server exposes <span className={code}>check_admission</span>, <span className={code}>get_admission_report</span> and <span className={code}>entity_status</span>. A session exported from <a href="/wallet" className="text-amber">/wallet</a> lets an agent send within the limits you signed.</>}>{MCP}</Step>
+      <Step n="03" title="Give an agent the same checks" className="min-[961px]:col-start-1" file="shell · Claude Code" lang="sh" lead={<>The MCP server exposes <span className={code}>check_admission</span>, <span className={code}>get_admission_report</span> and <span className={code}>entity_status</span>. A session exported from <a href="/wallet" className="text-amber">/wallet</a> lets an agent send within the limits you signed.</>}>{MCP}</Step>
     </div>
   </Section>
 );

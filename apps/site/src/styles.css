@@ -17,6 +17,13 @@
   --animate-pop: pop .7s ease;
 }
 
+/* Code highlighting tokens (sugar-high reads these; Code.tsx uses them for shell too). */
+:root {
+  --sh-keyword: var(--color-kw); --sh-string: var(--color-okt); --sh-comment: var(--color-dim);
+  --sh-class: var(--color-amber); --sh-property: var(--color-amber); --sh-entity: var(--color-amber);
+  --sh-identifier: var(--color-fg1); --sh-sign: var(--color-fg2); --sh-space: inherit; --sh-jsxliterals: var(--color-warn);
+}
+
 @keyframes bl { 50% { opacity: .35; } }
 @keyframes pop { 0% { opacity: .2; transform: translateY(6px); } 100% { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { animation: none !important; transition: none !important; } }

@@ -24,6 +24,7 @@
     "react": "^19",
     "react-dom": "^19",
     "snarkjs": "0.1.20",
+    "sugar-high": "^2.6.4",
     "viem": "^2.57.10",
     "websnark": "github:tornadocash/websnark#2041cfa5fa0b71cd5cca9022a4eeea4afe28c9f7"
   },
