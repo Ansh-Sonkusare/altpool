@@ -77,8 +77,7 @@ export const CardBar = ({ windowDots, children }: { windowDots?: boolean; childr
   </div>
 );
 
-/** tone "amber" is a temporary alias for "acc" until unmigrated callers move. */
-export const Eyebrow = ({ tone = "dim", children }: { tone?: "dim" | "acc" | "amber"; children: ReactNode }) => (
+export const Eyebrow = ({ tone = "dim", children }: { tone?: "dim" | "acc"; children: ReactNode }) => (
   <span className={cx("font-mono text-[12px]/normal tracking-[.08em]", tone === "dim" ? "text-fg2" : "text-acc")}>{children}</span>
 );
 

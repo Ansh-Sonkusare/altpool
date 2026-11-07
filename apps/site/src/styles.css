@@ -1,20 +1,18 @@
-/* Test-report look: warm paper, black ink, verdict colours only for verdicts, dark ink panels for code. */
+/* Dark test-report look: near-black page, light ink, amber accent, verdict colours only for verdicts, framed panels for code. */
 @import "tailwindcss";
 
 /* The design's tokens only: Tailwind's default palette is cleared so every colour comes from here. */
 @theme {
   --color-*: initial;
-  --color-bg: #f5f2ea; --color-band: #ece8dd; --color-s1: #fbf9f4;
-  --color-fg: #16140f; --color-fg1: #3a372f; --color-fg2: #5d584c; --color-dim: #8a8474;
-  --color-ln: rgba(22,20,15,.12); --color-ln2: rgba(22,20,15,.24); --color-x: rgba(22,20,15,.4);
-  --color-acc: #2347e6; --color-accbg: rgba(35,71,230,.07); --color-accln: rgba(35,71,230,.4);
-  --color-ok: #0b7a4b; --color-okt: #0b6b43; --color-okbg: rgba(11,122,75,.09); --color-okln: rgba(11,122,75,.35);
-  --color-bad: #b3321f; --color-badbg: rgba(179,50,31,.08);
-  --color-warn: #8a5a00; --color-warnbg: rgba(176,115,0,.12); --color-warnln: rgba(176,115,0,.4);
-  --color-kw: #6a3fc4;
-  --color-ink: #12110d; --color-ink2: #1b1a15; --color-inkfg: #ecebe4; --color-inkdim: #9a9788; --color-inkln: rgba(255,255,255,.12);
-  /* TEMPORARY aliases so unmigrated files keep compiling; integrator deletes this line once no file uses amber*. */
-  --color-amber: #2347e6; --color-amberbg: rgba(35,71,230,.07); --color-amberln: rgba(35,71,230,.4);
+  --color-bg: #09090b; --color-band: #0c0c0f; --color-s1: #0f0f12;
+  --color-fg: #ededef; --color-fg1: #c9c9d1; --color-fg2: #8b8b94; --color-dim: #5c5c66;
+  --color-ln: rgba(255,255,255,.08); --color-ln2: rgba(255,255,255,.14); --color-x: rgba(255,255,255,.35);
+  --color-acc: #f1c98c; --color-accbg: rgba(241,201,140,.06); --color-accln: rgba(241,201,140,.45);
+  --color-ok: #7be0b0; --color-okt: #9fd9b8; --color-okbg: rgba(123,224,176,.08); --color-okln: rgba(123,224,176,.35);
+  --color-bad: #f47c7c; --color-badbg: rgba(244,124,124,.1);
+  --color-warn: #f5b547; --color-warnbg: rgba(245,181,71,.1); --color-warnln: rgba(245,181,71,.4);
+  --color-kw: #c3a6ff;
+  --color-ink: #121216; --color-ink2: #18181d; --color-inkfg: #ededef; --color-inkdim: #8b8b94; --color-inkln: rgba(255,255,255,.1);
   --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --font-serif: "Instrument Serif", Georgia, serif;
@@ -35,7 +33,7 @@
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { animation: none !important; transition: none !important; } }
 
 @layer base {
-  :root { color-scheme: light; }
+  :root { color-scheme: dark; }
   html { scroll-behavior: smooth; scroll-padding-top: 90px; }
   body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 400 16px/1.55 var(--font-sans); -webkit-font-smoothing: antialiased; }
   a { color: inherit; text-decoration: none; }
@@ -44,6 +42,8 @@
   :focus-visible { outline: 2px solid var(--color-acc); outline-offset: 2px; border-radius: 6px; }
   .ink :focus-visible { outline-color: var(--color-inkfg); }
   ::selection { background: var(--color-acc); color: var(--color-bg); }
+  /* Code and terminal panels sit one step above the page; a hairline keeps them from melting into it. */
+  .ink { box-shadow: inset 0 0 0 1px var(--color-inkln); }
 }
 
 @utility num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }

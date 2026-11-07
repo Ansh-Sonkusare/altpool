@@ -1,5 +1,7 @@
 # Redesign spec: "Altpool: know before you sign"
 
+> Colours in this spec describe the paper-theme trial. The site went back to its original dark palette on Nov 8; `DESIGN.md` holds the current tokens. Layout, sections and copy in this spec still apply.
+
 Read PRODUCT.md and DESIGN.md first. Mode: landing = Persuade, monitor/wallet = Operate, docs = Read.
 
 ## 1. Critique of the current site
