@@ -58,7 +58,7 @@ const txLink = (h: string, on: string[]) =>
 const render = (s: EntityReport): string => {
   const r = s.reputation, h = s.headroom, f = s.funds;
   const repColor = r.status === "ok" ? green : r.status === "throttled" ? yellow : red;
-  const perNode = s.nodes.filter((n) => n.reputation).map((n) => `${n.name} ${n.reputation!.opsSeen}/${n.reputation!.opsIncluded}`).join(", ");
+  const perNode = s.nodes.filter((n) => n.reputation).map((n) => `${n.name} ${n.reputation!.opsSeen}/${n.reputation!.opsIncluded}${n.reputationError ? " stale" : ""}`).join(", ");
   const lines = [
     `${dim(new Date(s.updatedAt).toLocaleTimeString())} ${bold(s.address)}`,
     `  nodes       ${s.nodes.map((n) => (n.ok ? `${green(n.name)} ${dim(`${n.latencyMs}ms`)}` : `${red(n.name)} ${dim(n.error ?? "down")}`)).join("  ")}`,

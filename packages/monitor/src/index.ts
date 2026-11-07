@@ -33,6 +33,10 @@ export interface NodeView {
   latencyMs?: number;
   /** This node's own reputation table: each sidecar counts seen/included separately. */
   reputation?: Reputation;
+  /** When the reputation shown was read (it is refreshed every reputationTtlMs, and kept when a refresh fails). */
+  reputationAt?: number;
+  /** Set when the last reputation refresh failed: the value shown is older. */
+  reputationError?: string;
 }
 
 export interface TrackedTx {
@@ -118,6 +122,8 @@ export interface ReportOptions {
   feePerTx?: bigint;
   /** Receipt cache across polls. */
   cache?: Map<string, Omit<Inclusion, "nodes">>;
+  /** Re-read each node's reputation table at most this often (default 30 s: several heavy pages, slow-moving numbers). */
+  reputationTtlMs?: number;
   /** Pending tx bodies (fees, limits, nonce keys) across polls: a pending tx never changes. */
   txCache?: Map<string, PendingBody>;
   previous?: EntityReport;
@@ -181,22 +187,49 @@ const findReputationItem = async (gw: ReturnType<typeof gatewayClient>, entity: 
   return undefined;
 };
 
-const readNode = async (ref: NodeRef, entity: string, txLimit: number, ms: number): Promise<NodeData> => {
+/** Reputation per (node, entity), refreshed at most every ttl and kept through failed refreshes. Module-wide, so the
+ *  compare view and several watchers share it. */
+const repCache = new Map<string, { reputation?: Reputation; at: number }>();
+const repInFlight = new Map<string, Promise<void>>();
+
+const readReputation = async (gw: ReturnType<typeof gatewayClient>, ref: NodeRef, entity: string, ms: number, ttl: number) => {
+  const key = `${ref.url}|${entity}`;
+  const hit = repCache.get(key);
+  if (hit && Date.now() - hit.at < ttl) return { ...hit };
+  // One refresh at a time per key; a concurrent poll reuses the last value.
+  let job = repInFlight.get(key);
+  if (!job) {
+    job = (async () => {
+      const item = await findReputationItem(gw, entity, ms, ref.name);
+      const reputation: Reputation | undefined = item && {
+        opsSeen: Number(item.opsSeen ?? 0), opsIncluded: Number(item.opsIncluded ?? 0),
+        status: (item.status ?? "ok") as ReputationStatus, isWhitelisted: Boolean(item.isWhitelisted), isBlacklisted: Boolean(item.isBlacklisted),
+      };
+      repCache.set(key, { reputation, at: Date.now() });
+    })().finally(() => repInFlight.delete(key));
+    repInFlight.set(key, job);
+  }
+  try {
+    await job;
+    return { ...repCache.get(key)! };
+  } catch (e) {
+    return { reputation: hit?.reputation, at: hit?.at, error: errText(e) };
+  }
+};
+
+const readNode = async (ref: NodeRef, entity: string, txLimit: number, ms: number, ttl: number): Promise<NodeData> => {
   const gw = gatewayClient(ref.url);
   const t0 = Date.now();
   try {
-    const [item, txs, adm] = await Promise.all([
-      findReputationItem(gw, entity, ms, ref.name),
+    // The tx list decides whether the node is up; reputation and rejections are extras that may come back stale or empty.
+    const [rep, txs, adm] = await Promise.all([
+      readReputation(gw, ref, entity, ms, ttl),
       within(gw.call("skandha_explorer_listTransactions", [{ limit: Math.min(txLimit, 200) }]), ms, `${ref.name} listTransactions`),
       within(gw.call("skandha_explorer_listAdmissions", [{ outcome: "rejected", limit: 50 }]), ms, `${ref.name} listAdmissions`).catch(() => ({ items: [] })),
     ]);
-    const reputation: Reputation | undefined = item && {
-      opsSeen: Number(item.opsSeen ?? 0), opsIncluded: Number(item.opsIncluded ?? 0),
-      status: (item.status ?? "ok") as ReputationStatus, isWhitelisted: Boolean(item.isWhitelisted), isBlacklisted: Boolean(item.isBlacklisted),
-    };
     return {
       ref, gw, txs: txs?.items ?? [], rejected: adm?.items ?? [],
-      view: { name: ref.name, url: ref.url, ok: true, latencyMs: Date.now() - t0, reputation },
+      view: { name: ref.name, url: ref.url, ok: true, latencyMs: Date.now() - t0, reputation: rep.reputation, reputationAt: rep.at, reputationError: rep.error },
     };
   } catch (e) {
     return { ref, gw, txs: [], rejected: [], view: { name: ref.name, url: ref.url, ok: false, error: errText(e), latencyMs: Date.now() - t0 } };
@@ -218,7 +251,7 @@ export const entityReport = async (entity: Address, o: ReportOptions = {}): Prom
   const now = Date.now();
 
   const ms = o.timeoutMs ?? 25_000;
-  const data = await Promise.all(refs.map((r) => readNode(r, me, o.txLimit ?? 200, ms)));
+  const data = await Promise.all(refs.map((r) => readNode(r, me, o.txLimit ?? 200, ms, o.reputationTtlMs ?? 30_000)));
   const up = data.filter((d) => d.view.ok);
   if (!up.length) throw new Error(`no node reachable: ${data.map((d) => `${d.ref.name}: ${d.view.error}`).join("; ")}`);
   // Chain reads: ethrex first, then any sidecar (they forward eth_* to it).
@@ -273,7 +306,16 @@ export const entityReport = async (entity: Address, o: ReportOptions = {}): Prom
   const included = all.filter((t) => INCLUDED.includes(t.status))
     .sort((a, b) => (b.submittedAt ?? 0) - (a.submittedAt ?? 0))
     .slice(0, o.maxInclusions ?? 10);
-  const inclusions = (await Promise.all(included.map(async (t): Promise<Inclusion | undefined> => {
+  // Three at a time: browsers allow ~6 connections per host, and a burst of receipts starves the other calls.
+  const limit3 = <T>(fns: (() => Promise<T>)[]) => {
+    const lanes: Promise<unknown>[] = [Promise.resolve(), Promise.resolve(), Promise.resolve()];
+    return Promise.all(fns.map((fn, i) => {
+      const p = lanes[i % 3]!.then(fn);
+      lanes[i % 3] = p.catch(() => undefined);
+      return p;
+    }));
+  };
+  const inclusions = (await limit3(included.map((t) => async (): Promise<Inclusion | undefined> => {
     const nodes = Object.keys(t.nodes);
     const hit = cache.get(lc(t.hash));
     if (hit) return { ...hit, nodes };
