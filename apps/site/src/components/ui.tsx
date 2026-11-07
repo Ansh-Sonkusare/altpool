@@ -63,6 +63,6 @@ export const CardBar = ({ windowDots, children }: { windowDots?: boolean; childr
 );
 
 export const Eyebrow = ({ tone = "dim", children }: { tone?: "dim" | "amber"; children: ReactNode }) => (
-  <span className={cx("font-mono text-[12px]/normal uppercase tracking-[.12em]", tone === "amber" ? "text-amber" : "text-fg2")}>{children}</span>
+  <span className={cx("font-mono text-[12px]/normal tracking-[.12em]", tone === "amber" ? "text-amber" : "text-fg2")}>{children}</span>
 );
 

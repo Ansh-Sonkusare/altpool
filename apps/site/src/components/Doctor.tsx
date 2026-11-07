@@ -61,7 +61,7 @@ export const Doctor = ({ doctor: { current, run, invalid }, entity }: DoctorProp
           frame-doctor, <span className="text-fg2">running in this page.</span>
         </h2>
         <p className="m-0 max-w-[460px] text-fg2">
-          <span className="font-mono text-fg1">checkAdmission(tx)</span> says whether the public and the alt mempool will admit a frame transaction, which rule fails, for which entity and frame, and the fix. Each verdict names its source: the node's simulation, the sidecar's admission record, or our local rule model, marked <span className="text-warn">unverified</span>.
+          <span className="font-mono text-fg1">checkAdmission(tx)</span> says whether the public mempool and the alt mempool admit a frame transaction. When one rejects it, the report names the rule, the entity, the frame and the fix. Each verdict names its source: the node's simulation, the sidecar's admission record, or our local rule model, marked <span className="text-warn">unverified</span>.
         </p>
       </div>
 

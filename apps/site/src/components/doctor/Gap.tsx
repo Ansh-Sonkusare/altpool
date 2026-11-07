@@ -27,21 +27,21 @@ export const GapStory = ({ view, sent, preset }: { view?: DoctorView; sent?: Hex
           {pre ? `Two checks say go. The node's simulation says frame ${gap.frame} reverts.` : `Admitted, then frame ${gap.frame} reverted on chain.`}
         </h3>
         <p className="m-0 text-sm/[21px] text-fg2">
-          {preset && <>{preset}. </>}This is the gap in docs/10 finding 9: admission does not run the atomic batch, so only the node's simulation sees the revert.
+          {preset && <>{preset}. </>}This is finding 9. Admission does not act on the atomic batch's result, so only the node's simulation shows the revert.
         </p>
       </div>
       <div className="grid grid-cols-3 divide-x divide-warnln max-[860px]:grid-cols-1 max-[860px]:divide-x-0 max-[860px]:divide-y">
         <Cell who={pre ? "checkAdmission, alt mempool" : "Alt mempool, sidecar record"} verdict="Admitted" tone="ok">
-          {pre ? "From our local rule model, marked unverified. The rules it knows are about admission, not about what the batch does." : "The sidecar's own admission record says admitted."}
+          {pre ? "From our local rule model, marked unverified. Its rules cover admission, not what the batch does." : "The sidecar's own admission record says admitted."}
         </Cell>
         <Cell who="The miner's sidecar" verdict={sent || !pre ? "Admitted" : "Would admit"} tone="ok">
-          {sent ? `It accepted the transaction as ${short(sent)}. That is finding 9 measured again.`
-            : pre ? "Finding 9 measured the sidecar admitting a transaction its own simulation said would revert. This page has not re-measured it before sending."
+          {sent ? `It accepted the transaction as ${short(sent)}, which measures finding 9 again.`
+            : pre ? "Finding 9 measured the sidecar admitting a transaction that its own simulation said would revert. This page has not sent this one yet."
             : "It took the transaction into its pool, and the block builder included it."}
         </Cell>
         <Cell who={pre ? "frame-doctor, node simulation" : "The chain, frame receipt"} verdict={`Frame ${gap.frame} ${pre ? "reverts" : "reverted"}`} tone="bad">
           {gap.reason && <><span className="font-mono text-fg">{gap.reason}</span>. </>}
-          {pre ? "The atomic batch would roll back; the withdraw in frame 2 stays final." : "The atomic batch rolled back; the withdraw in frame 2 stayed final."}
+          {pre ? "The atomic batch would roll back. The withdraw in frame 2 stays final." : "The atomic batch rolled back. The withdraw in frame 2 stayed final."}
           {gap.fix && <span className="mt-2 block border-l-2 border-ok/60 pl-3"><span className="font-mono text-[12px] text-ok">fix </span>{gap.fix}</span>}
         </Cell>
       </div>

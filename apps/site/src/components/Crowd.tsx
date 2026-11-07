@@ -192,18 +192,18 @@ export function Crowd({ pool, myLeafIndex }: { pool: Address; myLeafIndex?: numb
             <Verdict title="Prove against the latest root" set={mine && after === 0 ? "1 likely" : `${fmt(Math.max(inPool, 1))} possible`}>
               {mine
                 ? `Your note and ${fmt(Math.max(inPool - 1, 0))} others are unspent inside this root. ${after === 0 ? "Its newest leaf is yours, so an observer guesses you until someone else deposits." : "Its newest leaf is not yours."}`
-                : `${fmt(inPool)} unspent notes sit inside this root. Whoever pays could be any of them.`}
+                : `${fmt(inPool)} unspent notes sit inside this root. A proof against it is designed to hide the payer among them.`}
             </Verdict>
             <Verdict title={mine ? "Prove against the root right after your deposit" : `Prove against the root from leaf ${ref.leaf}`} set={mine ? "1 likely" : `${fmt(Math.max(olderUnspent, 1))} possible`}>
               {mine
                 ? `${fmt(Math.max(olderUnspent, 1))} unspent notes are inside that root, but your leaf is its newest, so an observer who reads the root guesses you.`
-                : `${fmt(Math.max(olderUnspent, 1))} unspent notes were inside that older root. An older root hides the payer among fewer notes.`}
+                : `${fmt(Math.max(olderUnspent, 1))} unspent notes were inside that older root. An older root never holds more notes than the latest one.`}
             </Verdict>
           </div>
         )}
         <p className="m-0 text-[12px]/snug text-fg2">
-          These are other accounts depositing and withdrawing during this demo, run by us. They show the mechanism, not real-world privacy.
-          {hidden > 0 && ` ${fmt(hidden)} withdrawal${hidden === 1 ? "" : "s"} counted from the pool balance have no block: they failed at the top level, so eth_getLogs omits them, and they are older than block ${fmt(scanFrom)}, where the receipt scan starts.`}
+          Most of these deposits and withdrawals come from accounts we run on this devnet.
+          {hidden > 0 && ` ${fmt(hidden)} withdrawal${hidden === 1 ? "" : "s"} counted from the pool balance have no block. Their transactions failed at the top level, so eth_getLogs omits their logs, and they are older than block ${fmt(scanFrom)}, where the receipt scan starts.`}
           {scanFrom > 0 && hidden === 0 && ` Receipts scanned from block ${fmt(scanFrom)} to ${fmt(head)}.`}
         </p>
       </>

@@ -35,10 +35,10 @@ export const PipelineStrip = ({ p, tab, onTab }: { p: P; tab: string; onTab: (id
       <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 text-[13px]/[20px] text-fg2">
         <span role="status">
           {t?.hash
-            ? <>One transaction, five tools. Following {t.origin === "yours" ? "the run you sent" : "the newest Pledge Paid on chain"}: <ExtLink href={exitUrl(t.hash)} className="font-mono text-amber">{short(t.hash)}</ExtLink></>
+            ? <>One transaction, five steps. Following {t.origin === "yours" ? "the run you sent" : "the newest Pledge Paid on chain"}: <ExtLink href={exitUrl(t.hash)} className="font-mono text-amber">{short(t.hash)}</ExtLink></>
             : t?.raw
-              ? <>One transaction, five tools. Following the run you are building{t.preset ? ` (${t.preset})` : ""}. It has no hash until you send it.</>
-              : t ? <>One transaction, five tools. Building the run you started.</> : <>One transaction, five tools. Waiting for the first Pledge Paid on chain.</>}
+              ? <>One transaction, five steps. Following the run you are building{t.preset ? ` (${t.preset})` : ""}. It has no hash until you send it.</>
+              : t ? <>One transaction, five steps. Building the run you started.</> : <>One transaction, five steps. Waiting for the first Pledge Paid on chain.</>}
         </span>
         <a href="#pledge" className="font-mono text-[12px] text-amber hover:text-fg">Send one</a>
       </div>

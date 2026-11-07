@@ -30,7 +30,7 @@ export const FrameDetail = ({ row, rows, state }: { row: FrameRow; rows: FrameRo
         <KV k="Call">{row.call}</KV>
         {row.approves && <KV k="Approves">{row.approves}</KV>}
         <KV k="Batch">{row.batch}</KV>
-        <KV k="Gas limit (exec / state)">{fmt(row.gasLimit)} / {fmt(row.stateLimit)}</KV>
+        <KV k="Gas limit (exec / state)">{row.gasLimit || row.stateLimit ? `${fmt(row.gasLimit)} / ${fmt(row.stateLimit)}` : "set when the frames are built"}</KV>
         <KV k="Gas used (exec / state)">{u ? `${fmt(u.execution)} / ${fmt(u.state)}` : "none yet"}</KV>
       </dl>
     </div>

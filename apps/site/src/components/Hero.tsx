@@ -11,8 +11,8 @@ const btnOutline = `${btn} border border-ln2 font-normal text-fg2 hover:border-w
 
 const GET: readonly (readonly [string, string])[] = [
   ["SDK", "Build, simulate and send frame transactions from viem."],
-  ["frame-doctor", "Check whether the public and the alt mempool admit a transaction. If one rejects it, it names the rule and the fix."],
-  ["Monitor", "Watch a staked entity's stake, reputation and how many sends it has left."],
+  ["frame-doctor", "Ask the public mempool and the alt mempool whether they admit a transaction. When one rejects it, frame-doctor names the rule and the fix."],
+  ["Monitor", "Watch a staked entity's stake, its reputation and the sends it has left before throttling."],
   ["MCP server", "Give an AI agent the same checks."],
 ];
 
@@ -32,7 +32,7 @@ export const Hero = ({ head }: HeroProps) => {
         </div>
         <div className="flex flex-col gap-7">
           <p className="text-[18px]/[28px] text-[#b9b9c2]">
-            Altpool is a viem toolkit for the ERC-8421 alternative mempool, where frame transactions can validate with more gas and read more state than the public mempool allows.
+            Altpool is a viem toolkit for the ERC-8421 alt mempool. There, a frame transaction's validation can use more gas and read more state than the public mempool allows.
           </p>
           <ul className="m-0 flex list-none flex-col gap-3 p-0 text-[15px]/[22px] text-fg1">
             {GET.map(([tool, what]) => (
@@ -43,7 +43,7 @@ export const Hero = ({ head }: HeroProps) => {
             ))}
           </ul>
           <div className="flex flex-wrap gap-2.5">
-            <a href="#pledge" className={btnSolid}>Send one live</a>
+            <a href="#pledge" className={btnSolid}>Send a Pledge Paid</a>
             <a href="#doctor" className={btnOutline}>Run frame-doctor</a>
           </div>
         </div>

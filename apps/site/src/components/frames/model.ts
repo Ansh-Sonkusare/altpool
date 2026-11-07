@@ -30,7 +30,7 @@ export const stepName = (r: FrameRow): string => {
 export const GROUPS = {
   verify: { title: "Validation", sub: "who approves and who pays" },
   out: { title: "Outside the batch", sub: "always kept, repays the relay" },
-  atomic: { title: "ATOMIC", sub: "all or nothing" },
+  atomic: { title: "Atomic batch", sub: "all or nothing" },
 } as const;
 export type GroupKey = keyof typeof GROUPS;
 
@@ -56,9 +56,9 @@ export const explain = (r: FrameRow, st: FrameState, rows: FrameRow[]): string =
   const bad = rows.find((x) => stateOf(x) === "reverted");
   switch (st) {
     case "success": return "Ran and its effects stand.";
-    case "rolled back": return `The receipt says success but its logs are emptied, because frame ${bad?.index ?? "a later one"} of the same atomic batch reverted and undid it.`;
+    case "rolled back": return `The receipt says success with empty logs. Frame ${bad?.index ?? "a later one"} of the same atomic batch reverted and undid this one.`;
     case "reverted": return "This frame failed. Every earlier frame of its atomic batch was undone with it.";
-    case "skipped": return `Never ran: frame ${bad?.index ?? "an earlier one"} reverted, so the rest of the batch was dropped.`;
+    case "skipped": return `Receipt status 2. It never ran, because frame ${bad?.index ?? "an earlier one"} of its batch reverted.`;
     case "pending": return "Planned, not sent yet.";
   }
 };
@@ -67,11 +67,11 @@ export const explain = (r: FrameRow, st: FrameState, rows: FrameRow[]): string =
 const DOES: Record<string, { what: string; why: string }> = {
   expiry: {
     what: "Checks the transaction's deadline against the block time.",
-    why: "It is validation: a node can drop a stale payment before it spends anything on it.",
+    why: "As validation, it lets a node drop a stale payment before spending anything on it.",
   },
   "relay checks the proof and pays": {
-    what: "PayRelayWETH verifies the Groth16 proof of the pool withdrawal, then approves execution and payment, so the relay pays the gas and the 0-ETH sender needs no signature.",
-    why: "It is validation: the alt mempool admits the transaction only after reading and simulating this frame.",
+    what: "PayRelayWETH verifies the Groth16 proof of the pool withdrawal, then approves execution and payment, so the relay pays the gas and the transaction needs no signature.",
+    why: "As validation, it decides admission. The alt mempool simulates this frame before it admits the transaction.",
   },
   withdraw: {
     what: "Calls the WETH pool's withdraw. It pays the note out to the Settler's address and the relay fee to PayRelayWETH.",
@@ -98,7 +98,7 @@ const DOES: Record<string, { what: string; why: string }> = {
     why: "It is atomic, so the change moves only when the invoice was paid.",
   },
   "check books": {
-    what: "Calls assertSettled on the Settler: the invoice must be paid and the Settler must hold no ETH, WETH or fgUSD.",
+    what: "Calls assertSettled on the Settler. It reverts unless the invoice is paid and the Settler holds no ETH, WETH or fgUSD.",
     why: "It closes the atomic batch. If the books are off, the whole batch is undone.",
   },
 };
@@ -114,8 +114,8 @@ export const MODE_HELP = {
 export const STATE_HELP: Record<FrameState, string> = {
   pending: "Planned, or sent and not in a block yet.",
   success: "Ran, and its effects stand.",
-  "rolled back": "The receipt says success but its logs are empty: a later frame of the same atomic batch reverted and undid it.",
-  reverted: "This frame failed, which undid the atomic frames before it.",
+  "rolled back": "The receipt says success with empty logs, because a later frame of the same atomic batch reverted and undid it.",
+  reverted: "This frame failed and undid the earlier frames of its atomic batch.",
   skipped: "Receipt status 2. It never ran, because an earlier frame of its batch reverted.",
 };
 

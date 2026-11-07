@@ -14,13 +14,13 @@ export const UseIt = () => (
   <div className="grid grid-cols-3 gap-3 max-[960px]:grid-cols-1">
     <Block
       title="CLI"
-      lead={<>Exit <span className="text-ok">0</span> when the alt mempool admits, <span className="text-bad">1</span> when it rejects, <span className="text-warn">2</span> on usage or RPC errors, so it can gate CI. <span className={code}>--json</span> prints the report; <span className={code}>-v</span> adds every rule check.</>}
+      lead={<>Exits <span className="text-ok">0</span> when the alt mempool admits, <span className="text-bad">1</span> when it rejects and <span className="text-warn">2</span> on usage or RPC errors, so it can gate CI. <span className={code}>--json</span> prints the report as JSON. <span className={code}>-v</span> adds every rule check.</>}
     >{`frame-doctor <rawTx | txHash> [--json] [-v]
 frame-doctor 0x02… --json
 echo $?   # 0, 1 or 2`}</Block>
     <Block
       title="TypeScript"
-      lead={<><span className={code}>checkAdmission</span> takes a raw tx or a FrameTx and returns both verdicts. Pass <span className={code}>simulator</span> as the SDK's <span className={code}>precheck</span> to run it before every send.</>}
+      lead={<><span className={code}>checkAdmission</span> takes a raw tx or a FrameTx and returns both verdicts. Pass <span className={code}>simulator</span> as the SDK's <span className={code}>precheck</span> option, and the SDK runs it on preflight and on <span className={code}>{"submit({ precheck: true })"}</span>.</>}
     >{`import { checkAdmission, renderReport } from "@altpool/simulator";
 
 const r = await checkAdmission(rawTx);

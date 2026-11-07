@@ -80,7 +80,7 @@ stop();   // unwatch`,
   {
     id: "mcp",
     tab: "MCP",
-    value: "An agent that writes frame transactions can ask the mempool whether they will land, then read the reason when they do not.",
+    value: "An AI agent that writes frame transactions can ask whether each mempool admits them, and read the reason when one does not.",
     file: "@altpool/mcp · stdio server",
     code: `# add it to Claude Code
 claude mcp add altpool -- bun <path-to-altpool>/packages/mcp/src/server.ts
@@ -103,17 +103,17 @@ interface Entry {
 const ENTRIES: readonly Entry[] = [
   {
     path: "packages/prover", name: "@altpool/prover",
-    job: "Builds the note, rebuilds the pool's Merkle path and makes the Groth16 proof that frames 0 to 2 carry. The QuietSend exit and Pledge Paid share it. The site runs a browser websnark port in src/liveExit.",
+    job: "Builds the note, rebuilds the pool's Merkle path and makes the Groth16 proof that frames 1 and 2 use. The QuietSend exit and Pledge Paid share it. The site runs a browser websnark port in src/liveExit.",
     uses: ["createNote", "rootFor", "pathFor", "prove"],
   },
   {
     path: "packages/contracts", name: "@altpool/contracts",
-    job: "Holds the on-chain side of both flows. PayRelayWETH checks the proof, pays the gas and pins frames 2 to 8. SettlerFactory deploys the Settler at an address fixed by the invoice terms, and InvoiceBook records the payment. ExitRelay and ExitRelayToken are the plain QuietSend exit.",
+    job: "The on-chain side of both flows. PayRelayWETH checks the proof, pays the gas and pins frames 2 to 8. SettlerFactory deploys the Settler at an address fixed by the invoice terms, and InvoiceBook records the payment. ExitRelay and ExitRelayToken are the plain QuietSend exit.",
     uses: ["payTx", "settlerAddress", "exitTx", "deployments"],
   },
   {
     path: "packages/core", name: "@altpool/core",
-    job: "Devnet constants, the chain definition and the RPC clients every other package builds on.",
+    job: "The devnet constants, the chain definition and the RPC clients that every other package uses.",
     uses: ["DEVNET", "altDevnet", "gateway", "ethrex"],
   },
   {
@@ -128,7 +128,7 @@ const ENTRIES: readonly Entry[] = [
   },
   {
     path: "packages/monitor", name: "@altpool/monitor",
-    job: "Watches the staked relay across the gateway and the miner sidecar: reputation, stake, balance, stuck and rejected transactions.",
+    job: "Watches a staked relay on the gateway and the miner's sidecar. It reports reputation, stake, balance, and stuck or rejected transactions.",
     uses: ["watchEntity", "entityStatus", "txReport", "watch-entity"],
   },
   {
@@ -138,7 +138,7 @@ const ENTRIES: readonly Entry[] = [
   },
   {
     path: "packages/falcon", name: "@altpool/falcon",
-    job: "Not one of the nine frames. A Falcon-512 wallet that can receive a QuietSend payout and spend it with a frame transaction. Its verify step is over the public cap, so it is alt-mempool only.",
+    job: "Not part of Pledge Paid. A Falcon-512 wallet that can receive a QuietSend payout and spend it with a frame transaction. Its VERIFY frame needs more gas than the public cap, so only the alt mempool admits it.",
     uses: ["falconKeygen", "falconSign", "falconSpendTx", "predictWalletAddress"],
   },
   {
@@ -158,8 +158,8 @@ const ENTRIES: readonly Entry[] = [
   },
   {
     path: "apps/site", name: "@altpool/site",
-    job: "This page. Its live exit runs the prover, the contracts package and the SDK in your browser against the devnet.",
-    uses: ["src/liveExit/run.ts"],
+    job: "This page. Its Pledge Paid sender runs the prover, the contracts package and the SDK in your browser against the devnet.",
+    uses: ["src/livePledge/run.ts"],
   },
 ];
 
@@ -198,10 +198,10 @@ export const Codebase = ({ entity }: { entity: Live<EntityReport> }) => {
       <div className="flex flex-col gap-4">
         <Eyebrow>The toolkit</Eyebrow>
         <h2 className="m-0 text-balance text-[clamp(36px,5vw,56px)]/[1.07] font-light tracking-[-.03em]">
-          Four tools for the same <span className="font-serif font-normal italic tracking-[-.01em] text-amber">mempool.</span>
+          Four tools for the alt mempool.
         </h2>
         <p className="m-0 max-w-[640px] text-[16px]/[26px] text-fg2">
-          Each tool below runs live on the transaction in the pipeline. Send a Pledge Paid and watch it move from build to ask.
+          The strip follows one Pledge Paid through each tool. It follows yours once you send one, and the newest on chain until then.
         </p>
       </div>
       <PipelineStrip p={p} tab={id} onTab={setId} />
@@ -229,8 +229,8 @@ export const Codebase = ({ entity }: { entity: Live<EntityReport> }) => {
         </div>
       </div>
       <div className="mt-6 flex flex-col gap-3 border-t border-ln pt-8">
-        <h3 className="m-0 text-[22px]/[28px] font-light tracking-[-.01em]">Every package, in the order Pledge Paid uses them</h3>
-        <p className="m-0 max-w-[640px] text-[15px]/[24px] text-fg2">Each card names what the package does in this transaction and the exports the flow calls. The links open the source.</p>
+        <h3 className="m-0 text-[22px]/[28px] font-light tracking-[-.01em]">Every package, starting with the ones Pledge Paid uses</h3>
+        <p className="m-0 max-w-[640px] text-[15px]/[24px] text-fg2">Each card says what the package does and names the exports the flow calls.</p>
       </div>
       <div className="grid grid-cols-3 gap-4 max-[960px]:grid-cols-2 max-[720px]:grid-cols-1">
         {ENTRIES.map((e) => (
