@@ -98,7 +98,7 @@ export async function deployAccount(wallet: WalletClient, owner: Address, step: 
   step({ text: "Confirm the deploy in your wallet (12M gas: the account creates 7 opcode helpers; 0.05 ETH funds it)." });
   const hash = await wallet.deployContract({
     account: owner, chain: altDevnet, abi: bridgeAccountAbi, bytecode: bridgeAccountBytecode, args: [owner],
-    value: parseEther("0.05"), gas: BRIDGE_DEPLOY_GAS, gasPrice: await pub.getGasPrice(),
+    value: parseEther("0.05"), gas: BRIDGE_DEPLOY_GAS, gasPrice: (await pub.estimateFeesPerGas({ type: "legacy" })).gasPrice,
   });
   step({ text: "Deploy sent, waiting…", hash });
   const r = await pub.waitForTransactionReceipt({ hash, timeout: 180_000 });

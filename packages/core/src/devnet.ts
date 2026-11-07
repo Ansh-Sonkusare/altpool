@@ -1,5 +1,6 @@
 // Mirrors docs/01 in the research repo. Change a value there first.
 import { defineChain } from "viem";
+import { getBlock } from "viem/actions";
 import type { Address } from "./types";
 
 const env = (k: string): string | undefined => (globalThis as { process?: { env: Record<string, string | undefined> } }).process?.env[k] || undefined;
@@ -28,12 +29,24 @@ export const DEVNET = {
   reputation: { minInclusionDenominator: 10, throttlingSlack: 10, banSlack: 50 },
 } as const;
 
+/** Tip on top of the base fee for plain (non-frame) txs. */
+const TIP = 1_000_000_000n;
+
 export const altDevnet = defineChain({
   id: DEVNET.chainId,
   name: "Alt mempool devnet",
   nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
   rpcUrls: { default: { http: [DEVNET.ethrexUrl] } },
   blockExplorers: { default: { name: "Alt mempool explorer", url: DEVNET.explorerUrl } },
+  // eth_gasPrice here follows the node's priority-fee suggestion, which has reached ~400-500 gwei while the base fee sits
+  // at 7 wei. At that price 2M gas costs more than the faucet's 1 ETH. Price from the base fee instead.
+  fees: {
+    // viem passes the caller's block here, not the one it fetched, so it is often undefined: read it ourselves.
+    estimateFeesPerGas: async ({ block, client, type }) => {
+      const max = ((block ?? (await getBlock(client))).baseFeePerGas ?? 0n) * 2n + TIP;
+      return type === "legacy" ? { gasPrice: max } : { maxFeePerGas: max, maxPriorityFeePerGas: TIP };
+    },
+  },
 });
 
 export const explorerTx = (hash: string) => `${DEVNET.explorerUrl}/tx/${hash}`;

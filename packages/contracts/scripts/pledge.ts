@@ -138,9 +138,7 @@ async function freshDonor() {
   const donor = privateKeyToAccount(generatePrivateKey());
   console.log(`donor ${donor.address}, faucet ${j(await gateway().faucet(donor.address))}`);
   for (let i = 0; i < 60 && (await pub.getBalance({ address: donor.address })) < DEVNET.denomination + parseEther("0.01"); i++) await sleep(2000);
-  // The node's suggested gas price can reach hundreds of gwei, and 2M gas at that price exceeds the faucet's 1 ETH. The base fee is 7 wei.
-  const chain = { ...altDevnet, fees: { estimateFeesPerGas: async () => ({ gasPrice: 1_000_000_000n }) } };
-  return createWalletClient({ account: donor, chain, transport: http(DEVNET.ethrexUrl) });
+  return createWalletClient({ account: donor, chain: altDevnet, transport: http(DEVNET.ethrexUrl) });
 }
 
 const wethOf = (a: Address) => pub.readContract({ address: WETH9, abi: wethAbi, functionName: "balanceOf", args: [a] });

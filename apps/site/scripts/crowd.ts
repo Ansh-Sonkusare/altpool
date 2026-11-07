@@ -83,8 +83,9 @@ const wethOf = (a: Address) => pub.readContract({ address: WETH9, abi: wethAbi, 
 /** ETH account i needs for one deposit: gas plus whatever its recycled WETH does not cover. */
 async function need(i: number): Promise<bigint> {
   const weth = await wethOf(wallets(state)[i].address);
-  // Each tx reserves gasLimit * gasPrice up front; the devnet's price swings (seen 95 gwei), so budget from the live price.
-  const gas = TX.gas * (await pub.getGasPrice()) * 2n;
+  // Each tx reserves gasLimit * gasPrice up front. Use the price the wallet will actually pay (altDevnet's fee rule).
+  const { gasPrice } = await pub.estimateFeesPerGas({ type: "legacy" });
+  const gas = TX.gas * gasPrice * 2n;
   return (gas > GAS ? gas : GAS) + (weth >= DEVNET.denomination ? 0n : DEVNET.denomination - weth);
 }
 
