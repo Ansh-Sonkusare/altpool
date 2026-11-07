@@ -11,7 +11,8 @@
     "test": "forge test -vv",
     "forge:build": "forge build",
     "smoke": "bun scripts/falcon-smoke.ts",
-    "recipient": "bun scripts/falcon-recipient.ts"
+    "recipient": "bun scripts/falcon-recipient.ts",
+    "bytecode": "bun scripts/gen-bytecode.ts"
   },
   "dependencies": {
     "@altpool/core": "workspace:*",

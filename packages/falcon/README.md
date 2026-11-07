@@ -10,9 +10,26 @@ Post-quantum recipient wallets for QuietSend: a contract account whose only auth
 | `src/FalconSig.sol` | Decodes the signature bytes and calls the shared ZKNOX verifier. |
 | `src/FalconWalletFactory.sol` | CREATE2 factory, salt = `pkHash`. `predictAddress(pkHash)` works before the wallet exists. |
 | `src/falcon.ts`, `src/factory.ts` | noble keygen, NTT-domain key encoding, signing, frame-tx builder, off-chain `predictWalletAddress`. |
+| `src/account.ts` | `falconAccount` / `falconSigner`: the optional post-quantum account for the `altpool` SDK. |
+| `src/generated/bytecode.ts` | FalconWallet creation code (`bun run bytecode`), so prediction needs no forge and no `fs` (browser-safe). |
 | `scripts/falcon-smoke.ts` | Live gate: deploy, fund, simulate, tamper test, real inclusion. |
 | `scripts/falcon-recipient.ts` | Live flow: a QuietSend exit pays a not-yet-deployed Falcon wallet, which is then deployed and spends. |
 | `vendor/ethfalcon` | ZKNOX ETHFALCON `43ac863`, MIT, unmodified (see `vendor/README.md`). |
+
+## Use it from the SDK (optional post-quantum)
+
+The SDK needs no change: a `FrameSigner` may be `{ signFrame }`, and `falconSigner` is one. Apps that never import this package keep plain secp256k1.
+
+```ts
+import { falconAccount, falconKeygen } from "@altpool/falcon";
+const pq = falconAccount({ key: falconKeygen() });     // devnet factory + verifier by default; pq.address is final now
+// pay pq.address (e.g. a QuietSend exit), deploy it once from any funded account:
+await wallet.sendTransaction({ ...pq.deployCall(), gas: 18_000_000n, type: "legacy" });
+const tx = pq.buildTx({ nonce: await pq.getNonce(client), to, value, maxFeePerGas });
+await client.altpool.sendFrameTransaction({ transaction: tx, signer: pq.signer, prepare: true, mempool: "alt" });
+```
+
+Send to the alt mempool only: the public one rejects a ~3.9M-gas VERIFY. For `checkAdmission`, use `createSimulator({ verifyGasMax: FALCON_VERIFY_GAS })`: the default 450k pin is ExitRelay's. The demo shows it with `bun run demo --pq`.
 
 ## Design
 
@@ -46,7 +63,7 @@ VERIFY here is ~3.9M gas (frame limit 4.5M). ethrex's public mempool caps VERIFY
 - noble's Falcon is also young; signing is randomised and a signature is not constant gas.
 - Not verified: other nodes' validation caps; behaviour under a hard-fork change of the frame opcodes; a mainnet-grade audit; gossip across nodes (everything was sent to the miner's sidecar).
 - Of four correct spend submissions to the miner, one was admitted and then dropped by the miner after 4 relays without a block (hash `0x057b1b16…4e00`, status `Cancelled`); an identical resubmission at the same nonce was included in 8 seconds. Cause not established. `falcon-recipient.ts` resubmits once on a drop.
-- Scripts need `forge build` (artifacts in `out/`) and read keys from the gitignored `.env` (generated, funded from the faucet; never a published devnet key).
+- `falcon-smoke.ts` and first-time deploys need `forge build` (artifacts in `out/`); `falcon-recipient.ts` runs without forge once the factory is deployed. Scripts read keys from the gitignored `.env` (generated, funded from the faucet; never a published devnet key).
 
 ## Commands
 
@@ -54,8 +71,8 @@ VERIFY here is ~3.9M gas (frame limit 4.5M). ethrex's public mempool caps VERIFY
 export PATH="$PATH:$HOME/.foundry/bin"
 forge test -vv                          # 10 tests: TS-encoded key + sig verify in ZKNOX, tamper, factory, execute guard
 bun scripts/gen-vector.ts               # regenerate test/vector.json
+bun run bytecode                        # regenerate src/generated/bytecode.ts (from out/ or the deployed factory)
 forge build && bun scripts/falcon-smoke.ts       # F1 gate (live)
-bun scripts/falcon-recipient.ts                  # QuietSend recipient flow (live)
+bun scripts/falcon-recipient.ts                  # QuietSend recipient flow (live), spend through the SDK
+bun scripts/falcon-spend.ts <wallet> [to] [eth]  # SDK spend from a deployed wallet whose key is in .env (live)
 ```
-
-`scripts/falcon-recipient.ts` imports `@altpool/contracts` and `@altpool/prover`; they resolve through the workspace but are not yet listed in this package's `package.json`.

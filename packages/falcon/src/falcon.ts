@@ -2,7 +2,7 @@
 import { falcon512 } from "@noble/post-quantum/falcon.js";
 import { bytesToHex, concatHex, encodeFunctionData, hexToBytes, keccak256, pad, parseAbi, toHex, type Address, type Hex } from "viem";
 import { frame, newTx, sigHash, type FrameTx } from "@forshtat/hegota-support/tx";
-import { getProfile } from "@forshtat/hegota-support/profiles";
+import { getProfile, type Profile } from "@forshtat/hegota-support/profiles";
 import { DEVNET } from "@altpool/core";
 
 const Q = 12289n;
@@ -18,6 +18,8 @@ export interface FalconKey {
 }
 
 export const falconKeygen = (seed?: Uint8Array): FalconKey => falcon512.keygen(seed);
+/** Rebuild the key pair from a saved secret key (the public key is derived from it). */
+export const falconKeyFromSecret = (secretKey: Uint8Array): FalconKey => ({ secretKey, publicKey: falcon512.getPublicKey(secretKey) });
 
 const powMod = (b: bigint, e: bigint): bigint => {
   let r = 1n;
@@ -135,10 +137,10 @@ export interface SpendOpts {
   tamper?: (sig: Hex) => Hex;
 }
 
-/** Frames: 0 VERIFY wallet (data 0x00: empty calldata would hit receive()), 1 SENDER wallet.execute(to, value, data). */
-export function falconSpendTx(o: SpendOpts): FrameTx {
+/** The unsigned spend: frames 0 VERIFY wallet (data 0x00: empty calldata would hit receive()), 1 SENDER wallet.execute(to, value, data). */
+export function buildFalconSpendTx(o: Omit<SpendOpts, "key" | "tamper">): FrameTx {
   const profile = getProfile(DEVNET.profile);
-  const unsigned = newTx({
+  return newTx({
     chainId: DEVNET.chainId,
     sender: o.wallet,
     nonceSeq: o.nonce,
@@ -154,7 +156,18 @@ export function falconSpendTx(o: SpendOpts): FrameTx {
       }),
     ],
   });
-  let signature = falconSign(sigHash(profile, unsigned), o.key);
-  if (o.tamper) signature = o.tamper(signature);
-  return { ...unsigned, signatures: [{ scheme: 0, signer: "0x", msg: "0x", signature }] };
 }
+
+/** Fill ARBITRARY signature entry `index` with a Falcon signature over the tx's canonical sig hash. */
+export function attachFalconSignature(profile: Profile, tx: FrameTx, key: FalconKey, index = 0, tamper?: (sig: Hex) => Hex): FrameTx {
+  const entry = tx.signatures[index];
+  if (!entry) throw new Error(`The transaction has no signature entry ${index}`);
+  // FalconWallet accepts only scheme 0 (ARBITRARY) with an empty msg, i.e. a signature over the canonical sig hash.
+  if (entry.scheme !== 0 || entry.msg !== "0x") throw new Error(`Signature entry ${index} must be ARBITRARY (scheme 0) with an empty msg`);
+  let signature = falconSign(sigHash(profile, tx), key);
+  if (tamper) signature = tamper(signature);
+  return { ...tx, signatures: tx.signatures.map((s, i) => (i === index ? { ...s, signature } : s)) };
+}
+
+/** Build and sign in one go (the scripts' path). */
+export const falconSpendTx = (o: SpendOpts): FrameTx => attachFalconSignature(getProfile(DEVNET.profile), buildFalconSpendTx(o), o.key, 0, o.tamper);

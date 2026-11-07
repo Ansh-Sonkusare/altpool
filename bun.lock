@@ -17,6 +17,7 @@
       "dependencies": {
         "@altpool/contracts": "workspace:*",
         "@altpool/core": "workspace:*",
+        "@altpool/falcon": "workspace:*",
         "@altpool/monitor": "workspace:*",
         "@altpool/prover": "workspace:*",
         "@altpool/simulator": "workspace:*",

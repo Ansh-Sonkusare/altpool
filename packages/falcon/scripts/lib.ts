@@ -8,7 +8,8 @@ import { DEVNET, altDevnet, gateway } from "@altpool/core";
 const ENV = new URL("../.env", import.meta.url);
 const DEPLOYMENTS = new URL("../deployments.json", import.meta.url);
 
-export const pub = createPublicClient({ chain: altDevnet, transport: http(DEVNET.ethrexUrl) });
+// Long timeout: the devnet has been answering in 10-30 s per call.
+export const pub = createPublicClient({ chain: altDevnet, transport: http(DEVNET.ethrexUrl, { timeout: 90_000, retryCount: 3 }) });
 
 /** NAME from the gitignored packages/falcon/.env, or a new one written there. Never a published devnet key. */
 export function persistedKey(name: string): Hex {
